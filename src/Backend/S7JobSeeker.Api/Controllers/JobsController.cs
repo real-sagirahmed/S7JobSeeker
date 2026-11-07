@@ -113,6 +113,17 @@ public class JobsController : ControllerBase
                 var newJobs = techJobs.Where(j => !existingSet.Contains(j.ExternalId)).ToList();
                 if (newJobs.Count == 0) continue;
 
+                // ARCHITECTURAL INTENT: Defensive truncation to protect against SQL Server "String or binary data would be truncated"
+                foreach (var job in newJobs)
+                {
+                    if (job.Location?.Length > 200) job.Location = job.Location[..197] + "...";
+                    if (job.Title?.Length > 300) job.Title = job.Title[..297] + "...";
+                    if (job.Company?.Length > 200) job.Company = job.Company[..197] + "...";
+                    if (job.ExternalId?.Length > 200) job.ExternalId = job.ExternalId[..200];
+                    if (job.JobType?.Length > 100) job.JobType = job.JobType[..100];
+                    if (job.SalaryRange?.Length > 100) job.SalaryRange = job.SalaryRange[..100];
+                }
+
                 // ARCHITECTURAL INTENT: Relational-first persistence. Add and save all new jobs to MSSQL
                 // immediately before vector indexing so that network latency or Gemini 15 RPM
                 // rate limits never starve the relational database or cause HTTP sync timeouts.

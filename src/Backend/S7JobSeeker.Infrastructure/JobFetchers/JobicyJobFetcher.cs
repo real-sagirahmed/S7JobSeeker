@@ -78,17 +78,22 @@ public class JobicyJobFetcher : IJobFetcherService
 
                 var plainDesc = Regex.Replace(description ?? "", "<.*?>", string.Empty);
 
+                var safeLocation = string.IsNullOrWhiteSpace(location) ? "Remote" : (location.Length > 200 ? location[..197] + "..." : location);
+                var safeTitle = string.IsNullOrWhiteSpace(title) ? "Untitled" : (title.Length > 300 ? title[..297] + "..." : title);
+                var safeCompany = string.IsNullOrWhiteSpace(company) ? "Unknown" : (company.Length > 200 ? company[..197] + "..." : company);
+                var safeExtId = string.IsNullOrWhiteSpace(id) ? Guid.NewGuid().ToString() : (id.Length > 200 ? id[..200] : id);
+
                 jobList.Add(new JobPosting
                 {
                     Id = Guid.NewGuid(),
-                    ExternalId = id,
+                    ExternalId = safeExtId,
                     Source = JobSource.Jobicy,
-                    Title = title ?? "Untitled",
-                    Company = company ?? "Unknown",
-                    Location = string.IsNullOrWhiteSpace(location) ? "Remote" : location,
+                    Title = safeTitle,
+                    Company = safeCompany,
+                    Location = safeLocation,
                     IsRemote = true,
                     SalaryRange = salary,
-                    JobType = string.IsNullOrWhiteSpace(jobType) ? "Full-time" : jobType,
+                    JobType = string.IsNullOrWhiteSpace(jobType) ? "Full-time" : (jobType.Length > 100 ? jobType[..100] : jobType),
                     Description = plainDesc.Trim(),
                     Url = url,
                     PublishedAt = publishedAt,

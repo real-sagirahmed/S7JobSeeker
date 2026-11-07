@@ -49,6 +49,10 @@ public class HealthController : ControllerBase
                 if (!pendingMigrations.Any())
                 {
                     result["totalJobsInDb"] = await _dbContext.JobPostings.CountAsync(cancellationToken);
+                    result["jobsBySource"] = await _dbContext.JobPostings
+                        .GroupBy(j => j.Source)
+                        .Select(g => new { Source = g.Key.ToString(), SourceId = (int)g.Key, Count = g.Count() })
+                        .ToListAsync(cancellationToken);
                 }
             }
         }
