@@ -27,8 +27,7 @@ public class ProfileControllerTests
     public ProfileControllerTests()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=S7JobSeekerDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;")
-            .LogTo(Console.WriteLine, LogLevel.Information)
+            .UseInMemoryDatabase(databaseName: $"TestDb_{Guid.NewGuid()}")
             .Options;
 
         _db = new ApplicationDbContext(options);
