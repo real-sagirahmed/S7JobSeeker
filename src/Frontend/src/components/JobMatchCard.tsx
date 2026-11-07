@@ -24,6 +24,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
   const getSourceBadge = () => {
     const name = match.sourceName || (
       match.source === 7 ? 'BDJobs' :
+      match.source === 8 ? 'LinkedIn' :
       match.source === 3 ? 'Jobicy' :
       match.source === 5 ? 'Himalayas' :
       match.source === 6 ? 'We Work Remotely' :
@@ -37,6 +38,8 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
     let style = 'bg-slate-100 text-slate-700 border-slate-200';
     if (name.includes('BDJobs') || match.source === 7) {
       style = 'bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold';
+    } else if (name.includes('LinkedIn') || match.source === 8) {
+      style = 'bg-[#0A66C2]/10 text-[#0A66C2] border-[#0A66C2]/30 font-bold';
     } else if (name.includes('Jobicy') || match.source === 3) {
       style = 'bg-blue-50 text-blue-800 border-blue-200 font-bold';
     } else if (name.includes('Himalayas') || match.source === 5) {

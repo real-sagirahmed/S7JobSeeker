@@ -272,7 +272,7 @@ export const App: React.FC = () => {
                       onClick={handleSyncJobs}
                       disabled={isSyncingJobs}
                       className="px-3.5 py-1.5 rounded-xl bg-[#E6F4F4] hover:bg-[#007070]/20 text-[#007070] border border-[#007070]/30 text-xs font-bold flex items-center space-x-1.5 transition-colors disabled:opacity-50"
-                      title="Fetch latest tech jobs from BDJobs, Jobicy, Himalayas, WWR, Remotive & Arbeitnow"
+                      title="Fetch latest tech jobs from BDJobs, LinkedIn, Jobicy, Himalayas, WWR, Remotive & Arbeitnow"
                     >
                       <DownloadCloud className={`w-3.5 h-3.5 ${isSyncingJobs ? 'animate-bounce' : ''}`} />
                       <span>{isSyncingJobs ? 'Syncing...' : 'Sync Tech Jobs'}</span>
@@ -293,8 +293,9 @@ export const App: React.FC = () => {
                       onChange={(e) => setSourceFilter(Number(e.target.value))}
                       className="px-3 py-1.5 rounded-lg bg-white border border-black/10 text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
                     >
-                      <option value={0}>All Sources (৬টি সোর্স)</option>
+                      <option value={0}>All Sources (৭টি সোর্স)</option>
                       <option value={7}>🇧🇩 BDJobs (Local BD)</option>
+                      <option value={8}>LinkedIn Jobs</option>
                       <option value={3}>Jobicy (Remote)</option>
                       <option value={5}>Himalayas (Remote)</option>
                       <option value={6}>We Work Remotely</option>

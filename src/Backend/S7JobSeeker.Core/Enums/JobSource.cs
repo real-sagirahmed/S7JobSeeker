@@ -8,5 +8,6 @@ public enum JobSource
     CustomPaste = 4,
     Himalayas = 5,
     WeWorkRemotely = 6,
-    Bdjobs = 7
+    Bdjobs = 7,
+    LinkedIn = 8
 }

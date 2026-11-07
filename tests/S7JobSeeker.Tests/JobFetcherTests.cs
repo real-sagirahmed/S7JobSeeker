@@ -207,4 +207,57 @@ public class JobFetcherTests
         Assert.Equal("BDT 100,000 - 150,000", job.SalaryRange);
         Assert.Equal("https://bdjobs.com/h/details/1553412", job.Url);
     }
+
+    [Fact]
+    public async Task LinkedinJobFetcher_ParsesGuestHtmlSuccessfully()
+    {
+        var sampleHtml = """
+        <!DOCTYPE html>
+        <ul>
+          <li>
+            <div class="base-card" data-entity-urn="urn:li:jobPosting:4487731921">
+              <a class="base-card__full-link" href="https://bd.linkedin.com/jobs/view/senior-software-developer-net-4487731921?refId=123">
+                <span class="sr-only">Senior .NET Developer</span>
+              </a>
+              <div class="base-search-card__info">
+                <h3 class="base-search-card__title">
+                  Senior .NET Developer
+                </h3>
+                <h4 class="base-search-card__subtitle">
+                  <a class="hidden-nested-link" href="https://bd.linkedin.com/company/net-bridge">
+                    Net Bridge Ltd
+                  </a>
+                </h4>
+                <div class="base-search-card__metadata">
+                  <span class="job-search-card__location">
+                    Gulshan, Dhaka, Bangladesh
+                  </span>
+                  <time class="job-search-card__listdate" datetime="2026-11-07">1 hour ago</time>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+        """;
+
+        var handler = new MockHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(sampleHtml, Encoding.UTF8, "text/html")
+        });
+
+        var client = new HttpClient(handler);
+        var fetcher = new LinkedinJobFetcher(client, NullLogger<LinkedinJobFetcher>.Instance);
+
+        var result = await fetcher.FetchLatestJobsAsync();
+
+        Assert.Single(result);
+        var job = result[0];
+        Assert.Equal("4487731921", job.ExternalId);
+        Assert.Equal(JobSource.LinkedIn, job.Source);
+        Assert.Equal("Senior .NET Developer", job.Title);
+        Assert.Equal("Net Bridge Ltd", job.Company);
+        Assert.Equal("Gulshan, Dhaka, Bangladesh", job.Location);
+        Assert.Equal("https://bd.linkedin.com/jobs/view/senior-software-developer-net-4487731921", job.Url);
+        Assert.NotNull(job.PublishedAt);
+    }
 }

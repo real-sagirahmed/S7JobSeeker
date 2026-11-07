@@ -105,8 +105,13 @@ builder.Services.AddHttpClient<BdjobsJobFetcher>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(15);
 });
+builder.Services.AddHttpClient<LinkedinJobFetcher>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 
 builder.Services.AddScoped<IJobFetcherService, BdjobsJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, LinkedinJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, JobicyJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, HimalayasJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, WwrJobFetcher>();

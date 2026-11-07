@@ -291,6 +291,7 @@ public class JobMatcherService : IJobMatcherService
     private static string GetSourceName(JobSource source) => source switch
     {
         JobSource.Bdjobs => "BDJobs",
+        JobSource.LinkedIn => "LinkedIn",
         JobSource.Jobicy => "Jobicy",
         JobSource.Himalayas => "Himalayas",
         JobSource.WeWorkRemotely => "We Work Remotely",
