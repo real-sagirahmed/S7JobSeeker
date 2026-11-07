@@ -28,6 +28,16 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
+    private bool IsMasterAdminEmail(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        var cleanEmail = email.Trim();
+        var masterEmail = _configuration["AdminSettings:MasterEmail"] ?? "formal.teams7@gmail.com";
+        return string.Equals(cleanEmail, masterEmail.Trim(), StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(cleanEmail, "formal.teams7@gmail.com", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(cleanEmail, "sagir@teams7.com", StringComparison.OrdinalIgnoreCase);
+    }
+
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequestDto dto)
     {
@@ -37,8 +47,7 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Email already registered." });
         }
 
-        var masterEmail = _configuration["AdminSettings:MasterEmail"] ?? "sagir@teams7.com";
-        var isMaster = !string.IsNullOrWhiteSpace(dto.Email) && string.Equals(dto.Email.Trim(), masterEmail.Trim(), StringComparison.OrdinalIgnoreCase);
+        var isMaster = IsMasterAdminEmail(dto.Email);
 
         var user = new ApplicationUser
         {
@@ -71,8 +80,7 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid email or password." });
         }
 
-        var masterEmail = _configuration["AdminSettings:MasterEmail"] ?? "sagir@teams7.com";
-        var isMaster = !string.IsNullOrWhiteSpace(user.Email) && string.Equals(user.Email.Trim(), masterEmail.Trim(), StringComparison.OrdinalIgnoreCase);
+        var isMaster = IsMasterAdminEmail(user.Email);
 
         if (isMaster && (!user.IsAdmin || user.AiCredits < 999999))
         {
@@ -95,11 +103,11 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return NotFound();
 
-        var masterEmail = _configuration["AdminSettings:MasterEmail"] ?? "sagir@teams7.com";
-        if (!string.IsNullOrWhiteSpace(user.Email) && string.Equals(user.Email.Trim(), masterEmail.Trim(), StringComparison.OrdinalIgnoreCase) && !user.IsAdmin)
+        if (IsMasterAdminEmail(user.Email) && (!user.IsAdmin || user.AiCredits < 999999))
         {
             user.IsAdmin = true;
             user.AiCredits = 999999;
+            user.TrialEndsAt = DateTime.UtcNow.AddYears(50);
             await _userManager.UpdateAsync(user);
         }
 
