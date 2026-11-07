@@ -1,0 +1,27 @@
+name: Scheduled Job Ingestion & Vector Sync
+
+on:
+  schedule:
+    # Runs every 12 hours (00:00 and 12:00 UTC)
+    - cron: '0 0,12 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-jobs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger Job Ingestion & Embedding Sync
+      env:
+        APP_URL: ${{ secrets.APP_API_URL }}
+        CRON_KEY: ${{ secrets.APP_CRON_KEY }}
+      run: |
+        if [ -z "$APP_URL" ] || [ -z "$CRON_KEY" ]; then
+          echo "Error: APP_API_URL or APP_CRON_KEY secret is not configured in repository."
+          exit 1
+        fi
+        
+        echo "Triggering secure API Job Sync endpoint..."
+        curl -s -S -X POST "${APP_URL}/api/jobs/sync" \
+          -H "X-Cron-Key: ${CRON_KEY}" \
+          -H "Content-Type: application/json" \
+          --fail-with-body

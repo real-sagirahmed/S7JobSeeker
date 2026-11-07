@@ -1,0 +1,165 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Microsoft.SemanticKernel;
+using S7JobSeeker.AI.Parsers;
+using S7JobSeeker.AI.Services;
+using S7JobSeeker.Core.Entities;
+using S7JobSeeker.Core.Interfaces;
+using S7JobSeeker.Infrastructure.Data;
+using S7JobSeeker.Infrastructure.JobFetchers;
+using S7JobSeeker.Infrastructure.Vector;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Load user secrets and environment variables safely
+builder.Configuration.AddUserSecrets<Program>(optional: true);
+builder.Configuration.AddEnvironmentVariables();
+
+// Controllers & JSON
+builder.Services.AddControllers();
+
+// Database Context (SQL Server)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Server=(localdb)\\mssqllocaldb;Database=S7JobSeekerDb;Trusted_Connection=True;TrustServerCertificate=True;";
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
+// Identity Setup
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>();
+
+// JWT Authentication
+var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? "SuperSecretKeyForS7JobSeekerAuthenticationMustBeAtLeast32CharactersLong2026!";
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "s7job-seeker-api",
+            ValidAudience = builder.Configuration["JwtSettings:Audience"] ?? "s7job-seeker-client",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// HttpClient & Job Fetchers
+builder.Services.AddHttpClient<RemotiveJobFetcher>();
+builder.Services.AddHttpClient<ArbeitnowJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, RemotiveJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, ArbeitnowJobFetcher>();
+
+// Qdrant Vector Service
+builder.Services.AddSingleton<IQdrantVectorService, QdrantVectorService>();
+
+// Resume Parser
+builder.Services.AddScoped<IResumeParserService, ResumeParserService>();
+
+// Semantic Kernel & Gemini AI Services
+var geminiApiKey = builder.Configuration["GeminiSettings:ApiKey"] ?? "DEMO_KEY";
+var geminiChatModel = builder.Configuration["GeminiSettings:ModelId"] ?? "gemini-2.0-flash";
+var geminiEmbedModel = builder.Configuration["GeminiSettings:EmbeddingModelId"] ?? "text-embedding-004";
+
+builder.Services.AddGoogleAIGeminiChatCompletion(geminiChatModel, geminiApiKey);
+builder.Services.AddGoogleAIEmbeddingGeneration(geminiEmbedModel, geminiApiKey);
+
+builder.Services.AddScoped<ISkillExtractorService, SkillExtractorService>();
+builder.Services.AddScoped<IJobMatcherService, JobMatcherService>();
+
+// Swagger / OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "s7job-seeker API",
+        Version = "v1",
+        Description = "AI-Powered Semantic & RAG Job Seeker Platform"
+    });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and your token.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+// Serve React SPA files from wwwroot
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+// Client-side fallback routing for React Router
+app.MapFallbackToFile("index.html");
+
+// Auto-apply database migrations on startup (crucial for shared hosting environments like MonsterASP)
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        if (dbContext.Database.IsRelational())
+        {
+            logger.LogInformation("Applying pending database migrations...");
+            dbContext.Database.Migrate();
+            logger.LogInformation("Database migrations applied successfully.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Database migration on startup was skipped or failed. Ensure database server is accessible.");
+    }
+}
+
+app.Run();

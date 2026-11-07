@@ -1,0 +1,51 @@
+name: Deploy to MonsterASP.net
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: src/Frontend/package-lock.json
+
+    - name: Build React Frontend
+      run: |
+        cd src/Frontend
+        npm install
+        npm run build
+
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Run Automated Regression & Security Tests
+      run: |
+        dotnet test S7JobSeeker.sln --configuration Release --verbosity normal
+
+    - name: Publish .NET Web API
+      run: |
+        dotnet publish src/Backend/S7JobSeeker.Api/S7JobSeeker.Api.csproj -c Release -o ./publish
+
+    - name: Deploy to MonsterASP.net via FTPS
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.MONSTERASP_FTP_SERVER }}
+        username: ${{ secrets.MONSTERASP_FTP_USERNAME }}
+        password: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
+        local-dir: ./publish/
+        server-dir: /
+        protocol: ftps
+        security: strict
