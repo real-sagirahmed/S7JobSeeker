@@ -170,36 +170,98 @@ public class JobMatcherService : IJobMatcherService
         );
     }
 
+    // ARCHITECTURAL INTENT: Normalized Tech Skill Catalog for Deterministic Extraction
+    // Used for mathematical set-difference (A \ B) to identify true missing skills without LLM hallucinations.
+    private static readonly (string Name, string Pattern)[] KnownTechCatalog =
+    [
+        ("C#", @"(?<=^|\W)c#(?=\W|$)|csharp\b"),
+        (".NET", @"(?<=^|\W)\.net(?=\W|$)|dotnet\b|asp\.net\b"),
+        ("SQL Server", @"\b(sql\s*server|mssql|t-sql)\b"),
+        ("PostgreSQL", @"\b(postgres|postgresql)\b"),
+        ("React", @"\b(react|reactjs)\b"),
+        ("Angular", @"\b(angular)\b"),
+        ("TypeScript", @"\b(typescript|ts)\b"),
+        ("JavaScript", @"\b(javascript|js|es6)\b"),
+        ("Node.js", @"\b(node|nodejs)\b"),
+        ("Docker", @"\b(docker|container)\b"),
+        ("Kubernetes", @"\b(kubernetes|k8s)\b"),
+        ("Azure", @"\b(azure)\b"),
+        ("AWS", @"\b(aws|amazon\s*web\s*services)\b"),
+        ("GCP", @"\b(gcp|google\s*cloud)\b"),
+        ("Git", @"\b(git|github|gitlab)\b"),
+        ("Python", @"\b(python)\b"),
+        ("Clean Architecture", @"\b(clean\s*architecture|solid|cqrs)\b"),
+        ("REST API", @"\b(rest|web\s*api|restful)\b"),
+        ("GraphQL", @"\b(graphql)\b"),
+        ("Redis", @"\b(redis)\b"),
+        ("MongoDB", @"\b(mongodb|mongo)\b"),
+        ("Tailwind CSS", @"\b(tailwind)\b")
+    ];
+
     private JobMatchResultDto EvaluateMatchDeterministic(
         ResumeParsedProfileDto profile,
         JobPosting job,
         float? vectorSimilarity)
     {
+        // ARCHITECTURAL INTENT: Deterministic Skill Gap Set-Difference
+        // Missing skills = Skills required by the job which the candidate DOES NOT possess.
+        var candidateSkillsSet = new HashSet<string>(
+            profile.Skills.Select(s => s.Name.ToLowerInvariant().Trim()),
+            StringComparer.OrdinalIgnoreCase
+        );
+
         var matched = new List<string>();
         var missing = new List<string>();
 
-        var jobText = $"{job.Title} {job.Description}".ToLowerInvariant();
+        var jobText = $"{job.Title} {job.Description}";
 
-        foreach (var skill in profile.Skills)
+        // 1. Detect required tech skills from job circular
+        foreach (var tech in KnownTechCatalog)
         {
-            if (jobText.Contains(skill.Name.ToLowerInvariant()))
+            if (System.Text.RegularExpressions.Regex.IsMatch(jobText, tech.Pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             {
-                matched.Add(skill.Name);
-            }
-            else if (skill.IsPrimary)
-            {
-                missing.Add(skill.Name);
+                if (candidateSkillsSet.Contains(tech.Name) || candidateSkillsSet.Any(c => c.Contains(tech.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (!matched.Contains(tech.Name)) matched.Add(tech.Name);
+                }
+                else
+                {
+                    if (!missing.Contains(tech.Name)) missing.Add(tech.Name);
+                }
             }
         }
 
-        double skillScore = profile.Skills.Count > 0
-            ? Math.Round(((double)matched.Count / profile.Skills.Count) * 100.0, 1)
-            : 60.0;
+        // 2. Also check if candidate has any unique profile skills directly mentioned in the job description
+        foreach (var skill in profile.Skills)
+        {
+            if (!matched.Contains(skill.Name, StringComparer.OrdinalIgnoreCase) &&
+                jobText.Contains(skill.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                matched.Add(skill.Name);
+            }
+        }
 
-        skillScore = Math.Clamp(skillScore, 40.0, 95.0);
+        // Calculate skill match percentage based on required skills
+        int totalRequiredSkills = matched.Count + missing.Count;
+        double skillScore;
+
+        if (totalRequiredSkills > 0)
+        {
+            skillScore = Math.Round(((double)matched.Count / totalRequiredSkills) * 100.0, 1);
+            skillScore = Math.Clamp(skillScore, 30.0, 98.0);
+        }
+        else
+        {
+            // If job description doesn't explicitly list standard keywords, default to baseline
+            skillScore = profile.Skills.Count > 0 ? 70.0 : 50.0;
+        }
 
         double vectorScore = vectorSimilarity.HasValue ? Math.Clamp(vectorSimilarity.Value * 100.0, 0.0, 100.0) : skillScore;
         double overallScore = Math.Round((vectorScore * 0.5) + (skillScore * 0.5), 1);
+
+        string recommendations = missing.Count > 0
+            ? $"Target employer requires expertise in {string.Join(", ", missing.Take(3))}. Consider showcasing hands-on projects or certifications in these areas."
+            : $"Excellent match! Candidate satisfies all {matched.Count} identified requirements for {job.Title} at {job.Company}.";
 
         return new JobMatchResultDto(
             JobId: job.Id,
@@ -215,8 +277,8 @@ public class JobMatcherService : IJobMatcherService
             SemanticSimilarityScore: Math.Round(vectorScore, 1),
             SkillMatchScore: Math.Round(skillScore, 1),
             MatchingSkills: matched,
-            MissingSkills: missing.Take(3).ToList(),
-            Recommendations: $"Candidate has {matched.Count} overlapping core skills with {job.Company}. Review {job.Title} requirements for full alignment.",
+            MissingSkills: missing,
+            Recommendations: recommendations,
             IsBookmarked: false
         );
     }

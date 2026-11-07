@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UploadCloud, FileCheck, Sparkles, AlertCircle, Layers } from 'lucide-react';
+import { UploadCloud, FileCheck, Sparkles, AlertCircle, Layers, Plus, X } from 'lucide-react';
 import type { ResumeProfile } from '../types';
 import { api } from '../services/api';
 
@@ -11,6 +11,8 @@ interface ResumeUploaderProps {
 export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfileUpdated }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newSkillName, setNewSkillName] = useState('');
+  const [isAddingSkill, setIsAddingSkill] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -30,6 +32,32 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfi
       }
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleAddSkill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSkillName.trim()) return;
+    setIsAddingSkill(true);
+    setError(null);
+    try {
+      const updated = await api.profile.addSkill(newSkillName.trim());
+      onProfileUpdated(updated);
+      setNewSkillName('');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to add skill');
+    } finally {
+      setIsAddingSkill(false);
+    }
+  };
+
+  const handleDeleteSkill = async (skillName: string) => {
+    setError(null);
+    try {
+      const updated = await api.profile.deleteSkill(skillName);
+      onProfileUpdated(updated);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to remove skill');
     }
   };
 
@@ -135,7 +163,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfi
               {profile.skills.map((skill, idx) => (
                 <span
                   key={idx}
-                  className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold border ${
+                  className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
                     skill.isPrimary
                       ? 'bg-[#E6F4F4] text-[#007070] border-[#007070]/30 shadow-2xs'
                       : 'bg-[#F8FAFC] text-[#333333] border-black/8'
@@ -145,9 +173,36 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfi
                   <span className="ml-1.5 text-[10px] text-[#7C7C7C]">
                     ({getCategoryLabel(skill.category)})
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSkill(skill.name)}
+                    className="ml-1.5 p-0.5 rounded-full hover:bg-black/10 text-[#7C7C7C] hover:text-rose-600 transition-colors"
+                    title={`Remove ${skill.name}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </span>
               ))}
             </div>
+
+            {/* Inline Add Skill Form */}
+            <form onSubmit={handleAddSkill} className="flex items-center space-x-2 mt-4 pt-3 border-t border-black/5">
+              <input
+                type="text"
+                placeholder="Add missing skill (e.g. Kubernetes, Redis, Docker)..."
+                value={newSkillName}
+                onChange={(e) => setNewSkillName(e.target.value)}
+                className="px-3.5 py-1.5 text-xs rounded-xl border border-black/10 bg-[#F8FAFC] text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070] flex-1 max-w-sm"
+              />
+              <button
+                type="submit"
+                disabled={isAddingSkill || !newSkillName.trim()}
+                className="px-3.5 py-1.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-bold transition-colors disabled:opacity-50 flex items-center space-x-1 shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{isAddingSkill ? 'Adding...' : 'Add Skill'}</span>
+              </button>
+            </form>
           </div>
 
           {/* Experiences */}

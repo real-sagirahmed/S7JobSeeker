@@ -78,6 +78,34 @@ export const api = {
       if (res.status === 404) return null;
       if (!res.ok) throw new Error('Failed to load profile');
       return res.json();
+    },
+
+    async addSkill(name: string, category: number = 9, yearsOfExperience: number = 1): Promise<ResumeProfile> {
+      const res = await fetch(`${API_BASE}/profile/skills`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify({ name, category, yearsOfExperience })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to add skill' }));
+        throw new Error(err.message || 'Failed to add skill');
+      }
+      return res.json();
+    },
+
+    async deleteSkill(skillName: string): Promise<ResumeProfile> {
+      const res = await fetch(`${API_BASE}/profile/skills/${encodeURIComponent(skillName)}`, {
+        method: 'DELETE',
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to delete skill' }));
+        throw new Error(err.message || 'Failed to remove skill');
+      }
+      return res.json();
     }
   },
 
@@ -89,6 +117,17 @@ export const api = {
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: 'Failed to fetch matches' }));
         throw new Error(err.message || 'Failed to fetch job matches');
+      }
+      return res.json();
+    },
+
+    async getSaved(): Promise<JobMatch[]> {
+      const res = await fetch(`${API_BASE}/jobs/saved`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to fetch saved jobs' }));
+        throw new Error(err.message || 'Failed to fetch saved jobs');
       }
       return res.json();
     },

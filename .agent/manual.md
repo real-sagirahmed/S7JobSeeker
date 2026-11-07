@@ -5,6 +5,7 @@
 
 | তারিখ ও সময় (desc) | অ্যাকশন / মাইলস্টোন | বিস্তারিত বিবরণ | স্ট্যাটাস |
 | :--- | :--- | :--- | :--- |
+| `2026-11-07 16:45` | **Concurrency Bug Isolation, Saved Jobs & Skill Gap Suite** | রেজুমে রি-আপলোড/আপডেট-এ EF Core `DbUpdateConcurrencyException` (চাইল্ড `UserSkill` নেভিগেশন ট্র্যাকিং কনফ্লিক্ট) ১০০% আইসোলেট ও সলভ করা হয়েছে। Saved Jobs এন্ডপয়েন্ট, সেট-ডিফারেন্স স্কিল গ্যাপ অ্যালগরিদম, জিরো-ডিপেনডেন্সি কাস্টম ব্রান্ড টোস্ট (`Toast.tsx`), এবং প্রোফাইল স্কিল ম্যানুয়াল CRUD ইমপ্লিমেন্টেশন সম্পন্ন। ৯টি স্বয়ংক্রিয় ইউনিট টেস্ট সফলভাবে পাস। | Completed |
 | `2026-11-07 15:23` | **Local Full-Stack Execution & Multi-Port Dev Setup** | লোকাল ডেভেলপমেন্ট সফলভাবে চালু: `MSSQLLocalDB` স্টার্ট ও অটো-মাইগ্রেশন ভেরিফায়েড, ASP.NET Core API `http://localhost:5000`-এ লাইভ (Swagger ও হেলথ চেক সক্রিয়), এবং React 19 ফ্রন্টএন্ড Vite HMR সার্ভার `http://localhost:5173`-এ লাইভ। | Completed |
 | `2026-11-07 15:18` | **CI/CD IIS app_offline Lock Release & Live Verification** | GitHub Actions Run #13 সফল: IIS `app_offline.htm` মেকানিজমে DLL লক রিলিজ করে সরাসরি `\wwwroot`-এ নতুন কোড ও ফ্রন্টএন্ড বান্ডেল (`index-DzKjaAZh.js`) ডেপ্লয় সম্পন্ন। লাইভ রেজুমে আপলোড ও ৩১২টি জব সিঙ্ক ভেরিফায়েড। | Completed |
 | `2026-11-07 13:35` | **Production Deployment & MSSQL Database Online** | MonsterASP.net-এ `s7jobseeker.runasp.net` ডোমেনে লাইভ ওয়েব-অ্যাপ সক্রিয়। SQL Server 2025 ডাটাবেজ (`db78456`) কনফিগারেশন, `HealthController` ডায়াগনস্টিকস এবং লাইভ ভেরিফিকেশন সম্পন্ন। | Completed |

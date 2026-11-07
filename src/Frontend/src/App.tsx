@@ -5,6 +5,7 @@ import { JobMatchCard } from './components/JobMatchCard';
 import { PasteAndAnalyze } from './components/PasteAndAnalyze';
 import { TailoredModal } from './components/TailoredModal';
 import { AuthModal } from './components/AuthModal';
+import { ToastContainer, type ToastMessage } from './components/Toast';
 import { api } from './services/api';
 import type { User, ResumeProfile, JobMatch, TailoredApplication } from './types';
 import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu, DownloadCloud } from 'lucide-react';
@@ -14,13 +15,25 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'matches' | 'profile' | 'paste' | 'saved'>('matches');
   const [profile, setProfile] = useState<ResumeProfile | null>(null);
   const [matches, setMatches] = useState<JobMatch[]>([]);
+  const [savedList, setSavedList] = useState<JobMatch[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
+  const [isLoadingSaved, setIsLoadingSaved] = useState(false);
   const [isSyncingJobs, setIsSyncingJobs] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<TailoredApplication | null>(null);
   const [generatingAppId, setGeneratingAppId] = useState<string | null>(null);
   const [minScoreFilter, setMinScoreFilter] = useState<number>(0);
   const [remoteOnly, setRemoteOnly] = useState<boolean>(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, type, message }]);
+  };
+
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   // Initial user check
   useEffect(() => {
@@ -62,14 +75,33 @@ export const App: React.FC = () => {
     }
   };
 
+  const fetchSavedMatches = async () => {
+    setIsLoadingSaved(true);
+    try {
+      const list = await api.jobs.getSaved();
+      setSavedList(list);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingSaved(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'saved' && user) {
+      fetchSavedMatches();
+    }
+  }, [activeTab, user]);
+
   const handleSyncJobs = async () => {
     setIsSyncingJobs(true);
     try {
       const res = await api.jobs.syncJobs();
-      alert(`Job sync complete! Fetched: ${res.totalFetched}, New additions: ${res.totalNew}`);
+      showToast(`Job sync complete! Fetched: ${res.totalFetched}, New: ${res.totalNew}`, 'success');
       fetchMatches();
+      if (activeTab === 'saved') fetchSavedMatches();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to trigger job sync.');
+      showToast(err instanceof Error ? err.message : 'Failed to trigger job sync.', 'error');
     } finally {
       setIsSyncingJobs(false);
     }
@@ -80,8 +112,9 @@ export const App: React.FC = () => {
     try {
       const app = await api.jobs.generateTailoredApplication(jobId);
       setSelectedApplication(app);
+      showToast('Customized application package generated successfully.', 'success');
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to generate tailored application.');
+      showToast(err instanceof Error ? err.message : 'Failed to generate tailored application.', 'error');
     } finally {
       setGeneratingAppId(null);
     }
@@ -93,8 +126,15 @@ export const App: React.FC = () => {
       setMatches((prev) =>
         prev.map((m) => (m.jobId === jobId ? { ...m, isBookmarked } : m))
       );
+      setSavedList((prev) => {
+        if (!isBookmarked) return prev.filter((m) => m.jobId !== jobId);
+        const match = matches.find((m) => m.jobId === jobId);
+        return match ? [...prev, { ...match, isBookmarked: true }] : prev;
+      });
+      showToast(isBookmarked ? 'Job added to bookmarks.' : 'Job removed from bookmarks.', 'info');
     } catch (err) {
       console.error(err);
+      showToast('Failed to update bookmark.', 'error');
     }
   };
 
@@ -103,8 +143,6 @@ export const App: React.FC = () => {
     if (m.overallScore < minScoreFilter) return false;
     return true;
   });
-
-  const savedMatches = matches.filter((m) => m.isBookmarked);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#333333] flex flex-col font-sans">
@@ -320,14 +358,29 @@ export const App: React.FC = () => {
             {/* TAB: Saved Jobs */}
             {activeTab === 'saved' && (
               <div className="space-y-6">
-                <div className="pb-4 border-b border-black/8">
-                  <h2 className="text-xl font-black text-[#0B0B0B]">Saved Jobs ({savedMatches.length})</h2>
-                  <p className="text-xs text-[#7C7C7C] mt-0.5">Your bookmarked career opportunities</p>
+                <div className="pb-4 border-b border-black/8 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-black text-[#0B0B0B]">Saved Jobs ({savedList.length})</h2>
+                    <p className="text-xs text-[#7C7C7C] mt-0.5">Your permanently bookmarked career opportunities</p>
+                  </div>
+                  <button
+                    onClick={fetchSavedMatches}
+                    disabled={isLoadingSaved}
+                    className="p-2 rounded-xl border border-black/10 hover:border-[#007070] text-[#7C7C7C] hover:text-[#007070] transition-colors"
+                    title="Refresh Saved Jobs"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isLoadingSaved ? 'animate-spin text-[#007070]' : ''}`} />
+                  </button>
                 </div>
 
-                {savedMatches.length > 0 ? (
+                {isLoadingSaved ? (
+                  <div className="p-12 text-center space-y-3">
+                    <div className="w-8 h-8 border-2 border-[#007070] border-t-transparent rounded-full animate-spin mx-auto" />
+                    <p className="text-xs text-[#7C7C7C] font-semibold">Loading saved opportunities...</p>
+                  </div>
+                ) : savedList.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6">
-                    {savedMatches.map((match) => (
+                    {savedList.map((match) => (
                       <JobMatchCard
                         key={match.jobId}
                         match={match}
@@ -339,7 +392,7 @@ export const App: React.FC = () => {
                   </div>
                 ) : (
                   <div className="p-12 text-center rounded-2xl border border-black/8 bg-white space-y-2 shadow-xs">
-                    <p className="text-xs text-[#7C7C7C]">এখনও কোনো জব বুকমার্ক করেননি।</p>
+                    <p className="text-xs text-[#7C7C7C]">এখনও কোনো জব বুকমার্ক করেননি। "Smart Matches" থেকে বুকমার্ক করুন।</p>
                   </div>
                 )}
               </div>
@@ -366,6 +419,8 @@ export const App: React.FC = () => {
         application={selectedApplication}
         onClose={() => setSelectedApplication(null)}
       />
+
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
       <footer className="border-t border-black/8 py-6 text-center text-xs text-[#7C7C7C] bg-white">
         <b>teamS7 Intelligence</b> • s7job-seeker SaaS Platform • Primary Brand <span className="text-[#007070] font-bold">#007070</span>

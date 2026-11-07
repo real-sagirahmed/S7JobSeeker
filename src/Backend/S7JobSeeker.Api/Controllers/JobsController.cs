@@ -218,6 +218,76 @@ public class JobsController : ControllerBase
         return Ok(matchedJobs.OrderByDescending(m => m.OverallScore).ToList());
     }
 
+    [Authorize]
+    [HttpGet("saved")]
+    public async Task<ActionResult<List<JobMatchResultDto>>> GetSavedJobs(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var savedScores = await _dbContext.JobMatchScores
+            .AsNoTracking()
+            .Where(m => m.UserId == userId && m.IsBookmarked)
+            .OrderByDescending(m => m.AnalyzedAt)
+            .Skip((Math.Max(1, page) - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        if (savedScores.Count == 0)
+        {
+            return Ok(new List<JobMatchResultDto>());
+        }
+
+        var jobIds = savedScores.Select(s => s.JobPostingId).ToList();
+
+        var jobs = await _dbContext.JobPostings
+            .AsNoTracking()
+            .Where(j => jobIds.Contains(j.Id))
+            .ToDictionaryAsync(j => j.Id, cancellationToken);
+
+        var profile = await _dbContext.UserProfiles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+
+        var parsedProfile = !string.IsNullOrEmpty(profile?.ParsedProfileJson)
+            ? JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson)
+            : null;
+
+        var results = new List<JobMatchResultDto>();
+        foreach (var score in savedScores)
+        {
+            if (jobs.TryGetValue(score.JobPostingId, out var job))
+            {
+                var eval = parsedProfile != null
+                    ? await _matcherService.EvaluateMatchAsync(parsedProfile, job, (float)score.SemanticSimilarityScore, cancellationToken)
+                    : new JobMatchResultDto(
+                        job.Id,
+                        job.Title,
+                        job.Company,
+                        job.Location,
+                        job.IsRemote,
+                        job.JobType,
+                        job.SalaryRange,
+                        job.Url,
+                        job.CreatedAt,
+                        (int)score.OverallScore,
+                        score.SemanticSimilarityScore,
+                        (int)score.SkillMatchScore,
+                        [],
+                        [],
+                        "",
+                        true);
+
+                results.Add(eval with { IsBookmarked = true });
+            }
+        }
+
+        return Ok(results);
+    }
+
     public record PasteAndMatchRequest(string Title, string Company, string Description);
 
     [Authorize]

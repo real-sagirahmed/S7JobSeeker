@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, Sparkles, FileText } from 'lucide-react';
+import { X, Copy, Check, Sparkles, FileText, Download } from 'lucide-react';
 import type { TailoredApplication } from '../types';
 
 interface TailoredModalProps {
@@ -16,6 +16,18 @@ export const TailoredModal: React.FC<TailoredModalProps> = ({ application, onClo
     navigator.clipboard.writeText(application.coverLetter);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([application.coverLetter], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Tailored-Cover-Letter-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -57,13 +69,23 @@ export const TailoredModal: React.FC<TailoredModalProps> = ({ application, onClo
               <span className="text-xs font-bold text-[#0B0B0B] flex items-center">
                 <FileText className="w-4 h-4 mr-1.5 text-[#007070]" /> Tailored Cover Letter
               </span>
-              <button
-                onClick={handleCopy}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Copied to Clipboard' : 'Copy Text'}</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleDownload}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10"
+                  title="Download as .txt"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download .txt</span>
+                </button>
+                <button
+                  onClick={handleCopy}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copied' : 'Copy Text'}</span>
+                </button>
+              </div>
             </div>
 
             <div className="p-4 rounded-xl bg-[#0B0B0B] border border-black/10 text-xs text-[#D8F3F3] font-mono whitespace-pre-wrap leading-relaxed max-h-72 overflow-y-auto shadow-inner">

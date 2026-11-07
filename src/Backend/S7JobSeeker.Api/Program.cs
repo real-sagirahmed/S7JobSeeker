@@ -1,5 +1,7 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -20,6 +22,22 @@ builder.Configuration.AddEnvironmentVariables();
 
 // Controllers & JSON
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
+
+// Defensive Rate Limiting (LLM Denial-of-Wallet & Upload DoS Protection)
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("UploadPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 15,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
 
 // Database Context (SQL Server)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -130,6 +148,9 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Standard RFC 7807 ProblemDetails Global Exception Handler
+app.UseExceptionHandler();
+
 // Configure OpenAPI / Swagger for API testing
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -139,6 +160,9 @@ if (builder.Configuration.GetValue<bool>("EnableHttpsRedirection", false))
 {
     app.UseHttpsRedirection();
 }
+
+// Rate Limiter
+app.UseRateLimiter();
 
 // Serve React SPA files from wwwroot
 app.UseDefaultFiles();

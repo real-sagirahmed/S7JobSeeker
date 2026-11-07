@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
+using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace S7JobSeeker.Api.Controllers;
 
@@ -31,6 +33,7 @@ public class ProfileController : ControllerBase
         _logger = logger;
     }
 
+    [EnableRateLimiting("UploadPolicy")]
     [HttpPost("upload-resume")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<ResumeParsedProfileDto>> UploadResume(IFormFile file, CancellationToken cancellationToken)
@@ -93,20 +96,25 @@ public class ProfileController : ControllerBase
                 existingProfile.UpdatedAt = DateTime.UtcNow;
 
                 // Remove previous skills
-                _dbContext.UserSkills.RemoveRange(existingProfile.Skills);
+                var oldSkills = existingProfile.Skills.ToList();
+                foreach (var old in oldSkills)
+                {
+                    _dbContext.UserSkills.Remove(old);
+                }
             }
 
             // Add extracted skills
             foreach (var skill in parsedProfile.Skills)
             {
-                existingProfile.Skills.Add(new UserSkill
+                var newSkill = new UserSkill
                 {
                     UserProfileId = existingProfile.Id,
                     SkillName = skill.Name,
                     Category = skill.Category,
                     YearsOfExperience = skill.YearsOfExperience,
                     IsPrimary = skill.IsPrimary
-                });
+                };
+                _dbContext.UserSkills.Add(newSkill);
             }
 
             // Also update User TargetRole if extracted
@@ -123,11 +131,18 @@ public class ProfileController : ControllerBase
         }
         catch (Exception ex)
         {
+            var concurrencyDetails = "";
+            if (ex is DbUpdateConcurrencyException concEx)
+            {
+                var entryInfos = concEx.Entries.Select(e => $"{e.Entity.GetType().Name} (State: {e.State})");
+                concurrencyDetails = $" [Entries: {string.Join(", ", entryInfos)}]";
+            }
+
             _logger.LogError(ex, "Failed to upload and parse resume");
             return StatusCode(500, new
             {
                 message = "Resume processing encountered an error.",
-                details = ex.Message,
+                details = ex.Message + concurrencyDetails,
                 innerDetails = ex.InnerException?.Message
             });
         }
@@ -163,5 +178,106 @@ public class ProfileController : ControllerBase
                 innerDetails = ex.InnerException?.Message
             });
         }
+    }
+
+    public record AddManualSkillRequest(string Name, SkillCategory Category = SkillCategory.Other, int YearsOfExperience = 1);
+
+    [HttpPost("skills")]
+    public async Task<ActionResult<ResumeParsedProfileDto>> AddSkill([FromBody] AddManualSkillRequest request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return BadRequest(new { message = "Skill name cannot be empty." });
+        }
+
+        var profile = await _dbContext.UserProfiles
+            .Include(p => p.Skills)
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+
+        if (profile == null)
+        {
+            return NotFound(new { message = "Profile not found. Please upload a resume first." });
+        }
+
+        var trimmedName = request.Name.Trim();
+        if (profile.Skills.Any(s => s.SkillName.Equals(trimmedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            return BadRequest(new { message = $"Skill '{trimmedName}' already exists in your profile." });
+        }
+
+        var newSkill = new UserSkill
+        {
+            UserProfileId = profile.Id,
+            SkillName = trimmedName,
+            Category = request.Category,
+            YearsOfExperience = request.YearsOfExperience,
+            IsPrimary = true
+        };
+
+        profile.Skills.Add(newSkill);
+
+        // Also update ParsedProfileJson for consistent cache retrieval
+        var parsed = !string.IsNullOrEmpty(profile.ParsedProfileJson)
+            ? JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson)
+            : null;
+
+        if (parsed != null)
+        {
+            var updatedSkills = parsed.Skills.ToList();
+            updatedSkills.Add(new ExtractedSkillDto(trimmedName, request.Category, request.YearsOfExperience, true));
+            var updatedProfile = parsed with { Skills = updatedSkills };
+            profile.ParsedProfileJson = JsonSerializer.Serialize(updatedProfile);
+            profile.UpdatedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return Ok(updatedProfile);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { message = "Skill added successfully." });
+    }
+
+    [HttpDelete("skills/{skillName}")]
+    public async Task<ActionResult<ResumeParsedProfileDto>> DeleteSkill(string skillName, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var profile = await _dbContext.UserProfiles
+            .Include(p => p.Skills)
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+
+        if (profile == null)
+        {
+            return NotFound(new { message = "Profile not found." });
+        }
+
+        var decodedName = Uri.UnescapeDataString(skillName).Trim();
+        var skill = profile.Skills.FirstOrDefault(s => s.SkillName.Equals(decodedName, StringComparison.OrdinalIgnoreCase));
+        if (skill != null)
+        {
+            _dbContext.UserSkills.Remove(skill);
+        }
+
+        var parsed = !string.IsNullOrEmpty(profile.ParsedProfileJson)
+            ? JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson)
+            : null;
+
+        if (parsed != null)
+        {
+            var updatedSkills = parsed.Skills.Where(s => !s.Name.Equals(decodedName, StringComparison.OrdinalIgnoreCase)).ToList();
+            var updatedProfile = parsed with { Skills = updatedSkills };
+            profile.ParsedProfileJson = JsonSerializer.Serialize(updatedProfile);
+            profile.UpdatedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return Ok(updatedProfile);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { message = "Skill removed successfully." });
     }
 }
