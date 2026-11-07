@@ -7,6 +7,9 @@
 appsettings.Development.json
 appsettings.Production.json
 appsettings.Local.json
+appsettings.*.json
+!appsettings.json
+!appsettings.example.json
 *.env
 *.env.*
 *.local
@@ -15,8 +18,22 @@ secrets.json
 *.p12
 *.pem
 *.key
+*.cer
+*.crt
+*.der
 
-# 2. Build Outputs & Compilations
+# 2. Cloud, Hosting & Deployment Credentials
+*.publishsettings
+service_account*.json
+gcp-key*.json
+client_secret*.json
+firebase-adminsdk*.json
+google-services.json
+id_rsa*
+id_ed25519*
+*.ppk
+
+# 3. Build Outputs & Compilations
 **/bin/
 **/obj/
 publish/
@@ -25,7 +42,7 @@ dist/
 **/dist/
 **/wwwroot/
 
-# 3. Node & Frontend
+# 4. Node & Frontend
 **/node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -33,7 +50,7 @@ yarn-error.log*
 pnpm-debug.log*
 .npm
 
-# 4. User Uploads, Resumes & Temporary Data
+# 5. User Uploads, Resumes & Temporary Data
 uploads/
 **/uploads/
 temp/
@@ -41,8 +58,12 @@ temp/
 *.pdf
 *.docx
 *.doc
+test_resume*
+*.csv
+*.xlsx
+*.xls
 
-# 5. IDE, Editors & OS Files
+# 6. IDE, Editors & OS Files
 .agent/
 .vs/
 .idea/
@@ -51,17 +72,34 @@ temp/
 *.userosscache
 *.suo
 *.userprefs
-*.launchSettings.json
+launchSettings.json
+**/Properties/launchSettings.json
 Thumbs.db
 .DS_Store
+desktop.ini
+*.tmp
+*.temp
+*.swp
+*~
 
-# 6. Database & LocalDB files
+# 7. Database Backups, Dumps & Crash Files
 *.mdf
 *.ldf
 *.db
 *.sqlite
+*.bak
+*.sql
+*.dump
+*.dmp
+*.mdmp
+core
+core.*
 
-# 7. Visual Studio & .NET Build Artifacts
+# 8. REST Client & Secrets Scratchpads
+http-client.private.env.json
+*.private.json
+
+# 9. Visual Studio & .NET Build Artifacts
 [Dd]ebug/
 [Rr]elease/
 *.rsuser
