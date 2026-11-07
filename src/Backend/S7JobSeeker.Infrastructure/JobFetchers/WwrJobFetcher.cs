@@ -37,7 +37,7 @@ public class WwrJobFetcher : IJobFetcherService
             {
                 _logger.LogInformation("Fetching RSS jobs from {Url}...", feedUrl);
                 using var request = new HttpRequestMessage(HttpMethod.Get, feedUrl);
-                request.Headers.Add("User-Agent", "Mozilla/5.0 (compatible; s7job-seeker/1.0; +https://teams7.com)");
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
                 var response = await _httpClient.SendAsync(request, cancellationToken);
                 if (!response.IsSuccessStatusCode)

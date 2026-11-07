@@ -27,7 +27,8 @@ public class JobicyJobFetcher : IJobFetcherService
         {
             _logger.LogInformation("Fetching engineering jobs from Jobicy API...");
             using var request = new HttpRequestMessage(HttpMethod.Get, "https://jobicy.com/api/v2/remote-jobs?count=50&industry=engineering");
-            request.Headers.Add("User-Agent", "Mozilla/5.0 (compatible; s7job-seeker/1.0; +https://teams7.com)");
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            request.Headers.Add("Accept", "application/json");
 
             var response = await _httpClient.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
@@ -53,7 +54,9 @@ public class JobicyJobFetcher : IJobFetcherService
                 var url = element.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : null;
 
                 string? salary = null;
-                if (element.TryGetProperty("annualSalaryMin", out var minProp) && element.TryGetProperty("annualSalaryMax", out var maxProp))
+                var hasMin = element.TryGetProperty("salaryMin", out var minProp) || element.TryGetProperty("annualSalaryMin", out minProp);
+                var hasMax = element.TryGetProperty("salaryMax", out var maxProp) || element.TryGetProperty("annualSalaryMax", out maxProp);
+                if (hasMin && hasMax)
                 {
                     var currency = element.TryGetProperty("salaryCurrency", out var currProp) ? currProp.GetString() : "USD";
                     salary = $"{minProp} - {maxProp} {currency}";

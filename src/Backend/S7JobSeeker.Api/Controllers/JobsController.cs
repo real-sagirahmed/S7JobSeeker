@@ -110,11 +110,22 @@ public class JobsController : ControllerBase
 
                 var existingSet = new HashSet<string>(existingExtIds, StringComparer.OrdinalIgnoreCase);
 
-                foreach (var job in techJobs)
-                {
-                    if (existingSet.Contains(job.ExternalId)) continue;
+                var newJobs = techJobs.Where(j => !existingSet.Contains(j.ExternalId)).ToList();
+                if (newJobs.Count == 0) continue;
 
-                    // Attempt vector embedding & upsert with graceful fallback
+                // ARCHITECTURAL INTENT: Relational-first persistence. Add and save all new jobs to MSSQL
+                // immediately before vector indexing so that network latency or Gemini 15 RPM
+                // rate limits never starve the relational database or cause HTTP sync timeouts.
+                _dbContext.JobPostings.AddRange(newJobs);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                totalNew += newJobs.Count;
+
+                // Index a selective sample (up to 5 per fetcher per sync) into Qdrant to stay within Gemini 15 RPM quota
+                int vectorCount = 0;
+                foreach (var job in newJobs)
+                {
+                    if (vectorCount >= 5) break;
+
                     try
                     {
                         var embeddingText = $"{job.Title} at {job.Company}. {job.Description}";
@@ -133,17 +144,18 @@ public class JobsController : ControllerBase
                         };
 
                         await _vectorService.UpsertJobVectorAsync(pointId, embedding, metadata, cancellationToken);
+                        vectorCount++;
                     }
                     catch (Exception ex)
                     {
                         _logger.LogWarning("Vector indexing skipped for job {Title}: {Message}", job.Title, ex.Message);
                     }
-
-                    _dbContext.JobPostings.Add(job);
-                    totalNew++;
                 }
 
-                await _dbContext.SaveChangesAsync(cancellationToken);
+                if (vectorCount > 0)
+                {
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                }
             }
             catch (Exception ex)
             {
@@ -223,9 +235,10 @@ public class JobsController : ControllerBase
                 .Where(j => jobGuids.Contains(j.Id))
                 .ToListAsync(cancellationToken);
 
-            // If the user requested a specific source and vector search returned fewer than limit,
-            // supplement from MSSQL for that specific source
-            if (source.HasValue && source.Value != 0 && jobs.Count < limit)
+            // ARCHITECTURAL INTENT: Multi-source augmentation.
+            // If vector search yielded fewer jobs than limit (or user filtered by specific source not saturated in Qdrant),
+            // supplement from MSSQL for fresh representation across all sources.
+            if (jobs.Count < limit)
             {
                 var existingJobIds = jobs.Select(j => j.Id).ToList();
                 var needed = limit - jobs.Count;

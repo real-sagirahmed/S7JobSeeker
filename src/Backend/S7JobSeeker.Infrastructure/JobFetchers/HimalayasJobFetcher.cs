@@ -27,7 +27,8 @@ public class HimalayasJobFetcher : IJobFetcherService
         {
             _logger.LogInformation("Fetching remote tech jobs from Himalayas API...");
             using var request = new HttpRequestMessage(HttpMethod.Get, "https://himalayas.app/jobs/api?limit=50");
-            request.Headers.Add("User-Agent", "Mozilla/5.0 (compatible; s7job-seeker/1.0; +https://teams7.com)");
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            request.Headers.Add("Accept", "application/json");
 
             var response = await _httpClient.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
