@@ -24,4 +24,6 @@ jobs:
         curl -s -S -X POST "${APP_URL}/api/jobs/sync" \
           -H "X-Cron-Key: ${CRON_KEY}" \
           -H "Content-Type: application/json" \
+          -H "Content-Length: 0" \
+          -d '' \
           --fail-with-body
