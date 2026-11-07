@@ -5,6 +5,7 @@ import { JobMatchCard } from './components/JobMatchCard';
 import { PasteAndAnalyze } from './components/PasteAndAnalyze';
 import { TailoredModal } from './components/TailoredModal';
 import { AuthModal } from './components/AuthModal';
+import { CompanyDirectory } from './components/CompanyDirectory';
 import { ToastContainer, type ToastMessage } from './components/Toast';
 import { api } from './services/api';
 import type { User, ResumeProfile, JobMatch, TailoredApplication } from './types';
@@ -12,7 +13,7 @@ import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu,
 
 export const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'matches' | 'profile' | 'paste' | 'saved'>('matches');
+  const [activeTab, setActiveTab] = useState<'matches' | 'profile' | 'paste' | 'saved' | 'companies'>('matches');
   const [profile, setProfile] = useState<ResumeProfile | null>(null);
   const [matches, setMatches] = useState<JobMatch[]>([]);
   const [savedList, setSavedList] = useState<JobMatch[]>([]);
@@ -396,6 +397,15 @@ export const App: React.FC = () => {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* TAB: BD Tech Ecosystem */}
+            {activeTab === 'companies' && (
+              <CompanyDirectory
+                hasProfile={!!profile}
+                onSelectJobForApplication={handleGenerateApplication}
+                showToast={showToast}
+              />
             )}
           </div>
         )}

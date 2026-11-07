@@ -55,6 +55,52 @@ export interface TailoredApplication {
   resumeTips: string;
 }
 
+export type CompanyCategory = 
+  | 1 // EnterpriseOutsourcing
+  | 2 // GlobalSaaSAndProduct
+  | 3 // FintechAndHighScale
+  | 4 // CloudDevOpsAndInfra
+  | 5 // AIAndDataIntelligence
+  | 6; // DigitalAgencyAndConsulting
+
+export interface BdCompany {
+  id: string;
+  name: string;
+  slug: string;
+  website: string;
+  careersUrl: string;
+  linkedInUrl?: string;
+  category: CompanyCategory;
+  globalProducts: string;
+  description: string;
+  primaryTechStack: string[];
+  headquarters: string;
+  globalOffices: string;
+  workModel: string;
+  employeeCountRange: string;
+  isVerified: boolean;
+  activeJobsCount: number;
+  fitScore?: number;
+  matchingSkills?: string[];
+  missingSkills?: string[];
+}
+
+export interface CompanyListResponse {
+  items: BdCompany[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface TailoredPitch {
+  companyName: string;
+  pitchType: string;
+  subject: string;
+  content: string;
+  highlightedSkills: string[];
+}
+
 export interface AuthResponse {
   token: string;
   email: string;

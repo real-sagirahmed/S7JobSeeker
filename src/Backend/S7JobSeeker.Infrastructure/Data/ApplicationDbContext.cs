@@ -17,6 +17,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<JobPosting> JobPostings => Set<JobPosting>();
     public DbSet<JobMatchScore> JobMatchScores => Set<JobMatchScore>();
     public DbSet<TailoredApplication> TailoredApplications => Set<TailoredApplication>();
+    public DbSet<BdTechCompany> BdTechCompanies => Set<BdTechCompany>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -100,6 +101,28 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
              .WithMany(j => j.TailoredApplications)
              .HasForeignKey(t => t.JobPostingId)
              .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // BdTechCompany
+        builder.Entity<BdTechCompany>(b =>
+        {
+            b.HasKey(c => c.Id);
+            b.Property(c => c.Name).HasMaxLength(200).IsRequired();
+            b.Property(c => c.Slug).HasMaxLength(200).IsRequired();
+            b.Property(c => c.Website).HasMaxLength(500);
+            b.Property(c => c.CareersUrl).HasMaxLength(500);
+            b.Property(c => c.LinkedInUrl).HasMaxLength(500);
+            b.Property(c => c.GlobalProducts).HasMaxLength(500);
+            b.Property(c => c.Description).HasColumnType("nvarchar(max)");
+            b.Property(c => c.PrimaryTechStackJson).HasColumnType("nvarchar(max)");
+            b.Property(c => c.Headquarters).HasMaxLength(200);
+            b.Property(c => c.GlobalOffices).HasMaxLength(300);
+            b.Property(c => c.WorkModel).HasMaxLength(50);
+            b.Property(c => c.EmployeeCountRange).HasMaxLength(50);
+
+            b.HasIndex(c => c.Name);
+            b.HasIndex(c => c.Slug).IsUnique();
+            b.HasIndex(c => c.Category);
         });
     }
 }

@@ -180,5 +180,65 @@ export const api = {
       const data = await res.json();
       return data.isBookmarked;
     }
+  },
+
+  companies: {
+    async getAll(params: {
+      search?: string;
+      category?: number;
+      tech?: string;
+      workModel?: string;
+      page?: number;
+      pageSize?: number;
+    } = {}): Promise<import('../types').CompanyListResponse> {
+      const query = new URLSearchParams();
+      if (params.search) query.append('search', params.search);
+      if (params.category) query.append('category', params.category.toString());
+      if (params.tech) query.append('tech', params.tech);
+      if (params.workModel && params.workModel !== 'All') query.append('workModel', params.workModel);
+      if (params.page) query.append('page', params.page.toString());
+      if (params.pageSize) query.append('pageSize', params.pageSize.toString());
+
+      const res = await fetch(`${API_BASE}/companies?${query.toString()}`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) throw new Error('Failed to load companies');
+      return res.json();
+    },
+
+    async getTopMatches(limit: number = 30): Promise<import('../types').BdCompany[]> {
+      const res = await fetch(`${API_BASE}/companies/top-matches?limit=${limit}`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to load top company matches' }));
+        throw new Error(err.message || 'Failed to load company matches');
+      }
+      return res.json();
+    },
+
+    async getActiveJobs(companyId: string): Promise<import('../types').JobMatch[]> {
+      const res = await fetch(`${API_BASE}/companies/${companyId}/active-jobs`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) throw new Error('Failed to load active jobs for company');
+      return res.json();
+    },
+
+    async generatePitch(companyId: string, pitchType: string = 'ColdEmail'): Promise<import('../types').TailoredPitch> {
+      const res = await fetch(`${API_BASE}/companies/${companyId}/generate-pitch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify({ pitchType })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Pitch generation failed' }));
+        throw new Error(err.message || 'Failed to generate tailored pitch');
+      }
+      return res.json();
+    }
   }
 };

@@ -1,11 +1,11 @@
 import React from 'react';
-import { User as UserIcon, LogOut, Sparkles, FileText, Bookmark, ClipboardCheck } from 'lucide-react';
+import { User as UserIcon, LogOut, Sparkles, FileText, Bookmark, ClipboardCheck, Building2 } from 'lucide-react';
 import type { User } from '../types';
 
 interface NavbarProps {
   user: User | null;
-  activeTab: 'matches' | 'profile' | 'paste' | 'saved';
-  setActiveTab: (tab: 'matches' | 'profile' | 'paste' | 'saved') => void;
+  activeTab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies';
+  setActiveTab: (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies') => void;
   onLogout: () => void;
   onOpenAuth: () => void;
 }
@@ -94,6 +94,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Bookmark className="w-3.5 h-3.5" />
                 <span>Saved Jobs</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('companies')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+                  activeTab === 'companies'
+                    ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
+                    : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>BD Tech</span>
               </button>
             </nav>
           ) : null}

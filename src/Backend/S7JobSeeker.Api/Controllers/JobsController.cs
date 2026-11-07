@@ -41,6 +41,21 @@ public class JobsController : ControllerBase
         _logger = logger;
     }
 
+    // ARCHITECTURAL INTENT: Filter out non-technical roles to keep the candidate matching catalog strictly tech-focused
+    private static readonly string[] NonTechExclusions =
+    [
+        "account executive", "sales representative", "sales manager", "business development representative",
+        "customer success", "customer support", "call center", "telemarketer", "office assistant",
+        "human resources", "talent acquisition", "recruiter", "accountant", "receptionist",
+        "branch manager", "store manager", "merchandiser", "cashier", "medical officer", "pharmacist"
+    ];
+
+    private static bool IsTechJob(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title)) return false;
+        return !NonTechExclusions.Any(ex => title.Contains(ex, StringComparison.OrdinalIgnoreCase));
+    }
+
     [HttpPost("sync")]
     public async Task<IActionResult> SyncJobs(CancellationToken cancellationToken)
     {
@@ -85,6 +100,8 @@ public class JobsController : ControllerBase
 
                 foreach (var job in jobs)
                 {
+                    if (!IsTechJob(job.Title)) continue;
+
                     var exists = await _dbContext.JobPostings
                         .AnyAsync(j => j.Source == job.Source && j.ExternalId == job.ExternalId, cancellationToken);
 

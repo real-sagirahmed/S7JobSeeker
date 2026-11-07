@@ -89,8 +89,29 @@ builder.Services.AddHttpClient<ArbeitnowJobFetcher>(client =>
     client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
     client.Timeout = TimeSpan.FromSeconds(15);
 });
+builder.Services.AddHttpClient<JobicyJobFetcher>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddHttpClient<HimalayasJobFetcher>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddHttpClient<WwrJobFetcher>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddHttpClient<BdjobsJobFetcher>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+
 builder.Services.AddScoped<IJobFetcherService, RemotiveJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, ArbeitnowJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, JobicyJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, HimalayasJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, WwrJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, BdjobsJobFetcher>();
 
 // Qdrant Vector Service
 builder.Services.AddSingleton<IQdrantVectorService, QdrantVectorService>();
@@ -188,6 +209,16 @@ using (var scope = app.Services.CreateScope())
             logger.LogInformation("Applying pending database migrations...");
             dbContext.Database.Migrate();
             logger.LogInformation("Database migrations applied successfully.");
+        }
+
+        // Auto-seed BD Global Tech Companies if empty
+        if (!dbContext.BdTechCompanies.Any())
+        {
+            logger.LogInformation("Seeding curated BD Global Tech Companies master registry...");
+            var seedCompanies = S7JobSeeker.Infrastructure.Data.Seed.BdTechCompaniesData.GetSeedCompanies();
+            dbContext.BdTechCompanies.AddRange(seedCompanies);
+            dbContext.SaveChanges();
+            logger.LogInformation("Seeded {Count} verified BD Tech Companies successfully.", seedCompanies.Count);
         }
     }
     catch (Exception ex)
