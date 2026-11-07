@@ -205,6 +205,6 @@ public class JobFetcherTests
         Assert.Equal("Dhaka Tech Hub", job.Company);
         Assert.Equal("Banani, Dhaka", job.Location);
         Assert.Equal("BDT 100,000 - 150,000", job.SalaryRange);
-        Assert.Equal("https://bdjobs.com/h/jobdetails/1553412", job.Url);
+        Assert.Equal("https://bdjobs.com/h/details/1553412", job.Url);
     }
 }

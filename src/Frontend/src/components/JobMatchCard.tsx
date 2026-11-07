@@ -58,10 +58,12 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
 
   const getDirectApplicationUrl = (url?: string) => {
     if (!url) return undefined;
-    // ARCHITECTURAL INTENT: Normalize legacy BDJobs redirect URLs to direct Angular SPA to avoid IIS 404
-    if (url.includes('jobs.bdjobs.com/jobdetails.asp?id=')) {
-      const id = url.split('id=')[1]?.split('&')[0];
-      if (id) return `https://bdjobs.com/h/jobdetails/${id}`;
+    // ARCHITECTURAL INTENT: Direct route to BDJobs Angular SPA details/:id to prevent 404
+    if (url.includes('bdjobs.com/')) {
+      const idMatch = url.match(/(?:id=|details\/)(\d+)/);
+      if (idMatch && idMatch[1]) {
+        return `https://bdjobs.com/h/details/${idMatch[1]}`;
+      }
     }
     return url;
   };
