@@ -6,27 +6,22 @@
   --color-brand-soft: #E6F4F4;
   --color-brand-glow: rgba(0, 112, 112, 0.20);
 
-  --color-dark-bg: #050505;
-  --color-dark-section: #0D0D0D;
-  --color-dark-card: #141414;
-  --color-dark-heading: #FFFFFF;
-  --color-dark-text: #CCCCCC;
-  --color-dark-muted: #919191;
-  --color-dark-border: rgba(255, 255, 255, 0.08);
-
-  --color-nav: #0B0B0B;
-  --color-portfolio: #1A1A1A;
-  --color-grey-light: #D7D7D7;
-  --color-grey-mid: #919191;
-  --color-grey-dim: #8B8B8B;
-  --color-grey-accent: #7C7C7C;
+  /* S7 Light Theme Palette */
+  --color-light-bg: #FFFFFF;
+  --color-light-section: #F8FAFC;
+  --color-light-heading: #0B0B0B;
+  --color-light-text: #333333;
+  --color-light-muted: #7C7C7C;
+  --color-light-border: rgba(0, 0, 0, 0.08);
+  --color-light-card: rgba(255, 255, 255, 0.95);
+  --color-light-grey: #D7D7D7;
 }
 
 @layer base {
   body {
-    background-color: var(--color-dark-bg);
-    color: var(--color-dark-text);
-    font-family: Inter, system-ui, -apple-system, sans-serif;
+    background-color: #FFFFFF;
+    color: #333333;
+    font-family: Inter, Arial, system-ui, -apple-system, sans-serif;
     line-height: 1.55;
     selection-background-color: #007070;
     selection-color: #FFFFFF;

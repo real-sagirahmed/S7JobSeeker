@@ -46,28 +46,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-[#141414] border border-white/10 rounded-2xl shadow-2xl p-6 space-y-6">
-        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md bg-white border border-black/10 rounded-2xl shadow-2xl p-6 space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-black/8">
           <div>
-            <h3 className="font-bold text-white text-lg">
+            <h3 className="font-black text-[#0B0B0B] text-lg">
               {isRegister ? 'Create S7 SaaS Account' : 'Welcome to s7job-seeker'}
             </h3>
-            <p className="text-xs text-[#919191] mt-0.5">
+            <p className="text-xs text-[#7C7C7C] mt-0.5">
               {isRegister ? 'Sign up to match your resume with real jobs' : 'Sign in to access your matched jobs'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#919191] hover:text-white hover:bg-white/5 transition-colors"
+            className="p-1.5 rounded-lg text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-center space-x-2 text-xs">
-            <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+          <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center space-x-2 text-xs">
+            <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -76,7 +76,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           {isRegister && (
             <>
               <div>
-                <label className="block text-xs font-bold text-[#CCCCCC] mb-1">Full Name</label>
+                <label className="block text-xs font-bold text-[#333333] mb-1">Full Name</label>
                 <div className="relative">
                   <User className="w-4 h-4 text-[#7C7C7C] absolute left-3 top-3" />
                   <input
@@ -85,26 +85,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                     placeholder="e.g. Sagir Ahmed"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#0D0D0D] border border-white/10 text-xs text-white placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#CCCCCC] mb-1">Target Role (Optional)</label>
+                <label className="block text-xs font-bold text-[#333333] mb-1">Target Role (Optional)</label>
                 <input
                   type="text"
                   placeholder="e.g. Senior .NET / Cloud Architect"
                   value={targetRole}
                   onChange={(e) => setTargetRole(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0D0D] border border-white/10 text-xs text-white placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
                 />
               </div>
             </>
           )}
 
           <div>
-            <label className="block text-xs font-bold text-[#CCCCCC] mb-1">Email Address</label>
+            <label className="block text-xs font-bold text-[#333333] mb-1">Email Address</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-[#7C7C7C] absolute left-3 top-3" />
               <input
@@ -113,13 +113,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                 placeholder="name@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#0D0D0D] border border-white/10 text-xs text-white placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#CCCCCC] mb-1">Password</label>
+            <label className="block text-xs font-bold text-[#333333] mb-1">Password</label>
             <div className="relative">
               <Lock className="w-4 h-4 text-[#7C7C7C] absolute left-3 top-3" />
               <input
@@ -129,7 +129,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#0D0D0D] border border-white/10 text-xs text-white placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
               />
             </div>
           </div>
@@ -137,14 +137,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_16px_rgba(0,112,112,0.30)]"
+            className="w-full py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(0,112,112,0.25)]"
           >
             <span>{isLoading ? 'Processing...' : isRegister ? 'Complete Registration' : 'Sign In'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="text-center text-xs text-[#919191]">
+        <div className="text-center text-xs text-[#7C7C7C]">
           {isRegister ? 'Already have an account?' : "Don't have an account yet?"}{' '}
           <button
             onClick={() => {
