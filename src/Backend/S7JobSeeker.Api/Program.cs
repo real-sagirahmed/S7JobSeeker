@@ -106,12 +106,12 @@ builder.Services.AddHttpClient<BdjobsJobFetcher>(client =>
     client.Timeout = TimeSpan.FromSeconds(15);
 });
 
-builder.Services.AddScoped<IJobFetcherService, RemotiveJobFetcher>();
-builder.Services.AddScoped<IJobFetcherService, ArbeitnowJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, BdjobsJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, JobicyJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, HimalayasJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, WwrJobFetcher>();
-builder.Services.AddScoped<IJobFetcherService, BdjobsJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, RemotiveJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, ArbeitnowJobFetcher>();
 
 // Qdrant Vector Service
 builder.Services.AddSingleton<IQdrantVectorService, QdrantVectorService>();

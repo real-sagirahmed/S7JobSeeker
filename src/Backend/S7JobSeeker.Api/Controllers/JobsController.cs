@@ -98,14 +98,21 @@ public class JobsController : ControllerBase
                 var jobs = await fetcher.FetchLatestJobsAsync(cancellationToken);
                 totalFetched += jobs.Count;
 
-                foreach (var job in jobs)
+                var techJobs = jobs.Where(j => IsTechJob(j.Title)).ToList();
+                if (techJobs.Count == 0) continue;
+
+                var extIds = techJobs.Select(j => j.ExternalId).ToList();
+                var firstSource = techJobs[0].Source;
+                var existingExtIds = await _dbContext.JobPostings
+                    .Where(j => j.Source == firstSource && extIds.Contains(j.ExternalId))
+                    .Select(j => j.ExternalId)
+                    .ToListAsync(cancellationToken);
+
+                var existingSet = new HashSet<string>(existingExtIds, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var job in techJobs)
                 {
-                    if (!IsTechJob(job.Title)) continue;
-
-                    var exists = await _dbContext.JobPostings
-                        .AnyAsync(j => j.Source == job.Source && j.ExternalId == job.ExternalId, cancellationToken);
-
-                    if (exists) continue;
+                    if (existingSet.Contains(job.ExternalId)) continue;
 
                     // Attempt vector embedding & upsert with graceful fallback
                     try
@@ -159,6 +166,8 @@ public class JobsController : ControllerBase
     [HttpGet("matches")]
     public async Task<ActionResult<List<JobMatchResultDto>>> GetMatchedJobs(
         [FromQuery] int limit = 20,
+        [FromQuery] JobSource? source = null,
+        [FromQuery] bool? remoteOnly = null,
         CancellationToken cancellationToken = default)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -186,7 +195,23 @@ public class JobsController : ControllerBase
         // Query Qdrant for semantic top matches
         var vectorMatches = await _vectorService.SearchSimilarJobsAsync(profileEmbedding, limit, cancellationToken);
 
+        var query = _dbContext.JobPostings.AsNoTracking();
+        if (source.HasValue && source.Value != 0)
+        {
+            query = query.Where(j => j.Source == source.Value);
+        }
+        if (remoteOnly.HasValue && remoteOnly.Value)
+        {
+            query = query.Where(j => j.IsRemote);
+        }
+
         var matchedJobs = new List<JobMatchResultDto>();
+
+        var bookmarkedIds = await _dbContext.JobMatchScores
+            .AsNoTracking()
+            .Where(m => m.UserId == userId && m.IsBookmarked)
+            .Select(m => m.JobPostingId)
+            .ToListAsync(cancellationToken);
 
         if (vectorMatches.Count > 0)
         {
@@ -194,16 +219,24 @@ public class JobsController : ControllerBase
                                         .Where(g => g != Guid.Empty)
                                         .ToList();
 
-            var jobs = await _dbContext.JobPostings
-                .AsNoTracking()
+            var jobs = await query
                 .Where(j => jobGuids.Contains(j.Id))
                 .ToListAsync(cancellationToken);
 
-            var bookmarkedIds = await _dbContext.JobMatchScores
-                .AsNoTracking()
-                .Where(m => m.UserId == userId && m.IsBookmarked)
-                .Select(m => m.JobPostingId)
-                .ToListAsync(cancellationToken);
+            // If the user requested a specific source and vector search returned fewer than limit,
+            // supplement from MSSQL for that specific source
+            if (source.HasValue && source.Value != 0 && jobs.Count < limit)
+            {
+                var existingJobIds = jobs.Select(j => j.Id).ToList();
+                var needed = limit - jobs.Count;
+                var extraJobs = await query
+                    .Where(j => !existingJobIds.Contains(j.Id))
+                    .OrderByDescending(j => j.CreatedAt)
+                    .Take(needed)
+                    .ToListAsync(cancellationToken);
+
+                jobs.AddRange(extraJobs);
+            }
 
             foreach (var job in jobs)
             {
@@ -219,8 +252,7 @@ public class JobsController : ControllerBase
         else
         {
             // Fallback: If Qdrant is empty or during local dev without vectors, evaluate recent jobs from MSSQL
-            var recentJobs = await _dbContext.JobPostings
-                .AsNoTracking()
+            var recentJobs = await query
                 .OrderByDescending(j => j.CreatedAt)
                 .Take(limit)
                 .ToListAsync(cancellationToken);
@@ -228,7 +260,8 @@ public class JobsController : ControllerBase
             foreach (var job in recentJobs)
             {
                 var evaluation = await _matcherService.EvaluateMatchAsync(parsedProfile, job, null, cancellationToken);
-                matchedJobs.Add(evaluation);
+                var isBookmarked = bookmarkedIds.Contains(job.Id);
+                matchedJobs.Add(evaluation with { IsBookmarked = isBookmarked });
             }
         }
 

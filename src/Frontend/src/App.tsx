@@ -65,10 +65,12 @@ export const App: React.FC = () => {
     }
   };
 
-  const fetchMatches = async () => {
+  const fetchMatches = async (targetSource?: number, isRemote?: boolean) => {
     setIsLoadingMatches(true);
     try {
-      const list = await api.jobs.getMatches();
+      const src = targetSource !== undefined ? targetSource : sourceFilter;
+      const rem = isRemote !== undefined ? isRemote : remoteOnly;
+      const list = await api.jobs.getMatches(src, rem);
       setMatches(list);
     } catch (e) {
       console.error(e);
@@ -94,6 +96,12 @@ export const App: React.FC = () => {
       fetchSavedMatches();
     }
   }, [activeTab, user]);
+
+  useEffect(() => {
+    if (activeTab === 'matches' && user && profile) {
+      fetchMatches(sourceFilter, remoteOnly);
+    }
+  }, [sourceFilter, remoteOnly]);
 
   const handleSyncJobs = async () => {
     setIsSyncingJobs(true);
@@ -307,7 +315,7 @@ export const App: React.FC = () => {
                     </select>
 
                     <button
-                      onClick={fetchMatches}
+                      onClick={() => fetchMatches()}
                       disabled={isLoadingMatches}
                       title="Refresh Matches"
                       className="p-2 rounded-lg border border-black/10 text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-colors disabled:opacity-50"

@@ -110,8 +110,13 @@ export const api = {
   },
 
   jobs: {
-    async getMatches(): Promise<JobMatch[]> {
-      const res = await fetch(`${API_BASE}/jobs/matches`, {
+    async getMatches(source?: number, remoteOnly?: boolean): Promise<JobMatch[]> {
+      const params = new URLSearchParams();
+      if (source && source !== 0) params.append('source', source.toString());
+      if (remoteOnly) params.append('remoteOnly', 'true');
+      const query = params.toString() ? `?${params.toString()}` : '';
+
+      const res = await fetch(`${API_BASE}/jobs/matches${query}`, {
         headers: { ...getAuthHeader() }
       });
       if (!res.ok) {
