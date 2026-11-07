@@ -373,7 +373,19 @@ public class JobsController : ControllerBase
         return Ok(results);
     }
 
-    public record PasteAndMatchRequest(string Title, string Company, string Description);
+    private static string ExtractTitleFromText(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return "Custom Opportunity";
+        var lines = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var first = lines.FirstOrDefault(l => l.Length >= 4 && !l.StartsWith("http", StringComparison.OrdinalIgnoreCase));
+        if (first != null)
+        {
+            return first.Length > 80 ? first[..77] + "..." : first;
+        }
+        return "Custom Opportunity";
+    }
+
+    public record PasteAndMatchRequest(string? Title, string? Company, string Description, string? Url = null);
 
     [Authorize]
     [HttpPost("paste-and-match")]
@@ -383,6 +395,11 @@ public class JobsController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        if (string.IsNullOrWhiteSpace(request.Description))
+        {
+            return BadRequest(new { message = "Job description cannot be empty." });
+        }
 
         var profile = await _dbContext.UserProfiles
             .AsNoTracking()
@@ -396,18 +413,34 @@ public class JobsController : ControllerBase
         var parsedProfile = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson);
         if (parsedProfile == null) return BadRequest(new { message = "Invalid profile." });
 
-        var tempJob = new JobPosting
+        var title = string.IsNullOrWhiteSpace(request.Title)
+            ? ExtractTitleFromText(request.Description)
+            : request.Title.Trim();
+        var company = string.IsNullOrWhiteSpace(request.Company)
+            ? "Target Employer"
+            : request.Company.Trim();
+
+        var job = new JobPosting
         {
             Id = Guid.NewGuid(),
-            ExternalId = Guid.NewGuid().ToString(),
+            ExternalId = $"paste-{Guid.NewGuid():N}",
             Source = JobSource.CustomPaste,
-            Title = string.IsNullOrWhiteSpace(request.Title) ? "Custom Opportunity" : request.Title,
-            Company = string.IsNullOrWhiteSpace(request.Company) ? "Target Employer" : request.Company,
-            Description = request.Description,
+            Title = title.Length > 300 ? title[..297] + "..." : title,
+            Company = company.Length > 200 ? company[..197] + "..." : company,
+            Location = "Custom / Remote",
+            IsRemote = true,
+            Description = request.Description.Trim(),
+            Url = string.IsNullOrWhiteSpace(request.Url) ? null : request.Url.Trim(),
+            JobType = "Full-time",
             CreatedAt = DateTime.UtcNow
         };
 
-        var matchResult = await _matcherService.EvaluateMatchAsync(parsedProfile, tempJob, null, cancellationToken);
+        // ARCHITECTURAL INTENT: Persist pasted job to database to ensure Bookmark and
+        // Tailored Application generation succeed without Foreign Key constraint violations.
+        _dbContext.JobPostings.Add(job);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        var matchResult = await _matcherService.EvaluateMatchAsync(parsedProfile, job, null, cancellationToken);
         return Ok(matchResult);
     }
 

@@ -148,14 +148,14 @@ export const api = {
       return res.json();
     },
 
-    async pasteAndMatch(title: string, company: string, description: string): Promise<JobMatch> {
+    async pasteAndMatch(title: string, company: string, description: string, url?: string): Promise<JobMatch> {
       const res = await fetch(`${API_BASE}/jobs/paste-and-match`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeader()
         },
-        body: JSON.stringify({ title, company, description })
+        body: JSON.stringify({ title, company, description, url })
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: 'Failed to evaluate match' }));
