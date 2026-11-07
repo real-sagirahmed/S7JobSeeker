@@ -38,13 +38,33 @@ jobs:
     - name: Publish .NET Web API
       run: |
         dotnet publish src/Backend/S7JobSeeker.Api/S7JobSeeker.Api.csproj -c Release -o ./publish
+        cp -r src/Backend/S7JobSeeker.Api/wwwroot/* ./publish/
 
-    - name: Deploy to MonsterASP.net via FTPS
+    - name: Prepare app_offline marker
+      run: |
+        mkdir -p ./take_offline
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Deploying</title></head><body><h3>Application is updating... Please wait.</h3></body></html>' > ./take_offline/app_offline.htm
+
+    - name: Take IIS App Offline (Release DLL Locks)
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.MONSTERASP_FTP_SERVER }}
+        username: ${{ secrets.MONSTERASP_FTP_USERNAME }}
+        password: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
+        local-dir: ./take_offline/
+        server-dir: wwwroot/
+        protocol: ftps
+
+    - name: Deploy Published Files to MonsterASP wwwroot via FTPS
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.MONSTERASP_FTP_SERVER }}
         username: ${{ secrets.MONSTERASP_FTP_USERNAME }}
         password: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
         local-dir: ./publish/
-        server-dir: ./
+        server-dir: wwwroot/
         protocol: ftps
+
+    - name: Bring IIS App Online (Remove app_offline)
+      run: |
+        curl -k --ftp-ssl "ftp://${{ secrets.MONSTERASP_FTP_SERVER }}/wwwroot/" -u "${{ secrets.MONSTERASP_FTP_USERNAME }}:${{ secrets.MONSTERASP_FTP_PASSWORD }}" -Q "-DELE app_offline.htm" -Q "-DELE wwwroot/app_offline.htm" || true
