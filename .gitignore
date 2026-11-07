@@ -43,6 +43,7 @@ temp/
 *.doc
 
 # 5. IDE, Editors & OS Files
+.agent/
 .vs/
 .idea/
 .vscode/
