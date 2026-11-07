@@ -80,8 +80,9 @@ builder.Services.AddSingleton<IQdrantVectorService, QdrantVectorService>();
 // Resume Parser
 builder.Services.AddScoped<IResumeParserService, ResumeParserService>();
 
-// Semantic Kernel & Gemini AI Services
-var geminiApiKey = builder.Configuration["GeminiSettings:ApiKey"] ?? "DEMO_KEY";
+// Semantic Kernel & Gemini AI Services (with non-empty fallback format to prevent DI activation failure when unconfigured)
+var rawGeminiApiKey = builder.Configuration["GeminiSettings:ApiKey"];
+var geminiApiKey = string.IsNullOrWhiteSpace(rawGeminiApiKey) ? "AIzaSyDummyKeyForFallbackWhenUnconfigured12345" : rawGeminiApiKey;
 var geminiChatModel = builder.Configuration["GeminiSettings:ModelId"] ?? "gemini-2.0-flash";
 var geminiEmbedModel = builder.Configuration["GeminiSettings:EmbeddingModelId"] ?? "text-embedding-004";
 

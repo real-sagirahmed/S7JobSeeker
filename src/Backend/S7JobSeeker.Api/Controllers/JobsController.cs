@@ -47,13 +47,16 @@ public class JobsController : ControllerBase
         var isDev = _environment.IsDevelopment();
         var expectedKey = _configuration["CronSettings:SecretKey"] ?? "default-cron-secret";
 
-        // In production, strictly enforce secret header
+        // In production, allow either valid CronKey OR authenticated user
         if (!isDev)
         {
-            if (!Request.Headers.TryGetValue("X-Cron-Key", out var providedKey) || providedKey != expectedKey)
+            var hasValidCron = Request.Headers.TryGetValue("X-Cron-Key", out var providedKey) && providedKey == expectedKey;
+            var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+
+            if (!hasValidCron && !isAuthenticated)
             {
                 _logger.LogWarning("Unauthorized job sync trigger attempt.");
-                return Unauthorized(new { message = "Invalid or missing X-Cron-Key header." });
+                return Unauthorized(new { message = "Invalid or missing X-Cron-Key header or authentication token." });
             }
         }
 

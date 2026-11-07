@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -11,17 +13,31 @@ namespace S7JobSeeker.AI.Services;
 public class SkillExtractorService : ISkillExtractorService
 {
     private readonly IChatCompletionService _chatCompletionService;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<SkillExtractorService> _logger;
 
-    public SkillExtractorService(IChatCompletionService chatCompletionService, ILogger<SkillExtractorService> logger)
+    public SkillExtractorService(
+        IChatCompletionService chatCompletionService,
+        IConfiguration configuration,
+        ILogger<SkillExtractorService> logger)
     {
         _chatCompletionService = chatCompletionService;
+        _configuration = configuration;
         _logger = logger;
     }
 
     public async Task<ResumeParsedProfileDto> ExtractStructuredProfileAsync(string resumeText, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Extracting structured skills and experience from resume text (length: {Length})...", resumeText.Length);
+
+        var apiKey = _configuration["GeminiSettings:ApiKey"];
+        var isKeyConfigured = !string.IsNullOrWhiteSpace(apiKey) && !apiKey.Contains("Dummy") && !apiKey.StartsWith("DEMO");
+
+        if (!isKeyConfigured)
+        {
+            _logger.LogInformation("Gemini API key unconfigured or demo. Using deterministic keyword extraction.");
+            return ExtractDeterministicProfile(resumeText);
+        }
 
         var prompt = $$"""
         You are an elite Senior Technical Recruiter and Career Architect AI.
@@ -109,18 +125,66 @@ public class SkillExtractorService : ISkillExtractorService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to parse structured profile via LLM.");
+            _logger.LogError(ex, "Failed to parse structured profile via LLM. Falling back to deterministic parser.");
         }
 
-        // Fallback profile if LLM extraction fails or is unconfigured
+        return ExtractDeterministicProfile(resumeText);
+    }
+
+    private static ResumeParsedProfileDto ExtractDeterministicProfile(string resumeText)
+    {
+        var text = resumeText ?? string.Empty;
+
+        // Try extracting email
+        var emailMatch = Regex.Match(text, @"[\w\.-]+@[\w\.-]+\.\w+");
+        var email = emailMatch.Success ? emailMatch.Value : null;
+
+        // Try extracting phone
+        var phoneMatch = Regex.Match(text, @"(\+?\d{1,4}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}");
+        var phone = phoneMatch.Success ? phoneMatch.Value : null;
+
+        // Detect known skills
+        var skills = new List<ExtractedSkillDto>();
+        var skillCatalog = new (string Name, SkillCategory Category, string Pattern)[]
+        {
+            ("C#", SkillCategory.Backend, @"\b(c#|csharp)\b"),
+            (".NET", SkillCategory.Backend, @"\b(\.net|dotnet|asp\.net)\b"),
+            ("SQL Server", SkillCategory.Database, @"\b(sql\s*server|mssql|t-sql)\b"),
+            ("React", SkillCategory.Frontend, @"\b(react|reactjs)\b"),
+            ("TypeScript", SkillCategory.Frontend, @"\b(typescript|ts)\b"),
+            ("JavaScript", SkillCategory.Frontend, @"\b(javascript|js|es6)\b"),
+            ("Entity Framework", SkillCategory.Backend, @"\b(ef\s*core|entity\s*framework)\b"),
+            ("Docker", SkillCategory.CloudAndDevOps, @"\b(docker|container)\b"),
+            ("Azure", SkillCategory.CloudAndDevOps, @"\b(azure)\b"),
+            ("Git", SkillCategory.CloudAndDevOps, @"\b(git|github|gitlab)\b"),
+            ("Python", SkillCategory.Backend, @"\b(python)\b"),
+            ("REST API", SkillCategory.ArchitectureAndDesign, @"\b(rest|web\s*api|restful)\b"),
+            ("Clean Architecture", SkillCategory.ArchitectureAndDesign, @"\b(clean\s*architecture|solid|cqrs)\b"),
+            ("Tailwind CSS", SkillCategory.Frontend, @"\b(tailwind)\b")
+        };
+
+        foreach (var item in skillCatalog)
+        {
+            if (Regex.IsMatch(text, item.Pattern, RegexOptions.IgnoreCase))
+            {
+                skills.Add(new ExtractedSkillDto(item.Name, item.Category, 3, true));
+            }
+        }
+
+        var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var fullName = lines.Length > 0 ? lines[0].Trim() : "Candidate";
+        if (fullName.Length > 50) fullName = "Candidate";
+
+        var summary = text.Length > 250 ? text[..250] + "..." : text;
+
         return new ResumeParsedProfileDto(
-            FullName: "Candidate",
-            Email: null,
-            Phone: null,
-            TargetRole: "Software Engineer",
-            TotalYearsOfExperience: 0,
-            Summary: resumeText.Length > 200 ? resumeText[..200] + "..." : resumeText,
-            Skills: [],
+            FullName: fullName,
+            Email: email,
+            Phone: phone,
+            TargetRole: ".NET & Full Stack Developer",
+            TotalYearsOfExperience: 3,
+            Summary: summary,
+            Skills: skills,
             Experiences: []
         );
     }

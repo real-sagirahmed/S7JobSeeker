@@ -47,6 +47,6 @@ jobs:
         password: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
         port: 21
         local-dir: ./publish/
-        server-dir: /wwwroot/
+        server-dir: /
         protocol: ftps
         security: loose

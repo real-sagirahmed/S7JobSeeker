@@ -95,7 +95,8 @@ export const api = {
 
     async syncJobs(): Promise<{ totalFetched: number; totalNew: number }> {
       const res = await fetch(`${API_BASE}/jobs/sync`, {
-        method: 'POST'
+        method: 'POST',
+        headers: { ...getAuthHeader() }
       });
       if (!res.ok) {
         throw new Error('Failed to trigger job sync');
