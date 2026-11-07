@@ -9,6 +9,6 @@ public class TailoredApplication
     public string? ResumeOptimizationTips { get; set; }
     public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
 
-    public ApplicationUser User { get; set; } = null!;
-    public JobPosting JobPosting { get; set; } = null!;
+    public ApplicationUser? User { get; set; }
+    public JobPosting? JobPosting { get; set; }
 }

@@ -14,6 +14,6 @@ public class JobMatchScore
     public bool IsBookmarked { get; set; }
     public DateTime AnalyzedAt { get; set; } = DateTime.UtcNow;
 
-    public ApplicationUser User { get; set; } = null!;
-    public JobPosting JobPosting { get; set; } = null!;
+    public ApplicationUser? User { get; set; }
+    public JobPosting? JobPosting { get; set; }
 }

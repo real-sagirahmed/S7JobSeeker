@@ -38,6 +38,7 @@ jobs:
     - name: Publish .NET Web API
       run: |
         dotnet publish src/Backend/S7JobSeeker.Api/S7JobSeeker.Api.csproj -c Release -o ./publish
+        cp -r src/Backend/S7JobSeeker.Api/wwwroot/* ./publish/
 
     - name: Deploy to MonsterASP.net via FTPS
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -46,5 +47,5 @@ jobs:
         username: ${{ secrets.MONSTERASP_FTP_USERNAME }}
         password: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
         local-dir: ./publish/
-        server-dir: ./
+        server-dir: wwwroot/
         protocol: ftps

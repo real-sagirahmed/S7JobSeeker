@@ -11,5 +11,5 @@ public class UserSkill
     public int? YearsOfExperience { get; set; }
     public bool IsPrimary { get; set; }
 
-    public UserProfile UserProfile { get; set; } = null!;
+    public UserProfile? UserProfile { get; set; }
 }

@@ -11,6 +11,6 @@ public class UserProfile
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser? User { get; set; }
     public ICollection<UserSkill> Skills { get; set; } = [];
 }

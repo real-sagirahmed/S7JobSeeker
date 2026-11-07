@@ -35,107 +35,133 @@ public class ProfileController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<ResumeParsedProfileDto>> UploadResume(IFormFile file, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-        if (file == null || file.Length == 0)
+        try
         {
-            return BadRequest(new { message = "No resume file provided." });
-        }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        // Limit file size to 10MB
-        if (file.Length > 10 * 1024 * 1024)
-        {
-            return BadRequest(new { message = "Resume file exceeds 10MB limit." });
-        }
-
-        _logger.LogInformation("Processing resume upload for user: {UserId}, file: {FileName}", userId, file.FileName);
-
-        string rawText;
-        using (var stream = file.OpenReadStream())
-        {
-            rawText = await _resumeParser.ExtractTextFromDocumentAsync(stream, file.FileName, cancellationToken);
-        }
-
-        if (string.IsNullOrWhiteSpace(rawText))
-        {
-            return BadRequest(new { message = "Failed to extract text from the document. Ensure it is not an encrypted or scanned image PDF." });
-        }
-
-        var parsedProfile = await _skillExtractor.ExtractStructuredProfileAsync(rawText, cancellationToken);
-
-        // Fetch or create profile
-        var existingProfile = await _dbContext.UserProfiles
-            .Include(p => p.Skills)
-            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
-
-        if (existingProfile == null)
-        {
-            existingProfile = new UserProfile
+            if (file == null || file.Length == 0)
             {
-                UserId = userId,
-                ResumeFileName = file.FileName,
-                RawResumeText = rawText,
-                ProfessionalSummary = parsedProfile.Summary,
-                ParsedProfileJson = JsonSerializer.Serialize(parsedProfile),
-                CreatedAt = DateTime.UtcNow
-            };
-            _dbContext.UserProfiles.Add(existingProfile);
-        }
-        else
-        {
-            existingProfile.ResumeFileName = file.FileName;
-            existingProfile.RawResumeText = rawText;
-            existingProfile.ProfessionalSummary = parsedProfile.Summary;
-            existingProfile.ParsedProfileJson = JsonSerializer.Serialize(parsedProfile);
-            existingProfile.UpdatedAt = DateTime.UtcNow;
+                return BadRequest(new { message = "No resume file provided." });
+            }
 
-            // Remove previous skills
-            _dbContext.UserSkills.RemoveRange(existingProfile.Skills);
-        }
-
-        // Add extracted skills
-        foreach (var skill in parsedProfile.Skills)
-        {
-            existingProfile.Skills.Add(new UserSkill
+            // Limit file size to 10MB
+            if (file.Length > 10 * 1024 * 1024)
             {
-                UserProfileId = existingProfile.Id,
-                SkillName = skill.Name,
-                Category = skill.Category,
-                YearsOfExperience = skill.YearsOfExperience,
-                IsPrimary = skill.IsPrimary
+                return BadRequest(new { message = "Resume file exceeds 10MB limit." });
+            }
+
+            _logger.LogInformation("Processing resume upload for user: {UserId}, file: {FileName}", userId, file.FileName);
+
+            string rawText;
+            using (var stream = file.OpenReadStream())
+            {
+                rawText = await _resumeParser.ExtractTextFromDocumentAsync(stream, file.FileName, cancellationToken);
+            }
+
+            if (string.IsNullOrWhiteSpace(rawText))
+            {
+                return BadRequest(new { message = "Failed to extract text from the document. Ensure it is not an encrypted or scanned image PDF." });
+            }
+
+            var parsedProfile = await _skillExtractor.ExtractStructuredProfileAsync(rawText, cancellationToken);
+
+            // Fetch or create profile
+            var existingProfile = await _dbContext.UserProfiles
+                .Include(p => p.Skills)
+                .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+
+            if (existingProfile == null)
+            {
+                existingProfile = new UserProfile
+                {
+                    UserId = userId,
+                    ResumeFileName = file.FileName,
+                    RawResumeText = rawText,
+                    ProfessionalSummary = parsedProfile.Summary,
+                    ParsedProfileJson = JsonSerializer.Serialize(parsedProfile),
+                    CreatedAt = DateTime.UtcNow
+                };
+                _dbContext.UserProfiles.Add(existingProfile);
+            }
+            else
+            {
+                existingProfile.ResumeFileName = file.FileName;
+                existingProfile.RawResumeText = rawText;
+                existingProfile.ProfessionalSummary = parsedProfile.Summary;
+                existingProfile.ParsedProfileJson = JsonSerializer.Serialize(parsedProfile);
+                existingProfile.UpdatedAt = DateTime.UtcNow;
+
+                // Remove previous skills
+                _dbContext.UserSkills.RemoveRange(existingProfile.Skills);
+            }
+
+            // Add extracted skills
+            foreach (var skill in parsedProfile.Skills)
+            {
+                existingProfile.Skills.Add(new UserSkill
+                {
+                    UserProfileId = existingProfile.Id,
+                    SkillName = skill.Name,
+                    Category = skill.Category,
+                    YearsOfExperience = skill.YearsOfExperience,
+                    IsPrimary = skill.IsPrimary
+                });
+            }
+
+            // Also update User TargetRole if extracted
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+            if (user != null)
+            {
+                if (!string.IsNullOrWhiteSpace(parsedProfile.TargetRole)) user.TargetRole = parsedProfile.TargetRole;
+                if (parsedProfile.TotalYearsOfExperience.HasValue) user.YearsOfExperience = parsedProfile.TotalYearsOfExperience.Value;
+            }
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return Ok(parsedProfile);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to upload and parse resume");
+            return StatusCode(500, new
+            {
+                message = "Resume processing encountered an error.",
+                details = ex.Message,
+                innerDetails = ex.InnerException?.Message
             });
         }
-
-        // Also update User TargetRole if extracted
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-        if (user != null)
-        {
-            if (!string.IsNullOrWhiteSpace(parsedProfile.TargetRole)) user.TargetRole = parsedProfile.TargetRole;
-            if (parsedProfile.TotalYearsOfExperience.HasValue) user.YearsOfExperience = parsedProfile.TotalYearsOfExperience.Value;
-        }
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return Ok(parsedProfile);
     }
 
     [HttpGet]
     public async Task<ActionResult<ResumeParsedProfileDto>> GetProfile(CancellationToken cancellationToken)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-        var profile = await _dbContext.UserProfiles
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
-
-        if (profile == null || string.IsNullOrEmpty(profile.ParsedProfileJson))
+        try
         {
-            return NotFound(new { message = "Profile not found. Please upload a resume first." });
-        }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        var parsed = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson);
-        return Ok(parsed);
+            var profile = await _dbContext.UserProfiles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+
+            if (profile == null || string.IsNullOrEmpty(profile.ParsedProfileJson))
+            {
+                return NotFound(new { message = "Profile not found. Please upload a resume first." });
+            }
+
+            var parsed = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson);
+            return Ok(parsed);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get profile");
+            return StatusCode(500, new
+            {
+                message = "Failed to retrieve profile.",
+                details = ex.Message,
+                innerDetails = ex.InnerException?.Message
+            });
+        }
     }
 }
