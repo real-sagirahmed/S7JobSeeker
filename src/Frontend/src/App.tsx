@@ -466,8 +466,26 @@ export const App: React.FC = () => {
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
-      <footer className="border-t border-black/8 py-6 text-center text-xs text-[#7C7C7C] bg-white">
-        <b>teamS7 Intelligence</b> • s7job-seeker SaaS Platform • Primary Brand <span className="text-[#007070] font-bold">#007070</span>
+      <footer className="border-t border-black/8 py-6 bg-white mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#7C7C7C]">
+          <div className="flex items-center space-x-2.5">
+            <img
+              src="/logo-icon.png"
+              alt="s7job-seeker"
+              className="w-5 h-5 rounded-md object-cover border border-[#007070]/20"
+            />
+            <span className="font-bold text-[#0B0B0B]">s7job-seeker</span>
+            <span>•</span>
+            <span>teamS7 Intelligence</span>
+          </div>
+          <div className="flex items-center space-x-4 text-[11px]">
+            <span>Semantic AI Job Matcher</span>
+            <span>•</span>
+            <span>RAG Tailored Application Engine</span>
+            <span>•</span>
+            <span>© {new Date().getFullYear()} teamS7. All rights reserved.</span>
+          </div>
+        </div>
       </footer>
     </div>
   );

@@ -19,10 +19,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   return (
     <>
-      {/* S7 Top Accent Bar */}
-      <div className="bg-[#007070] text-white py-1.5 px-4 text-center text-[11px] font-extrabold tracking-widest uppercase">
-        S7 / teamS7 Intelligence · Complete Brand System · Primary #007070
-      </div>
+      {/* Sleek Top Brand Line */}
+      <div className="h-1 bg-[#007070] w-full" />
 
       <header className="border-b border-black/8 bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
