@@ -49,13 +49,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="relative w-full max-w-md bg-white border border-black/10 rounded-2xl shadow-2xl p-6 space-y-6">
         <div className="flex items-center justify-between pb-3 border-b border-black/8">
-          <div>
-            <h3 className="font-black text-[#0B0B0B] text-lg">
-              {isRegister ? 'Create S7 SaaS Account' : 'Welcome to s7job-seeker'}
-            </h3>
-            <p className="text-xs text-[#7C7C7C] mt-0.5">
-              {isRegister ? 'Sign up to match your resume with real jobs' : 'Sign in to access your matched jobs'}
-            </p>
+          <div className="flex items-center space-x-3">
+            <img
+              src="/logo-icon.png"
+              alt="S7 Logo"
+              className="w-10 h-10 rounded-xl object-cover border border-[#007070]/20 shadow-xs"
+            />
+            <div>
+              <h3 className="font-black text-[#0B0B0B] text-base leading-snug">
+                {isRegister ? 'Create S7 SaaS Account' : 'Welcome to s7job-seeker'}
+              </h3>
+              <p className="text-[11px] text-[#7C7C7C]">
+                {isRegister ? 'Sign up to match your resume with real jobs' : 'Sign in to access your matched jobs'}
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}

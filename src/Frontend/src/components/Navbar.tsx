@@ -28,9 +28,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo & Title */}
           <div className="flex items-center space-x-3.5 cursor-pointer" onClick={() => setActiveTab('matches')}>
-            <div className="w-10 h-10 border-[3px] border-[#007070] rounded-xl flex items-center justify-center font-black text-base text-[#007070] bg-white -skew-x-6 shadow-[0_8px_25px_rgba(0,112,112,0.20)]">
-              S7
-            </div>
+            <img
+              src="/logo-icon.png"
+              alt="S7 Job Seeker Logo"
+              className="w-10 h-10 rounded-xl object-cover shadow-[0_4px_16px_rgba(0,112,112,0.25)] border border-[#007070]/20"
+            />
             <div>
               <div className="flex items-center space-x-2">
                 <span className="text-lg font-black tracking-tight text-[#0B0B0B]">

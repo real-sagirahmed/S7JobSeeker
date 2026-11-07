@@ -173,7 +173,15 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!user ? (
           // Landing Hero for Logged-Out Users
-          <div className="py-16 text-center space-y-8 max-w-3xl mx-auto">
+          <div className="py-12 text-center space-y-6 max-w-3xl mx-auto">
+            <div className="flex justify-center">
+              <img
+                src="/logo-full.png"
+                alt="S7 Job Seeker"
+                className="w-36 sm:w-44 h-auto rounded-2xl shadow-xl border border-black/10 object-cover"
+              />
+            </div>
+
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#E6F4F4] border border-[#007070]/30 text-xs font-bold text-[#007070]">
               <Sparkles className="w-4 h-4" />
               <span>S7 Semantic & RAG Job Matching System</span>
