@@ -1,3 +1,5 @@
+using S7JobSeeker.Core.Enums;
+
 namespace S7JobSeeker.Core.DTOs;
 
 public record JobMatchResultDto(
@@ -16,5 +18,7 @@ public record JobMatchResultDto(
     List<string> MatchingSkills,
     List<string> MissingSkills,
     string? Recommendations,
-    bool IsBookmarked
+    bool IsBookmarked,
+    JobSource Source = JobSource.CustomPaste,
+    string? SourceName = null
 );

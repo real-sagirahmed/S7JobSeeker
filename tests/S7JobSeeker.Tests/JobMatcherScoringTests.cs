@@ -187,4 +187,45 @@ public class JobMatcherScoringTests
         Assert.Contains("Python", result.MissingSkills);
         Assert.Contains("Git", result.MissingSkills);
     }
+
+    [Theory]
+    [InlineData(JobSource.Bdjobs, "BDJobs")]
+    [InlineData(JobSource.Jobicy, "Jobicy")]
+    [InlineData(JobSource.Himalayas, "Himalayas")]
+    [InlineData(JobSource.WeWorkRemotely, "We Work Remotely")]
+    [InlineData(JobSource.Remotive, "Remotive")]
+    [InlineData(JobSource.Arbeitnow, "Arbeitnow")]
+    [InlineData(JobSource.CustomPaste, "Custom Paste")]
+    public async Task EvaluateMatch_CorrectlyPreservesJobSourceAndFormattedSourceName(JobSource source, string expectedSourceName)
+    {
+        var profile = new ResumeParsedProfileDto(
+            FullName: "Test Engineer",
+            Email: "dev@teams7.com",
+            Phone: "+8801700000000",
+            TargetRole: "Software Engineer",
+            TotalYearsOfExperience: 3,
+            Summary: "Engineering profile",
+            Skills: [new ExtractedSkillDto(".NET", SkillCategory.Backend, 3, true)],
+            Experiences: []
+        );
+
+        var job = new JobPosting
+        {
+            Id = Guid.NewGuid(),
+            ExternalId = $"job-{source}",
+            Source = source,
+            Title = "Software Developer",
+            Company = "Tech Corp",
+            Location = "Dhaka, Bangladesh",
+            IsRemote = false,
+            Description = "Looking for a skilled .NET developer.",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var result = await _matcherService.EvaluateMatchAsync(profile, job);
+
+        Assert.NotNull(result);
+        Assert.Equal(source, result.Source);
+        Assert.Equal(expectedSourceName, result.SourceName);
+    }
 }

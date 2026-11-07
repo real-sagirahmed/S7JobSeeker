@@ -2,8 +2,23 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { BdCompany, TailoredPitch, JobMatch } from '../types';
 import { CompanyCard } from './CompanyCard';
 import { CompanyPitchModal } from './CompanyPitchModal';
+import { SuggestCompanyModal } from './SuggestCompanyModal';
 import { api } from '../services/api';
-import { Search, Building2, Sparkles, Filter, X, ArrowLeft, ArrowRight } from 'lucide-react';
+import {
+  Search,
+  Building2,
+  Sparkles,
+  Filter,
+  X,
+  ArrowLeft,
+  ArrowRight,
+  PlusCircle,
+  Rocket,
+  CreditCard,
+  Cloud,
+  Cpu,
+  Palette
+} from 'lucide-react';
 
 interface CompanyDirectoryProps {
   hasProfile: boolean;
@@ -19,6 +34,69 @@ const CATEGORIES = [
   { id: 4, name: 'Cloud & DevOps' },
   { id: 5, name: 'AI & Data Intelligence' },
   { id: 6, name: 'Digital Agencies' }
+];
+
+const CLUSTERS = [
+  {
+    id: 2,
+    title: 'Global SaaS & Products',
+    icon: Rocket,
+    tagline: 'World-class SaaS built from BD',
+    gradient: 'from-emerald-500/10 to-teal-500/5',
+    border: 'border-emerald-200',
+    iconColor: 'text-emerald-700',
+    badge: 'Optimizely, NewsCred, DSI'
+  },
+  {
+    id: 1,
+    title: 'Enterprise & Global IT',
+    icon: Building2,
+    tagline: 'Global Fortune 500 engineering',
+    gradient: 'from-blue-500/10 to-indigo-500/5',
+    border: 'border-blue-200',
+    iconColor: 'text-blue-700',
+    badge: 'Brain Station, BJIT, Enosis'
+  },
+  {
+    id: 3,
+    title: 'Fintech & Scale Platforms',
+    icon: CreditCard,
+    tagline: 'High-throughput transactional systems',
+    gradient: 'from-amber-500/10 to-orange-500/5',
+    border: 'border-amber-200',
+    iconColor: 'text-amber-700',
+    badge: 'bKash, Nagad, Pathao'
+  },
+  {
+    id: 4,
+    title: 'Cloud, DevOps & Infra',
+    icon: Cloud,
+    tagline: 'Reliability & enterprise cloud scale',
+    gradient: 'from-cyan-500/10 to-sky-500/5',
+    border: 'border-cyan-200',
+    iconColor: 'text-cyan-700',
+    badge: 'AWS/Azure Partners, Therap'
+  },
+  {
+    id: 5,
+    title: 'AI & Data Intelligence',
+    icon: Cpu,
+    tagline: 'Computer vision, NLP & LLMs',
+    gradient: 'from-purple-500/10 to-pink-500/5',
+    border: 'border-purple-200',
+    iconColor: 'text-purple-700',
+    badge: 'Intelligent Machines, TigerIT'
+  },
+  {
+    id: 6,
+    title: 'Digital Agency & Creative Tech',
+    icon: Palette,
+    tagline: 'UI/UX, web engineering & scale',
+    gradient: 'from-rose-500/10 to-pink-500/5',
+    border: 'border-rose-200',
+    iconColor: 'text-rose-700',
+    badge: 'Ollyo, Dcastalia, Bondstein'
+  }
 ];
 
 export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
@@ -43,6 +121,9 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
   const [pitchData, setPitchData] = useState<TailoredPitch | null>(null);
   const [pitchType, setPitchType] = useState('ColdEmail');
   const [isGeneratingPitch, setIsGeneratingPitch] = useState(false);
+
+  // Suggest company modal
+  const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
 
   // Active jobs modal
   const [activeJobsCompany, setActiveJobsCompany] = useState<BdCompany | null>(null);
@@ -150,23 +231,78 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
           </p>
         </div>
 
-        {/* Best Fit Switch */}
-        {hasProfile && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Suggest a Company Button */}
           <button
-            onClick={() => {
-              setIsBestFitMode(!isBestFitMode);
-              setCurrentPage(1);
-            }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 shrink-0 ${
-              isBestFitMode
-                ? 'bg-[#007070] text-white shadow-md'
-                : 'bg-[#F8FAFC] text-[#333333] hover:bg-[#E6F4F4] hover:text-[#007070] border border-black/10'
-            }`}
+            onClick={() => setIsSuggestModalOpen(true)}
+            className="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 bg-[#E6F4F4] text-[#007070] hover:bg-[#007070] hover:text-white border border-[#007070]/20 shrink-0"
           >
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>{isBestFitMode ? 'Showing: My Best Tech Fits' : 'Sort by: My Best Tech Fits'}</span>
+            <PlusCircle className="w-4 h-4" />
+            <span>Suggest a Company</span>
           </button>
-        )}
+
+          {/* Best Fit Switch */}
+          {hasProfile && (
+            <button
+              onClick={() => {
+                setIsBestFitMode(!isBestFitMode);
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 shrink-0 ${
+                isBestFitMode
+                  ? 'bg-[#007070] text-white shadow-md'
+                  : 'bg-[#F8FAFC] text-[#333333] hover:bg-[#E6F4F4] hover:text-[#007070] border border-black/10'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>{isBestFitMode ? 'Showing: My Best Tech Fits' : 'Sort by: My Best Tech Fits'}</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Visual Cluster Category Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {CLUSTERS.map((cl) => {
+          const Icon = cl.icon;
+          const isSelected = selectedCategory === cl.id;
+          return (
+            <button
+              key={cl.id}
+              onClick={() => {
+                setSelectedCategory(isSelected ? 0 : cl.id);
+                setCurrentPage(1);
+              }}
+              className={`text-left p-3.5 rounded-2xl border transition-all relative flex flex-col justify-between ${
+                isSelected
+                  ? 'border-[#007070] bg-[#E6F4F4] ring-2 ring-[#007070]/20 shadow-xs'
+                  : 'border-slate-200 bg-white hover:border-[#007070]/40 hover:shadow-xs'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className={`p-2 rounded-xl bg-gradient-to-br ${cl.gradient} ${cl.iconColor}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  {isSelected && (
+                    <span className="text-[10px] font-bold text-[#007070] bg-white px-1.5 py-0.5 rounded-md border border-[#007070]/30">
+                      Active
+                    </span>
+                  )}
+                </div>
+                <h4 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 mb-1">
+                  {cl.title}
+                </h4>
+                <p className="text-[10px] text-slate-500 line-clamp-1 mb-2">
+                  {cl.tagline}
+                </p>
+              </div>
+              <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-medium truncate">
+                {cl.badge}
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Filter Toolbar */}
@@ -380,6 +516,16 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
           </div>
         </div>
       )}
+
+      {/* Suggest Company Modal */}
+      <SuggestCompanyModal
+        isOpen={isSuggestModalOpen}
+        onClose={() => setIsSuggestModalOpen(false)}
+        onSuccess={() => {
+          showToast('Company submitted successfully! Added to BD Tech Directory.', 'success');
+          fetchCompanies();
+        }}
+      />
     </div>
   );
 };

@@ -48,6 +48,8 @@ export interface JobMatch {
   missingSkills: string[];
   recommendations?: string;
   isBookmarked: boolean;
+  source?: number;
+  sourceName?: string;
 }
 
 export interface TailoredApplication {
@@ -99,6 +101,18 @@ export interface TailoredPitch {
   subject: string;
   content: string;
   highlightedSkills: string[];
+}
+
+export interface SuggestCompanyRequest {
+  name: string;
+  website: string;
+  careersUrl?: string;
+  category: number;
+  globalProducts?: string;
+  description?: string;
+  primaryTechStack?: string[];
+  headquarters?: string;
+  workModel?: string;
 }
 
 export interface AuthResponse {

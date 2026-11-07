@@ -296,7 +296,18 @@ public class JobsController : ControllerBase
                         [],
                         [],
                         "",
-                        true);
+                        true,
+                        job.Source,
+                        job.Source switch
+                        {
+                            JobSource.Bdjobs => "BDJobs",
+                            JobSource.Jobicy => "Jobicy",
+                            JobSource.Himalayas => "Himalayas",
+                            JobSource.WeWorkRemotely => "We Work Remotely",
+                            JobSource.Remotive => "Remotive",
+                            JobSource.Arbeitnow => "Arbeitnow",
+                            _ => "Custom Paste"
+                        });
 
                 results.Add(eval with { IsBookmarked = true });
             }

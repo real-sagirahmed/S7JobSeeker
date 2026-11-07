@@ -24,6 +24,7 @@ export const App: React.FC = () => {
   const [selectedApplication, setSelectedApplication] = useState<TailoredApplication | null>(null);
   const [generatingAppId, setGeneratingAppId] = useState<string | null>(null);
   const [minScoreFilter, setMinScoreFilter] = useState<number>(0);
+  const [sourceFilter, setSourceFilter] = useState<number>(0);
   const [remoteOnly, setRemoteOnly] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -142,6 +143,7 @@ export const App: React.FC = () => {
   const filteredMatches = matches.filter((m) => {
     if (remoteOnly && !m.isRemote) return false;
     if (m.overallScore < minScoreFilter) return false;
+    if (sourceFilter !== 0 && m.source !== sourceFilter) return false;
     return true;
   });
 
@@ -262,7 +264,7 @@ export const App: React.FC = () => {
                       onClick={handleSyncJobs}
                       disabled={isSyncingJobs}
                       className="px-3.5 py-1.5 rounded-xl bg-[#E6F4F4] hover:bg-[#007070]/20 text-[#007070] border border-[#007070]/30 text-xs font-bold flex items-center space-x-1.5 transition-colors disabled:opacity-50"
-                      title="Fetch latest tech jobs from Remotive & Arbeitnow"
+                      title="Fetch latest tech jobs from BDJobs, Jobicy, Himalayas, WWR, Remotive & Arbeitnow"
                     >
                       <DownloadCloud className={`w-3.5 h-3.5 ${isSyncingJobs ? 'animate-bounce' : ''}`} />
                       <span>{isSyncingJobs ? 'Syncing...' : 'Sync Tech Jobs'}</span>
@@ -277,6 +279,21 @@ export const App: React.FC = () => {
                       />
                       <span>Remote Only</span>
                     </label>
+
+                    <select
+                      value={sourceFilter}
+                      onChange={(e) => setSourceFilter(Number(e.target.value))}
+                      className="px-3 py-1.5 rounded-lg bg-white border border-black/10 text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
+                    >
+                      <option value={0}>All Sources (৬টি সোর্স)</option>
+                      <option value={7}>🇧🇩 BDJobs (Local BD)</option>
+                      <option value={3}>Jobicy (Remote)</option>
+                      <option value={5}>Himalayas (Remote)</option>
+                      <option value={6}>We Work Remotely</option>
+                      <option value={1}>Remotive</option>
+                      <option value={2}>Arbeitnow</option>
+                      <option value={4}>Custom Pasted</option>
+                    </select>
 
                     <select
                       value={minScoreFilter}

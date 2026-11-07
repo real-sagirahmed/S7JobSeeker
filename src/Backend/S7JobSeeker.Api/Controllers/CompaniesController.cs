@@ -385,4 +385,53 @@ public class CompaniesController : ControllerBase
             return StatusCode(500, new { message = "Failed to generate tailored pitch." });
         }
     }
+
+    [HttpPost("suggest")]
+    public async Task<IActionResult> SuggestCompany(
+        [FromBody] SuggestCompanyRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Website))
+        {
+            return BadRequest(new { message = "Company name and website are required." });
+        }
+
+        var trimmedName = request.Name.Trim();
+        var slug = trimmedName.ToLowerInvariant().Replace(" ", "-").Replace(".", "");
+
+        var exists = await _dbContext.BdTechCompanies
+            .AnyAsync(c => c.Name.ToLower() == trimmedName.ToLower() || c.Slug == slug, cancellationToken);
+
+        if (exists)
+        {
+            return BadRequest(new { message = $"Company '{trimmedName}' is already listed in the directory." });
+        }
+
+        var newCompany = new BdTechCompany
+        {
+            Name = trimmedName,
+            Slug = slug,
+            Website = request.Website.Trim(),
+            CareersUrl = !string.IsNullOrWhiteSpace(request.CareersUrl) ? request.CareersUrl.Trim() : request.Website.Trim(),
+            Category = request.Category,
+            GlobalProducts = request.GlobalProducts?.Trim() ?? string.Empty,
+            Description = request.Description?.Trim() ?? $"{trimmedName} is a software and technology firm based in Bangladesh.",
+            PrimaryTechStackJson = JsonSerializer.Serialize(request.PrimaryTechStack ?? []),
+            Headquarters = !string.IsNullOrWhiteSpace(request.Headquarters) ? request.Headquarters.Trim() : "Dhaka, Bangladesh",
+            WorkModel = !string.IsNullOrWhiteSpace(request.WorkModel) ? request.WorkModel.Trim() : "Hybrid",
+            IsVerified = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _dbContext.BdTechCompanies.Add(newCompany);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("New company suggestion added to directory: {CompanyName} ({Website})", newCompany.Name, newCompany.Website);
+
+        return Ok(new
+        {
+            message = $"'{trimmedName}' has been successfully added to the BD Tech Directory!",
+            companyId = newCompany.Id
+        });
+    }
 }

@@ -239,6 +239,26 @@ export const api = {
         throw new Error(err.message || 'Failed to generate tailored pitch');
       }
       return res.json();
+    },
+
+    async suggest(data: import('../types').SuggestCompanyRequest): Promise<{ message: string; companyId: string }> {
+      const res = await fetch(`${API_BASE}/companies/suggest`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to submit company suggestion' }));
+        throw new Error(err.message || 'Failed to submit company suggestion');
+      }
+      return res.json();
+    },
+
+    async suggestCompany(data: import('../types').SuggestCompanyRequest): Promise<{ message: string; companyId: string }> {
+      return this.suggest(data);
     }
   }
 };

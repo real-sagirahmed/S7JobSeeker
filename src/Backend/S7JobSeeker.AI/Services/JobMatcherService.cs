@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
+using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
 
 namespace S7JobSeeker.AI.Services;
@@ -166,7 +167,9 @@ public class JobMatcherService : IJobMatcherService
             MatchingSkills: matchingSkills,
             MissingSkills: missingSkills,
             Recommendations: recommendations,
-            IsBookmarked: false
+            IsBookmarked: false,
+            Source: job.Source,
+            SourceName: GetSourceName(job.Source)
         );
     }
 
@@ -279,9 +282,23 @@ public class JobMatcherService : IJobMatcherService
             MatchingSkills: matched,
             MissingSkills: missing,
             Recommendations: recommendations,
-            IsBookmarked: false
+            IsBookmarked: false,
+            Source: job.Source,
+            SourceName: GetSourceName(job.Source)
         );
     }
+
+    private static string GetSourceName(JobSource source) => source switch
+    {
+        JobSource.Bdjobs => "BDJobs",
+        JobSource.Jobicy => "Jobicy",
+        JobSource.Himalayas => "Himalayas",
+        JobSource.WeWorkRemotely => "We Work Remotely",
+        JobSource.Remotive => "Remotive",
+        JobSource.Arbeitnow => "Arbeitnow",
+        JobSource.CustomPaste => "Custom Paste",
+        _ => source.ToString()
+    };
 
     public async Task<TailoredApplicationResult> GenerateTailoredApplicationAsync(
         ResumeParsedProfileDto profile,

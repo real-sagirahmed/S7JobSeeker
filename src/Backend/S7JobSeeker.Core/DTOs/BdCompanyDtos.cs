@@ -34,6 +34,18 @@ public record CompanyListResponse(
 
 public record GeneratePitchRequest(string PitchType = "ColdEmail"); // ColdEmail or CoverLetter
 
+public record SuggestCompanyRequestDto(
+    string Name,
+    string Website,
+    string? CareersUrl,
+    CompanyCategory Category,
+    string? GlobalProducts,
+    string? Description,
+    List<string>? PrimaryTechStack,
+    string? Headquarters,
+    string? WorkModel
+);
+
 public record TailoredPitchDto(
     string CompanyName,
     string PitchType,
