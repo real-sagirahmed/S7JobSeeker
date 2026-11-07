@@ -75,46 +75,53 @@ public class JobsController : ControllerBase
 
         foreach (var fetcher in _jobFetchers)
         {
-            var jobs = await fetcher.FetchLatestJobsAsync(cancellationToken);
-            totalFetched += jobs.Count;
-
-            foreach (var job in jobs)
+            try
             {
-                var exists = await _dbContext.JobPostings
-                    .AnyAsync(j => j.Source == job.Source && j.ExternalId == job.ExternalId, cancellationToken);
+                var jobs = await fetcher.FetchLatestJobsAsync(cancellationToken);
+                totalFetched += jobs.Count;
 
-                if (exists) continue;
-
-                // Attempt vector embedding & upsert with graceful fallback
-                try
+                foreach (var job in jobs)
                 {
-                    var embeddingText = $"{job.Title} at {job.Company}. {job.Description}";
-                    var embedding = await _matcherService.GenerateEmbeddingAsync(embeddingText, cancellationToken);
+                    var exists = await _dbContext.JobPostings
+                        .AnyAsync(j => j.Source == job.Source && j.ExternalId == job.ExternalId, cancellationToken);
 
-                    var pointId = Guid.NewGuid();
-                    job.QdrantPointId = pointId;
+                    if (exists) continue;
 
-                    var metadata = new Dictionary<string, string>
+                    // Attempt vector embedding & upsert with graceful fallback
+                    try
                     {
-                        ["JobId"] = job.Id.ToString(),
-                        ["Title"] = job.Title,
-                        ["Company"] = job.Company,
-                        ["IsRemote"] = job.IsRemote.ToString(),
-                        ["Source"] = job.Source.ToString()
-                    };
+                        var embeddingText = $"{job.Title} at {job.Company}. {job.Description}";
+                        var embedding = await _matcherService.GenerateEmbeddingAsync(embeddingText, cancellationToken);
 
-                    await _vectorService.UpsertJobVectorAsync(pointId, embedding, metadata, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning("Vector indexing skipped for job {Title}: {Message}", job.Title, ex.Message);
+                        var pointId = Guid.NewGuid();
+                        job.QdrantPointId = pointId;
+
+                        var metadata = new Dictionary<string, string>
+                        {
+                            ["JobId"] = job.Id.ToString(),
+                            ["Title"] = job.Title,
+                            ["Company"] = job.Company,
+                            ["IsRemote"] = job.IsRemote.ToString(),
+                            ["Source"] = job.Source.ToString()
+                        };
+
+                        await _vectorService.UpsertJobVectorAsync(pointId, embedding, metadata, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning("Vector indexing skipped for job {Title}: {Message}", job.Title, ex.Message);
+                    }
+
+                    _dbContext.JobPostings.Add(job);
+                    totalNew++;
                 }
 
-                _dbContext.JobPostings.Add(job);
-                totalNew++;
+                await _dbContext.SaveChangesAsync(cancellationToken);
             }
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fetcher {SourceName} failed during sync", fetcher.SourceName);
+            }
         }
 
         sw.Stop();

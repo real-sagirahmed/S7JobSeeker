@@ -60,9 +60,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// HttpClient & Job Fetchers
-builder.Services.AddHttpClient<RemotiveJobFetcher>();
-builder.Services.AddHttpClient<ArbeitnowJobFetcher>();
+// HttpClient & Job Fetchers with Browser-grade User-Agent & resilient timeouts
+builder.Services.AddHttpClient<RemotiveJobFetcher>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddHttpClient<ArbeitnowJobFetcher>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 builder.Services.AddScoped<IJobFetcherService, RemotiveJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, ArbeitnowJobFetcher>();
 
