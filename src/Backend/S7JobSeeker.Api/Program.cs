@@ -121,14 +121,15 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Configure OpenAPI / Swagger for API testing
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+// Conditional HTTPS redirection (disabled by default on shared hosts like MonsterASP to avoid SSL handshake resets)
+if (builder.Configuration.GetValue<bool>("EnableHttpsRedirection", false))
+{
+    app.UseHttpsRedirection();
+}
 
 // Serve React SPA files from wwwroot
 app.UseDefaultFiles();
