@@ -56,6 +56,18 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
     );
   };
 
+  const getDirectApplicationUrl = (url?: string) => {
+    if (!url) return undefined;
+    // ARCHITECTURAL INTENT: Normalize legacy BDJobs redirect URLs to direct Angular SPA to avoid IIS 404
+    if (url.includes('jobs.bdjobs.com/jobdetails.asp?id=')) {
+      const id = url.split('id=')[1]?.split('&')[0];
+      if (id) return `https://bdjobs.com/h/jobdetails/${id}`;
+    }
+    return url;
+  };
+
+  const directUrl = getDirectApplicationUrl(match.url);
+
   return (
     <div className="rounded-2xl border border-black/8 bg-white p-6 space-y-5 hover:border-[#007070] transition-all shadow-[0_8px_25px_rgba(0,0,0,0.04)]">
       {/* Header */}
@@ -176,9 +188,9 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
           <span>{isGenerating ? 'Drafting Application...' : 'Generate Cover Letter & Tips'}</span>
         </button>
 
-        {match.url && (
+        {directUrl && (
           <a
-            href={match.url}
+            href={directUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="px-3.5 py-2 rounded-xl bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] text-xs font-bold flex items-center space-x-1.5 transition-colors border border-black/8"

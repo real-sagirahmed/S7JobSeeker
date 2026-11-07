@@ -220,6 +220,25 @@ using (var scope = app.Services.CreateScope())
             dbContext.SaveChanges();
             logger.LogInformation("Seeded {Count} verified BD Tech Companies successfully.", seedCompanies.Count);
         }
+
+        // Auto-heal legacy BDJobs URLs in JobPostings table to modern Angular SPA route
+        if (dbContext.Database.IsRelational())
+        {
+            try
+            {
+                var rowsUpdated = dbContext.Database.ExecuteSqlRaw(
+                    "UPDATE JobPostings SET Url = REPLACE(Url, 'https://jobs.bdjobs.com/jobdetails.asp?id=', 'https://bdjobs.com/h/jobdetails/') WHERE Source = 7 AND Url LIKE '%jobs.bdjobs.com%';"
+                );
+                if (rowsUpdated > 0)
+                {
+                    logger.LogInformation("Auto-healed {Count} legacy BDJobs URLs to modern SPA route.", rowsUpdated);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to auto-heal legacy BDJobs URLs on startup.");
+            }
+        }
     }
     catch (Exception ex)
     {

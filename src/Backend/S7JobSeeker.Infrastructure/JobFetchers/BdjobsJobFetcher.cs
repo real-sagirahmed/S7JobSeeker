@@ -114,7 +114,8 @@ public class BdjobsJobFetcher : IJobFetcherService
                     SalaryRange = salary,
                     JobType = jobType,
                     Description = fullDesc,
-                    Url = $"https://jobs.bdjobs.com/jobdetails.asp?id={jobId}",
+                    // ARCHITECTURAL INTENT: Direct route to BDJobs Angular SPA to prevent broken 302 legacy redirects
+                    Url = $"https://bdjobs.com/h/jobdetails/{jobId}",
                     PublishedAt = publishedAt,
                     CreatedAt = DateTime.UtcNow
                 });
