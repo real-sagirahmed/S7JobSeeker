@@ -5,6 +5,8 @@
 
 | তারিখ ও সময় (desc) | অ্যাকশন / মাইলস্টোন | বিস্তারিত বিবরণ | স্ট্যাটাস |
 | :--- | :--- | :--- | :--- |
+| `2026-11-07 15:23` | **Local Full-Stack Execution & Multi-Port Dev Setup** | লোকাল ডেভেলপমেন্ট সফলভাবে চালু: `MSSQLLocalDB` স্টার্ট ও অটো-মাইগ্রেশন ভেরিফায়েড, ASP.NET Core API `http://localhost:5000`-এ লাইভ (Swagger ও হেলথ চেক সক্রিয়), এবং React 19 ফ্রন্টএন্ড Vite HMR সার্ভার `http://localhost:5173`-এ লাইভ। | Completed |
+| `2026-11-07 15:18` | **CI/CD IIS app_offline Lock Release & Live Verification** | GitHub Actions Run #13 সফল: IIS `app_offline.htm` মেকানিজমে DLL লক রিলিজ করে সরাসরি `\wwwroot`-এ নতুন কোড ও ফ্রন্টএন্ড বান্ডেল (`index-DzKjaAZh.js`) ডেপ্লয় সম্পন্ন। লাইভ রেজুমে আপলোড ও ৩১২টি জব সিঙ্ক ভেরিফায়েড। | Completed |
 | `2026-11-07 13:35` | **Production Deployment & MSSQL Database Online** | MonsterASP.net-এ `s7jobseeker.runasp.net` ডোমেনে লাইভ ওয়েব-অ্যাপ সক্রিয়। SQL Server 2025 ডাটাবেজ (`db78456`) কনফিগারেশন, `HealthController` ডায়াগনস্টিকস এবং লাইভ ভেরিফিকেশন সম্পন্ন। | Completed |
 | `2026-11-07 11:51` | **GitHub Remote Integration & Production Codebase Pushed** | রিমোট রিপোজিটরি `https://github.com/real-sagirahmed/S7JobSeeker.git`-এ সিকিউরিটি অডিট ও টেস্ট সম্পন্ন করে `main` ব্রাঞ্চে সোর্সকোড সফলভাবে পুশ সম্পন্ন। | Completed |
 | `2026-11-07 11:42` | **S7 Brand System Light Theme Implementation** | `s7-brand-color-details.html` গাইডলাইন অনুযায়ী সম্পূর্ণ ফ্রন্টএন্ড লাইট থিমে রূপান্তর সম্পন্ন। Primary Teal (`#007070`), Background (`#FFFFFF`, `#F8FAFC`), Headings (`#0B0B0B`), Body (`#333333`), Muted (`#7C7C7C`), Border (`rgba(0,0,0,0.08)`), Soft Accent (`#E6F4F4`) প্রয়োগ এবং Vite প্রোডাকশন রিবিল্ড সফল। | Completed |
