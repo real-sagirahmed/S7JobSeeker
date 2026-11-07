@@ -44,7 +44,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Server=(localdb)\\mssqllocaldb;Database=S7JobSeekerDb;Trusted_Connection=True;TrustServerCertificate=True;";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    options.UseSqlServer(connectionString);
+    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
 builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
@@ -70,6 +73,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role,
             ValidIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "s7job-seeker-api",
             ValidAudience = builder.Configuration["JwtSettings:Audience"] ?? "s7job-seeker-client",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))

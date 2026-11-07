@@ -10,7 +10,12 @@ public class ApplicationUser : IdentityUser
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
+    public bool IsAdmin { get; set; } = false;
+    public int AiCredits { get; set; } = 20;
+    public DateTime TrialEndsAt { get; set; } = DateTime.UtcNow.AddDays(30);
+
     public UserProfile? Profile { get; set; }
     public ICollection<JobMatchScore> MatchScores { get; set; } = [];
     public ICollection<TailoredApplication> TailoredApplications { get; set; } = [];
+    public ICollection<CreditTransaction> Transactions { get; set; } = [];
 }

@@ -6,6 +6,8 @@ import { PasteAndAnalyze } from './components/PasteAndAnalyze';
 import { TailoredModal } from './components/TailoredModal';
 import { AuthModal } from './components/AuthModal';
 import { CompanyDirectory } from './components/CompanyDirectory';
+import { BuyCreditsModal } from './components/BuyCreditsModal';
+import { AdminDashboard } from './components/AdminDashboard';
 import { ToastContainer, type ToastMessage } from './components/Toast';
 import { api } from './services/api';
 import type { User, ResumeProfile, JobMatch, TailoredApplication } from './types';
@@ -13,7 +15,7 @@ import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu,
 
 export const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'matches' | 'profile' | 'paste' | 'saved' | 'companies'>('matches');
+  const [activeTab, setActiveTab] = useState<'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin'>('matches');
   const [profile, setProfile] = useState<ResumeProfile | null>(null);
   const [matches, setMatches] = useState<JobMatch[]>([]);
   const [savedList, setSavedList] = useState<JobMatch[]>([]);
@@ -21,6 +23,7 @@ export const App: React.FC = () => {
   const [isLoadingSaved, setIsLoadingSaved] = useState(false);
   const [isSyncingJobs, setIsSyncingJobs] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isBuyCreditsOpen, setIsBuyCreditsOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<TailoredApplication | null>(null);
   const [generatingAppId, setGeneratingAppId] = useState<string | null>(null);
   const [minScoreFilter, setMinScoreFilter] = useState<number>(0);
@@ -123,8 +126,16 @@ export const App: React.FC = () => {
       const app = await api.jobs.generateTailoredApplication(jobId);
       setSelectedApplication(app);
       showToast('Customized application package generated successfully.', 'success');
+      // Refresh user credits
+      api.auth.getMe().then(setUser).catch(() => {});
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to generate tailored application.', 'error');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to generate tailored application.';
+      if (errorMsg.includes('Credit') || errorMsg.includes('402')) {
+        showToast('আপনার এআই ক্রেডিট শেষ হয়ে গেছে। দয়া করে ক্রেডিট টপ-আপ করুন।', 'error');
+        setIsBuyCreditsOpen(true);
+      } else {
+        showToast(errorMsg, 'error');
+      }
     } finally {
       setGeneratingAppId(null);
     }
@@ -168,6 +179,7 @@ export const App: React.FC = () => {
           setMatches([]);
         }}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenBuyCredits={() => setIsBuyCreditsOpen(true)}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -383,10 +395,13 @@ export const App: React.FC = () => {
             {activeTab === 'profile' && (
               <ResumeUploader
                 profile={profile}
+                user={user}
                 onProfileUpdated={(p) => {
                   setProfile(p);
                   fetchMatches();
                 }}
+                onNavigateToMatches={() => setActiveTab('matches')}
+                onNavigateToCompanies={() => setActiveTab('companies')}
               />
             )}
 
@@ -441,6 +456,11 @@ export const App: React.FC = () => {
                 showToast={showToast}
               />
             )}
+
+            {/* TAB: Director Admin Console */}
+            {activeTab === 'admin' && user?.isAdmin && (
+              <AdminDashboard onNotify={showToast} />
+            )}
           </div>
         )}
       </main>
@@ -453,10 +473,23 @@ export const App: React.FC = () => {
             id: '',
             email: authData.email,
             fullName: authData.fullName,
-            targetRole: authData.targetRole
+            targetRole: authData.targetRole,
+            isAdmin: authData.isAdmin,
+            aiCredits: authData.aiCredits,
+            trialEndsAt: authData.trialEndsAt
           });
           loadProfileAndMatches();
         }}
+      />
+
+      <BuyCreditsModal
+        isOpen={isBuyCreditsOpen}
+        onClose={() => setIsBuyCreditsOpen(false)}
+        onSuccess={() => {
+          showToast('পেমেন্ট রিকোয়েস্ট জমা নেওয়া হয়েছে। পরিচালক ভেরিফাই করলেই ক্রেডিট যুক্ত হবে।', 'success');
+          api.auth.getMe().then(setUser).catch(() => {});
+        }}
+        userCredits={user?.aiCredits}
       />
 
       <TailoredModal

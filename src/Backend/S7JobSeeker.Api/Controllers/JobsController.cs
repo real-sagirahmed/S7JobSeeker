@@ -410,6 +410,19 @@ public class JobsController : ControllerBase
             return BadRequest(new { message = "Please upload your resume first." });
         }
 
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user == null) return Unauthorized();
+
+        // ARCHITECTURAL INTENT (LOCK 1 & LOCK 2): Master Admin bypass, candidate credit enforcement
+        if (!user.IsAdmin && user.AiCredits <= 0)
+        {
+            return StatusCode(StatusCodes.Status402PaymentRequired, new
+            {
+                message = "You have exhausted your AI Credits. Please top up your credits to analyze custom job postings.",
+                requiresCredits = true
+            });
+        }
+
         var parsedProfile = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson);
         if (parsedProfile == null) return BadRequest(new { message = "Invalid profile." });
 
@@ -438,6 +451,13 @@ public class JobsController : ControllerBase
         // ARCHITECTURAL INTENT: Persist pasted job to database to ensure Bookmark and
         // Tailored Application generation succeed without Foreign Key constraint violations.
         _dbContext.JobPostings.Add(job);
+
+        // Deduct 1 credit for non-admin candidate
+        if (!user.IsAdmin)
+        {
+            user.AiCredits = Math.Max(0, user.AiCredits - 1);
+        }
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         var matchResult = await _matcherService.EvaluateMatchAsync(parsedProfile, job, null, cancellationToken);
@@ -465,10 +485,29 @@ public class JobsController : ControllerBase
             return BadRequest(new { message = "Please upload your resume first." });
         }
 
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user == null) return Unauthorized();
+
+        // ARCHITECTURAL INTENT (LOCK 1 & LOCK 2): Master Admin bypass, candidate credit enforcement
+        if (!user.IsAdmin && user.AiCredits <= 0)
+        {
+            return StatusCode(StatusCodes.Status402PaymentRequired, new
+            {
+                message = "You have exhausted your AI Credits. Please purchase a credit pack to continue generating customized applications.",
+                requiresCredits = true
+            });
+        }
+
         var parsedProfile = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson);
         if (parsedProfile == null) return BadRequest(new { message = "Invalid profile." });
 
         var application = await _matcherService.GenerateTailoredApplicationAsync(parsedProfile, job, cancellationToken);
+
+        // Deduct 1 credit for non-admin candidate
+        if (!user.IsAdmin)
+        {
+            user.AiCredits = Math.Max(0, user.AiCredits - 1);
+        }
 
         // Save to DB
         var existing = await _dbContext.TailoredApplications

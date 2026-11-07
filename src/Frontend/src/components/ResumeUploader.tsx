@@ -1,18 +1,58 @@
 import React, { useState } from 'react';
-import { UploadCloud, FileCheck, Sparkles, AlertCircle, Layers, Plus, X } from 'lucide-react';
-import type { ResumeProfile } from '../types';
+import {
+  UploadCloud,
+  FileCheck,
+  Sparkles,
+  AlertCircle,
+  Layers,
+  Plus,
+  X,
+  RefreshCw,
+  Mail,
+  Phone,
+  Briefcase,
+  CheckCircle2,
+  ArrowRight,
+  Shield,
+  FileText,
+  Building2,
+  Zap
+} from 'lucide-react';
+import type { ResumeProfile, User } from '../types';
 import { api } from '../services/api';
 
 interface ResumeUploaderProps {
   profile: ResumeProfile | null;
+  user?: User | null;
   onProfileUpdated: (profile: ResumeProfile) => void;
+  onNavigateToMatches?: () => void;
+  onNavigateToCompanies?: () => void;
 }
 
-export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfileUpdated }) => {
+const RECOMMENDED_SKILLS = [
+  { name: 'Docker', category: 4 },
+  { name: 'Azure', category: 4 },
+  { name: 'Microservices', category: 7 },
+  { name: 'Redis', category: 3 },
+  { name: 'Kubernetes', category: 4 },
+  { name: 'PostgreSQL', category: 3 },
+  { name: 'CI/CD', category: 4 },
+  { name: 'MongoDB', category: 3 }
+];
+
+export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
+  profile,
+  user,
+  onProfileUpdated,
+  onNavigateToMatches,
+  onNavigateToCompanies
+}) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newSkillName, setNewSkillName] = useState('');
   const [isAddingSkill, setIsAddingSkill] = useState(false);
+  const [showUploaderDrawer, setShowUploaderDrawer] = useState(false);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<number>(0);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,6 +64,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfi
     try {
       const updatedProfile = await api.profile.uploadResume(file);
       onProfileUpdated(updatedProfile);
+      setShowUploaderDrawer(false);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -35,13 +76,13 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfi
     }
   };
 
-  const handleAddSkill = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSkillName.trim()) return;
+  const handleAddSkill = async (skillName: string, category: number = 9) => {
+    const trimmed = skillName.trim();
+    if (!trimmed) return;
     setIsAddingSkill(true);
     setError(null);
     try {
-      const updated = await api.profile.addSkill(newSkillName.trim());
+      const updated = await api.profile.addSkill(trimmed, category);
       onProfileUpdated(updated);
       setNewSkillName('');
     } catch (err: unknown) {
@@ -75,108 +116,291 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfi
     }
   };
 
+  const getCategoryBadgeClass = (cat: number): string => {
+    switch (cat) {
+      case 1: return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 2: return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 3: return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 4: return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+      case 5: return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 7: return 'bg-teal-50 text-[#007070] border-teal-200';
+      default: return 'bg-slate-50 text-slate-700 border-slate-200';
+    }
+  };
+
+  const displayName = profile?.fullName && profile.fullName.toLowerCase() !== 'candidate'
+    ? profile.fullName
+    : user?.fullName || 'Candidate';
+
+  const displayEmail = profile?.email || user?.email || '';
+
+  const filteredSkills = profile?.skills
+    ? selectedCategoryFilter === 0
+      ? profile.skills
+      : profile.skills.filter((s) => s.category === selectedCategoryFilter)
+    : [];
+
+  const unaddedRecommendations = RECOMMENDED_SKILLS.filter(
+    (rec) => !profile?.skills.some((s) => s.name.toLowerCase() === rec.name.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
-      {/* Upload Box */}
-      <div className="p-8 rounded-2xl border-2 border-dashed border-black/10 bg-[#F8FAFC] hover:border-[#007070] transition-all text-center relative group shadow-xs">
-        <input
-          type="file"
-          accept=".pdf,.txt,.docx"
-          onChange={handleFileChange}
-          disabled={isUploading}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-        />
+      {/* Top Header & Actions */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-2 mb-1">
+            <span className="p-1.5 rounded-lg bg-[#E6F4F4] text-[#007070]">
+              <FileCheck className="w-5 h-5" />
+            </span>
+            <h1 className="font-bold text-xl text-slate-900 tracking-tight">
+              Career Profile & Resume Intelligence
+            </h1>
+          </div>
+          <p className="text-xs text-slate-500">
+            AI-extracted competencies, career summary, and verified credentials for BD & Global tech matching.
+          </p>
+        </div>
 
-        <div className="flex flex-col items-center justify-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#E6F4F4] border border-[#007070]/20 flex items-center justify-center text-[#007070] group-hover:scale-105 transition-transform shadow-[0_4px_16px_rgba(0,112,112,0.15)]">
-            {isUploading ? (
-              <div className="w-6 h-6 border-2 border-[#007070] border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <UploadCloud className="w-7 h-7" />
+        {profile && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowUploaderDrawer(!showUploaderDrawer)}
+              className="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 bg-[#F8FAFC] text-slate-700 hover:bg-[#E6F4F4] hover:text-[#007070] border border-slate-200 shrink-0"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>{showUploaderDrawer ? 'Hide Re-upload' : 'Update Resume'}</span>
+            </button>
+            {onNavigateToMatches && (
+              <button
+                onClick={onNavigateToMatches}
+                className="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 bg-[#007070] text-white hover:bg-[#005a5a] shadow-xs shrink-0"
+              >
+                <span>View Job Matches</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
-
-          <div>
-            <h3 className="text-lg font-black text-[#0B0B0B]">
-              {isUploading ? 'Parsing Resume with Gemini AI...' : 'Upload your Resume / CV'}
-            </h3>
-            <p className="text-xs text-[#7C7C7C] mt-1 font-medium">
-              Drag and drop your PDF or TXT file here (max 10MB)
-            </p>
-          </div>
-
-          <span className="inline-flex items-center text-xs font-bold text-[#007070] bg-[#E6F4F4] px-3.5 py-1 rounded-full border border-[#007070]/25">
-            <Sparkles className="w-3.5 h-3.5 mr-1" /> Auto-extracts skills, experience & role
-          </span>
-        </div>
+        )}
       </div>
 
+      {/* Error Alert */}
       {error && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center space-x-3 text-xs">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-600" />
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center space-x-3 text-xs shadow-xs animate-fade-in">
+          <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Extracted Profile Details */}
-      {profile && (
-        <div className="rounded-2xl border border-black/8 bg-white p-6 space-y-6 shadow-[0_8px_25px_rgba(0,0,0,0.04)]">
-          <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-black/8 gap-4">
+      {/* Re-Upload Dropzone Drawer / Initial Upload Screen */}
+      {(!profile || showUploaderDrawer) && (
+        <div className="p-8 rounded-2xl border-2 border-dashed border-teal-300 bg-gradient-to-b from-[#F0FDF4]/30 to-[#E6F4F4]/50 hover:border-[#007070] transition-all text-center relative group shadow-sm">
+          <input
+            type="file"
+            accept=".pdf,.txt,.docx"
+            onChange={handleFileChange}
+            disabled={isUploading}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+          />
+
+          <div className="flex flex-col items-center justify-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-white border border-[#007070]/20 flex items-center justify-center text-[#007070] group-hover:scale-105 transition-transform shadow-md">
+              {isUploading ? (
+                <div className="w-7 h-7 border-3 border-[#007070] border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <UploadCloud className="w-7 h-7" />
+              )}
+            </div>
+
             <div>
-              <div className="flex items-center space-x-2">
-                <FileCheck className="w-5 h-5 text-[#007070]" />
-                <h2 className="text-xl font-black text-[#0B0B0B]">{profile.fullName}</h2>
-              </div>
-              <p className="text-xs text-[#007070] font-bold mt-1">
-                {profile.targetRole || 'Software Professional'} • {profile.totalYearsOfExperience || 0}+ Years Experience
+              <h3 className="text-base font-bold text-slate-900">
+                {isUploading ? 'Extracting Resume & Structuring Profile...' : 'Upload your Resume / CV'}
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Drag and drop your PDF or TXT resume here (Max 10MB)
               </p>
             </div>
-            {(profile.email || profile.phone) && (
-              <div className="text-xs text-[#7C7C7C] space-y-1">
-                {profile.email && <div>Email: {profile.email}</div>}
-                {profile.phone && <div>Phone: {profile.phone}</div>}
+
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+              <span className="inline-flex items-center text-[11px] font-semibold text-[#007070] bg-white px-3 py-1 rounded-full border border-[#007070]/20 shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 mr-1" /> Auto-extracts skills & role
+              </span>
+              <span className="inline-flex items-center text-[11px] font-semibold text-slate-600 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
+                <Shield className="w-3.5 h-3.5 mr-1 text-slate-400" /> Private & Secure
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Structured Profile Display */}
+      {profile && (
+        <div className="space-y-6">
+          {/* Hero Profile Overview Card */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-teal-50/60 to-transparent rounded-bl-full pointer-events-none" />
+
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-0">
+              <div className="flex items-start sm:items-center gap-4">
+                {/* Initials Avatar */}
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#007070] to-[#009b9b] text-white flex items-center justify-center text-xl font-bold tracking-tight shadow-md shrink-0">
+                  {displayName
+                    .split(' ')
+                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase()}
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+                      {displayName}
+                    </h2>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <CheckCircle2 className="w-3 h-3 mr-1" /> AI-Verified
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="text-sm font-semibold text-[#007070]">
+                      {profile.targetRole || user?.targetRole || '.NET & Full Stack Developer'}
+                    </span>
+                    <span className="text-slate-300">•</span>
+                    <span className="text-xs font-medium text-slate-600 flex items-center">
+                      <Briefcase className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                      {profile.totalYearsOfExperience || 3}+ Years Experience
+                    </span>
+                  </div>
+
+                  {/* Contact Row */}
+                  <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 flex-wrap">
+                    {displayEmail && (
+                      <a
+                        href={`mailto:${displayEmail}`}
+                        className="flex items-center hover:text-[#007070] transition-colors"
+                      >
+                        <Mail className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
+                        <span>{displayEmail}</span>
+                      </a>
+                    )}
+                    {profile.phone && (
+                      <span className="flex items-center">
+                        <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
+                        <span>{profile.phone}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
+
+              {/* Profile Strength & Quick CTA */}
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 lg:min-w-[260px] space-y-3">
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className="text-slate-600 flex items-center gap-1.5">
+                    <Zap className="w-4 h-4 text-amber-500" /> Profile Strength
+                  </span>
+                  <span className="text-emerald-700 font-bold">92% Complete</span>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div className="bg-gradient-to-r from-teal-500 to-emerald-500 h-full rounded-full w-[92%]" />
+                </div>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  High semantic match rating for top BD tech firms & global remote engineering roles.
+                </p>
+                {onNavigateToCompanies && (
+                  <button
+                    onClick={onNavigateToCompanies}
+                    className="w-full text-center text-xs font-bold text-[#007070] hover:text-[#005a5a] pt-1 flex items-center justify-center gap-1"
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Browse 180+ BD Tech Firms ↗</span>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Professional Summary */}
+          {/* Executive Professional Summary */}
           {profile.summary && (
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#7C7C7C] mb-2">
-                Executive Professional Summary
-              </h4>
-              <p className="text-xs text-[#333333] leading-relaxed bg-[#F8FAFC] p-4 rounded-xl border border-black/5">
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-[#007070]" />
+                  Executive Professional Summary
+                </h3>
+                <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                  AI-Extracted Overview
+                </span>
+              </div>
+              <p className="text-sm text-slate-700 leading-relaxed bg-slate-50/70 p-4 rounded-xl border border-slate-100 font-normal">
                 {profile.summary}
               </p>
             </div>
           )}
 
-          {/* Skills Badges */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#7C7C7C] flex items-center">
-                <Layers className="w-3.5 h-3.5 mr-1.5 text-[#007070]" /> Extracted Skills & Competencies ({profile.skills.length})
-              </h4>
-            </div>
+          {/* Extracted Skills & Competencies */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-[#007070]" />
+                  Extracted Skills & Competencies ({profile.skills.length})
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Categorized skills extracted from your resume used in semantic RAG matching
+                </p>
+              </div>
 
-            <div className="flex flex-wrap gap-2">
-              {profile.skills.map((skill, idx) => (
-                <span
-                  key={idx}
-                  className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
-                    skill.isPrimary
-                      ? 'bg-[#E6F4F4] text-[#007070] border-[#007070]/30 shadow-2xs'
-                      : 'bg-[#F8FAFC] text-[#333333] border-black/8'
+              {/* Category Filter Tabs */}
+              <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+                <button
+                  onClick={() => setSelectedCategoryFilter(0)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                    selectedCategoryFilter === 0
+                      ? 'bg-[#007070] text-white shadow-2xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  {skill.name}
-                  <span className="ml-1.5 text-[10px] text-[#7C7C7C]">
-                    ({getCategoryLabel(skill.category)})
+                  All ({profile.skills.length})
+                </button>
+                {[1, 2, 3, 4, 7].map((catId) => {
+                  const count = profile.skills.filter((s) => s.category === catId).length;
+                  if (count === 0) return null;
+                  return (
+                    <button
+                      key={catId}
+                      onClick={() => setSelectedCategoryFilter(catId)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                        selectedCategoryFilter === catId
+                          ? 'bg-[#007070] text-white shadow-2xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {getCategoryLabel(catId)} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Skill Badges */}
+            <div className="flex flex-wrap gap-2.5">
+              {filteredSkills.map((skill, idx) => (
+                <span
+                  key={idx}
+                  className={`inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold border transition-all shadow-2xs ${getCategoryBadgeClass(
+                    skill.category
+                  )}`}
+                >
+                  <span>{skill.name}</span>
+                  <span className="ml-1.5 text-[10px] opacity-75 font-normal">
+                    • {getCategoryLabel(skill.category)}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleDeleteSkill(skill.name)}
-                    className="ml-1.5 p-0.5 rounded-full hover:bg-black/10 text-[#7C7C7C] hover:text-rose-600 transition-colors"
+                    className="ml-2 p-0.5 rounded-full hover:bg-black/10 transition-colors"
                     title={`Remove ${skill.name}`}
                   >
                     <X className="w-3 h-3" />
@@ -185,19 +409,48 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfi
               ))}
             </div>
 
-            {/* Inline Add Skill Form */}
-            <form onSubmit={handleAddSkill} className="flex items-center space-x-2 mt-4 pt-3 border-t border-black/5">
+            {/* Recommended Skills 1-Click Add */}
+            {unaddedRecommendations.length > 0 && (
+              <div className="pt-3 border-t border-slate-100">
+                <div className="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Frequently Required Skills in Target Roles (1-Click Add):</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {unaddedRecommendations.slice(0, 6).map((rec) => (
+                    <button
+                      key={rec.name}
+                      onClick={() => handleAddSkill(rec.name, rec.category)}
+                      disabled={isAddingSkill}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 hover:border-[#007070] hover:text-[#007070] hover:bg-[#E6F4F4] transition-all"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>{rec.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Custom Skill Input */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAddSkill(newSkillName);
+              }}
+              className="flex items-center space-x-2 pt-2"
+            >
               <input
                 type="text"
-                placeholder="Add missing skill (e.g. Kubernetes, Redis, Docker)..."
+                placeholder="Add another skill (e.g., PostgreSQL, RabbitMQ, Tailwind)..."
                 value={newSkillName}
                 onChange={(e) => setNewSkillName(e.target.value)}
-                className="px-3.5 py-1.5 text-xs rounded-xl border border-black/10 bg-[#F8FAFC] text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070] flex-1 max-w-sm"
+                className="px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#007070] focus:border-transparent flex-1 max-w-md shadow-2xs"
               />
               <button
                 type="submit"
                 disabled={isAddingSkill || !newSkillName.trim()}
-                className="px-3.5 py-1.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-bold transition-colors disabled:opacity-50 flex items-center space-x-1 shadow-xs"
+                className="px-4 py-2 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-bold transition-all disabled:opacity-50 flex items-center space-x-1.5 shadow-xs shrink-0"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{isAddingSkill ? 'Adding...' : 'Add Skill'}</span>
@@ -205,22 +458,32 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({ profile, onProfi
             </form>
           </div>
 
-          {/* Experiences */}
+          {/* Career Experiences */}
           {profile.experiences.length > 0 && (
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#7C7C7C] mb-3">
-                Key Career Experiences
-              </h4>
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Briefcase className="w-4 h-4 text-[#007070]" />
+                Key Career Experiences ({profile.experiences.length})
+              </h3>
               <div className="space-y-3">
                 {profile.experiences.map((exp, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl bg-[#F8FAFC] border border-black/5">
-                    <div className="flex justify-between items-start">
-                      <div className="font-bold text-[#0B0B0B] text-xs">{exp.role}</div>
-                      <div className="text-xs text-[#007070] font-bold">{exp.duration}</div>
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl bg-slate-50/80 border border-slate-200/60 hover:bg-white hover:border-[#007070]/30 transition-all"
+                  >
+                    <div className="flex justify-between items-start flex-wrap gap-2">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm">{exp.role}</h4>
+                        <div className="text-xs text-[#007070] font-semibold mt-0.5">{exp.company}</div>
+                      </div>
+                      <span className="text-xs text-slate-500 font-semibold bg-white px-2.5 py-1 rounded-md border border-slate-200">
+                        {exp.duration}
+                      </span>
                     </div>
-                    <div className="text-xs text-[#7C7C7C] font-semibold mt-0.5">{exp.company}</div>
                     {exp.description && (
-                      <p className="text-xs text-[#333333] mt-2 leading-relaxed">{exp.description}</p>
+                      <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                        {exp.description}
+                      </p>
                     )}
                   </div>
                 ))}

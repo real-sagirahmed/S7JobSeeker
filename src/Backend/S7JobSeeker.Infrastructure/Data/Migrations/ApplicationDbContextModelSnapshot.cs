@@ -163,6 +163,9 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<int>("AiCredits")
+                        .HasColumnType("int");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -180,6 +183,9 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -209,6 +215,9 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
 
                     b.Property<string>("TargetRole")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("TrialEndsAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -318,6 +327,62 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("BdTechCompanies");
+                });
+
+            modelBuilder.Entity("S7JobSeeker.Core.Entities.CreditTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AdminNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<decimal>("AmountPaidBdt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreditsAmount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Method")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SenderNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CreditTransactions");
                 });
 
             modelBuilder.Entity("S7JobSeeker.Core.Entities.JobMatchScore", b =>
@@ -438,6 +503,61 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("JobPostings");
+                });
+
+            modelBuilder.Entity("S7JobSeeker.Core.Entities.SaaSPlatformSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BkashNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NagadNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PaymentInstructions")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("RocketNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("TrialDays")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("WelcomeCredits")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PlatformSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BkashNumber = "017XXXXXXXX (Personal / Send Money)",
+                            NagadNumber = "017XXXXXXXX (Personal / Send Money)",
+                            PaymentInstructions = "বিকাশ বা নগদ সেন্ড মানি করে TrxID ও প্রেরক নম্বর নিচে সাবমিট করুন। অ্যাডমিন ভেরিফাই করে ক্রেডিট অনুমোদন করবেন।",
+                            RocketNumber = "017XXXXXXXX (Personal / Send Money)",
+                            TrialDays = 30,
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            WelcomeCredits = 20
+                        });
                 });
 
             modelBuilder.Entity("S7JobSeeker.Core.Entities.TailoredApplication", b =>
@@ -592,6 +712,17 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("S7JobSeeker.Core.Entities.CreditTransaction", b =>
+                {
+                    b.HasOne("S7JobSeeker.Core.Entities.ApplicationUser", "User")
+                        .WithMany("Transactions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("S7JobSeeker.Core.Entities.JobMatchScore", b =>
                 {
                     b.HasOne("S7JobSeeker.Core.Entities.JobPosting", "JobPosting")
@@ -659,6 +790,8 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                     b.Navigation("Profile");
 
                     b.Navigation("TailoredApplications");
+
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("S7JobSeeker.Core.Entities.JobPosting", b =>

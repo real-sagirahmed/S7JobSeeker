@@ -37,13 +37,19 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Email already registered." });
         }
 
+        var masterEmail = _configuration["AdminSettings:MasterEmail"] ?? "sagir@teams7.com";
+        var isMaster = !string.IsNullOrWhiteSpace(dto.Email) && string.Equals(dto.Email.Trim(), masterEmail.Trim(), StringComparison.OrdinalIgnoreCase);
+
         var user = new ApplicationUser
         {
             UserName = dto.Email,
             Email = dto.Email,
             FullName = dto.FullName,
             TargetRole = dto.TargetRole,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            IsAdmin = isMaster,
+            AiCredits = isMaster ? 999999 : 20,
+            TrialEndsAt = isMaster ? DateTime.UtcNow.AddYears(50) : DateTime.UtcNow.AddDays(30)
         };
 
         var result = await _userManager.CreateAsync(user, dto.Password);
@@ -65,6 +71,17 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid email or password." });
         }
 
+        var masterEmail = _configuration["AdminSettings:MasterEmail"] ?? "sagir@teams7.com";
+        var isMaster = !string.IsNullOrWhiteSpace(user.Email) && string.Equals(user.Email.Trim(), masterEmail.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        if (isMaster && (!user.IsAdmin || user.AiCredits < 999999))
+        {
+            user.IsAdmin = true;
+            user.AiCredits = 999999;
+            user.TrialEndsAt = DateTime.UtcNow.AddYears(50);
+            await _userManager.UpdateAsync(user);
+        }
+
         return GenerateAuthResponse(user);
     }
 
@@ -78,7 +95,24 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return NotFound();
 
-        return new UserDto(user.Id, user.Email ?? "", user.FullName, user.TargetRole, user.YearsOfExperience);
+        var masterEmail = _configuration["AdminSettings:MasterEmail"] ?? "sagir@teams7.com";
+        if (!string.IsNullOrWhiteSpace(user.Email) && string.Equals(user.Email.Trim(), masterEmail.Trim(), StringComparison.OrdinalIgnoreCase) && !user.IsAdmin)
+        {
+            user.IsAdmin = true;
+            user.AiCredits = 999999;
+            await _userManager.UpdateAsync(user);
+        }
+
+        return new UserDto(
+            user.Id,
+            user.Email ?? "",
+            user.FullName,
+            user.TargetRole,
+            user.YearsOfExperience,
+            user.IsAdmin,
+            user.AiCredits,
+            user.TrialEndsAt
+        );
     }
 
     private AuthResponseDto GenerateAuthResponse(ApplicationUser user)
@@ -92,12 +126,17 @@ public class AuthController : ControllerBase
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expires = DateTime.UtcNow.AddDays(expiryDays);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email ?? ""),
-            new Claim(ClaimTypes.Name, user.FullName)
+            new(ClaimTypes.NameIdentifier, user.Id),
+            new(ClaimTypes.Email, user.Email ?? ""),
+            new(ClaimTypes.Name, user.FullName)
         };
+
+        if (user.IsAdmin)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+        }
 
         var token = new JwtSecurityToken(
             issuer: issuer,
@@ -112,6 +151,9 @@ public class AuthController : ControllerBase
             Email: user.Email ?? "",
             FullName: user.FullName,
             TargetRole: user.TargetRole,
+            IsAdmin: user.IsAdmin,
+            AiCredits: user.AiCredits,
+            TrialEndsAt: user.TrialEndsAt,
             ExpiresAt: expires
         );
     }

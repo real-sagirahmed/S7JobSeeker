@@ -4,6 +4,9 @@ export interface User {
   fullName: string;
   targetRole?: string;
   yearsOfExperience?: number;
+  isAdmin?: boolean;
+  aiCredits?: number;
+  trialEndsAt?: string;
 }
 
 export interface ExtractedSkill {
@@ -120,5 +123,76 @@ export interface AuthResponse {
   email: string;
   fullName: string;
   targetRole?: string;
+  isAdmin?: boolean;
+  aiCredits?: number;
+  trialEndsAt?: string;
   expiresAt: string;
 }
+
+export interface CreditBundle {
+  id: number;
+  name: string;
+  credits: number;
+  priceBdt: number;
+  badgeText: string;
+  isPopular: boolean;
+}
+
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  userEmail: string;
+  userFullName: string;
+  creditsAmount: number;
+  amountPaidBdt: number;
+  method: string;
+  senderNumber: string;
+  transactionId: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  adminNote?: string;
+  createdAt: string;
+  reviewedAt?: string;
+}
+
+export interface SubscriptionStatus {
+  aiCredits: number;
+  trialEndsAt: string;
+  isTrialActive: boolean;
+  trialDaysRemaining: number;
+  isAdmin: boolean;
+  recentTransactions: CreditTransaction[];
+}
+
+export interface SaaSPlatformSettings {
+  id: number;
+  bkashNumber: string;
+  nagadNumber: string;
+  rocketNumber: string;
+  paymentInstructions: string;
+  welcomeCredits: number;
+  trialDays: number;
+  updatedAt?: string;
+}
+
+export interface AdminMetrics {
+  totalUsers: number;
+  activeCandidates: number;
+  totalJobs: number;
+  pendingPaymentsCount: number;
+  approvedPaymentsCount: number;
+  totalRevenueBdt: number;
+}
+
+export interface AdminUserItem {
+  id: string;
+  email: string;
+  fullName: string;
+  targetRole?: string;
+  isAdmin: boolean;
+  aiCredits: number;
+  trialEndsAt: string;
+  isTrialActive: boolean;
+  createdAt: string;
+  totalTransactions: number;
+}
+

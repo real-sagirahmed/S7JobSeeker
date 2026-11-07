@@ -19,6 +19,9 @@ public record AuthResponseDto(
     string Email,
     string FullName,
     string? TargetRole,
+    bool IsAdmin,
+    int AiCredits,
+    DateTime TrialEndsAt,
     DateTime ExpiresAt
 );
 
@@ -27,5 +30,8 @@ public record UserDto(
     string Email,
     string FullName,
     string? TargetRole,
-    int? YearsOfExperience
+    int? YearsOfExperience,
+    bool IsAdmin,
+    int AiCredits,
+    DateTime TrialEndsAt
 );

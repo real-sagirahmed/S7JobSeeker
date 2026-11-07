@@ -28,6 +28,19 @@ public class ResumeParserService : IResumeParserService
                 foreach (var page in document.GetPages())
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+                    try
+                    {
+                        var words = page.GetWords();
+                        if (words != null && words.Any())
+                        {
+                            sb.AppendLine(string.Join(" ", words.Select(w => w.Text)));
+                            continue;
+                        }
+                    }
+                    catch
+                    {
+                        // Fallback to page.Text
+                    }
                     sb.AppendLine(page.Text);
                 }
                 return sb.ToString().Trim();

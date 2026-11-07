@@ -1,13 +1,24 @@
 import React from 'react';
-import { User as UserIcon, LogOut, Sparkles, FileText, Bookmark, ClipboardCheck, Building2 } from 'lucide-react';
+import {
+  User as UserIcon,
+  LogOut,
+  Sparkles,
+  FileText,
+  Bookmark,
+  ClipboardCheck,
+  Building2,
+  Zap,
+  ShieldCheck
+} from 'lucide-react';
 import type { User } from '../types';
 
 interface NavbarProps {
   user: User | null;
-  activeTab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies';
-  setActiveTab: (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies') => void;
+  activeTab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin';
+  setActiveTab: (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin') => void;
   onLogout: () => void;
   onOpenAuth: () => void;
+  onOpenBuyCredits: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,7 +26,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
   onLogout,
-  onOpenAuth
+  onOpenAuth,
+  onOpenBuyCredits
 }) => {
   return (
     <>
@@ -107,16 +119,50 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Building2 className="w-3.5 h-3.5" />
                 <span>BD Tech</span>
               </button>
+
+              {user.isAdmin && (
+                <button
+                  onClick={() => setActiveTab('admin')}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+                    activeTab === 'admin'
+                      ? 'bg-slate-900 text-teal-300 shadow-[0_4px_14px_rgba(15,23,42,0.3)] border border-teal-500/30'
+                      : 'text-slate-800 hover:text-teal-700 hover:bg-slate-100 font-extrabold'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Director Console</span>
+                </button>
+              )}
             </nav>
           ) : null}
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {user ? (
               <div className="flex items-center space-x-3">
+                {/* AI Credits Badge / Paywall Trigger */}
+                <button
+                  onClick={onOpenBuyCredits}
+                  title="Click to view AI Credits or Top Up via bKash/Nagad"
+                  className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#E6F4F4] text-[#007070] border border-[#007070]/25 hover:bg-[#d4eded] hover:shadow-xs transition-all flex items-center space-x-1.5"
+                >
+                  <Zap className="w-3.5 h-3.5 fill-current" />
+                  <span>
+                    {user.isAdmin ? 'Unlimited' : `${user.aiCredits ?? 0} Credits`}
+                  </span>
+                </button>
+
                 <div className="hidden sm:block text-right">
-                  <div className="text-xs font-bold text-[#0B0B0B]">{user.fullName}</div>
+                  <div className="text-xs font-bold text-[#0B0B0B] flex items-center justify-end gap-1">
+                    <span>{user.fullName}</span>
+                    {user.isAdmin && (
+                      <span className="px-1.5 py-0.2 bg-slate-900 text-teal-300 text-[9px] font-black rounded uppercase tracking-wider">
+                        Director
+                      </span>
+                    )}
+                  </div>
                   <div className="text-[11px] text-[#7C7C7C] font-medium">{user.targetRole || user.email}</div>
                 </div>
+
                 <button
                   onClick={onLogout}
                   title="Logout"

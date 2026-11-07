@@ -11,6 +11,8 @@ public interface IApplicationDbContext
     DbSet<JobPosting> JobPostings { get; }
     DbSet<JobMatchScore> JobMatchScores { get; }
     DbSet<TailoredApplication> TailoredApplications { get; }
+    DbSet<CreditTransaction> CreditTransactions { get; }
+    DbSet<SaaSPlatformSetting> PlatformSettings { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

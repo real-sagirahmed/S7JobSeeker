@@ -69,6 +69,22 @@ public class ProfileController : ControllerBase
 
             var parsedProfile = await _skillExtractor.ExtractStructuredProfileAsync(rawText, cancellationToken);
 
+            // Fetch user for name & role enrichment
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+            if (user != null)
+            {
+                if ((string.IsNullOrWhiteSpace(parsedProfile.FullName) || parsedProfile.FullName.Equals("Candidate", StringComparison.OrdinalIgnoreCase)) && !string.IsNullOrWhiteSpace(user.FullName))
+                {
+                    parsedProfile = parsedProfile with { FullName = user.FullName };
+                }
+                if (string.IsNullOrWhiteSpace(parsedProfile.Email) && !string.IsNullOrWhiteSpace(user.Email))
+                {
+                    parsedProfile = parsedProfile with { Email = user.Email };
+                }
+                if (!string.IsNullOrWhiteSpace(parsedProfile.TargetRole)) user.TargetRole = parsedProfile.TargetRole;
+                if (parsedProfile.TotalYearsOfExperience.HasValue) user.YearsOfExperience = parsedProfile.TotalYearsOfExperience.Value;
+            }
+
             // Fetch or create profile
             var existingProfile = await _dbContext.UserProfiles
                 .Include(p => p.Skills)
@@ -115,14 +131,6 @@ public class ProfileController : ControllerBase
                     IsPrimary = skill.IsPrimary
                 };
                 _dbContext.UserSkills.Add(newSkill);
-            }
-
-            // Also update User TargetRole if extracted
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-            if (user != null)
-            {
-                if (!string.IsNullOrWhiteSpace(parsedProfile.TargetRole)) user.TargetRole = parsedProfile.TargetRole;
-                if (parsedProfile.TotalYearsOfExperience.HasValue) user.YearsOfExperience = parsedProfile.TotalYearsOfExperience.Value;
             }
 
             await _dbContext.SaveChangesAsync(cancellationToken);

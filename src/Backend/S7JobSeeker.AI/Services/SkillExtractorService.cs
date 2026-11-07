@@ -135,8 +135,8 @@ public class SkillExtractorService : ISkillExtractorService
     {
         var text = resumeText ?? string.Empty;
 
-        // Try extracting email
-        var emailMatch = Regex.Match(text, @"[\w\.-]+@[\w\.-]+\.\w+");
+        // Try extracting email cleanly (stop at valid TLD boundaries)
+        var emailMatch = Regex.Match(text, @"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|io|ai|dev|co|me|xyz|info|tech|biz|bd|co\.uk)\b", RegexOptions.IgnoreCase);
         var email = emailMatch.Success ? emailMatch.Value : null;
 
         // Try extracting phone
@@ -171,11 +171,31 @@ public class SkillExtractorService : ISkillExtractorService
             }
         }
 
+        // Extract Name: check first short line or name pattern
         var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        var fullName = lines.Length > 0 ? lines[0].Trim() : "Candidate";
-        if (fullName.Length > 50) fullName = "Candidate";
+        string fullName = "Candidate";
+        foreach (var line in lines.Take(5))
+        {
+            var trimmed = line.Trim();
+            if (trimmed.Length >= 3 && trimmed.Length <= 40 && !trimmed.Contains("@") && !trimmed.Contains("http") && !trimmed.Contains("Resume"))
+            {
+                fullName = trimmed;
+                break;
+            }
+        }
 
-        var summary = text.Length > 250 ? text[..250] + "..." : text;
+        // Extract Summary: find section heading if present
+        string summary = "";
+        var summaryRegex = Regex.Match(text, @"(?:PROFESSIONAL SUMMARY|EXECUTIVE SUMMARY|SUMMARY|PROFILE|ABOUT ME)[\s:]+(.+?)(?=(?:SKILLS|TECHNICAL SKILLS|EXPERIENCE|WORK EXPERIENCE|EDUCATION|PROJECTS|$))", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+        if (summaryRegex.Success && summaryRegex.Groups[1].Value.Trim().Length > 20)
+        {
+            summary = summaryRegex.Groups[1].Value.Trim();
+            if (summary.Length > 400) summary = summary[..400] + "...";
+        }
+        else
+        {
+            summary = text.Length > 250 ? text[..250] + "..." : text;
+        }
 
         return new ResumeParsedProfileDto(
             FullName: fullName,

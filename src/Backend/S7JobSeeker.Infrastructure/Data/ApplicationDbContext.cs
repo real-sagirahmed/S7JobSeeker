@@ -18,6 +18,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<JobMatchScore> JobMatchScores => Set<JobMatchScore>();
     public DbSet<TailoredApplication> TailoredApplications => Set<TailoredApplication>();
     public DbSet<BdTechCompany> BdTechCompanies => Set<BdTechCompany>();
+    public DbSet<CreditTransaction> CreditTransactions => Set<CreditTransaction>();
+    public DbSet<SaaSPlatformSetting> PlatformSettings => Set<SaaSPlatformSetting>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -123,6 +125,48 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             b.HasIndex(c => c.Name);
             b.HasIndex(c => c.Slug).IsUnique();
             b.HasIndex(c => c.Category);
+        });
+
+        // CreditTransaction
+        builder.Entity<CreditTransaction>(b =>
+        {
+            b.HasKey(t => t.Id);
+            b.Property(t => t.SenderNumber).HasMaxLength(50).IsRequired();
+            b.Property(t => t.TransactionId).HasMaxLength(100).IsRequired();
+            b.Property(t => t.AmountPaidBdt).HasColumnType("decimal(18,2)");
+            b.Property(t => t.AdminNote).HasMaxLength(500);
+
+            // ARCHITECTURAL INTENT (LOCK 4): Unique index on TransactionId to prevent duplicate submission fraud
+            b.HasIndex(t => t.TransactionId).IsUnique();
+            b.HasIndex(t => t.Status);
+            b.HasIndex(t => t.CreatedAt);
+
+            b.HasOne(t => t.User)
+             .WithMany(u => u.Transactions)
+             .HasForeignKey(t => t.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // SaaSPlatformSetting
+        builder.Entity<SaaSPlatformSetting>(b =>
+        {
+            b.HasKey(s => s.Id);
+            b.Property(s => s.BkashNumber).HasMaxLength(100).IsRequired();
+            b.Property(s => s.NagadNumber).HasMaxLength(100).IsRequired();
+            b.Property(s => s.RocketNumber).HasMaxLength(100).IsRequired();
+            b.Property(s => s.PaymentInstructions).HasMaxLength(1000).IsRequired();
+
+            b.HasData(new SaaSPlatformSetting
+            {
+                Id = 1,
+                BkashNumber = "017XXXXXXXX (Personal / Send Money)",
+                NagadNumber = "017XXXXXXXX (Personal / Send Money)",
+                RocketNumber = "017XXXXXXXX (Personal / Send Money)",
+                PaymentInstructions = "বিকাশ বা নগদ সেন্ড মানি করে TrxID ও প্রেরক নম্বর নিচে সাবমিট করুন। অ্যাডমিন ভেরিফাই করে ক্রেডিট অনুমোদন করবেন।",
+                WelcomeCredits = 20,
+                TrialDays = 30,
+                UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            });
         });
     }
 }

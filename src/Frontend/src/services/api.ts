@@ -1,4 +1,16 @@
-import type { AuthResponse, JobMatch, ResumeProfile, TailoredApplication, User } from '../types';
+import type {
+  AuthResponse,
+  JobMatch,
+  ResumeProfile,
+  TailoredApplication,
+  User,
+  CreditBundle,
+  CreditTransaction,
+  SubscriptionStatus,
+  SaaSPlatformSettings,
+  AdminMetrics,
+  AdminUserItem
+} from '../types';
 
 const API_BASE = '/api';
 
@@ -264,6 +276,143 @@ export const api = {
 
     async suggestCompany(data: import('../types').SuggestCompanyRequest): Promise<{ message: string; companyId: string }> {
       return this.suggest(data);
+    }
+  },
+
+  subscription: {
+    async getBundles(): Promise<CreditBundle[]> {
+      const res = await fetch(`${API_BASE}/subscription/bundles`);
+      if (!res.ok) throw new Error('Failed to load credit bundles');
+      return res.json();
+    },
+
+    async getPlatformSettings(): Promise<SaaSPlatformSettings> {
+      const res = await fetch(`${API_BASE}/subscription/platform-settings`);
+      if (!res.ok) throw new Error('Failed to load platform payment settings');
+      return res.json();
+    },
+
+    async getStatus(): Promise<SubscriptionStatus> {
+      const res = await fetch(`${API_BASE}/subscription/status`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) throw new Error('Failed to load subscription status');
+      return res.json();
+    },
+
+    async submitPayment(bundleId: number, method: number, senderNumber: string, transactionId: string): Promise<{ message: string }> {
+      const res = await fetch(`${API_BASE}/subscription/submit-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify({ bundleId, method, senderNumber, transactionId })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to submit payment' }));
+        throw new Error(err.message || 'Payment submission failed');
+      }
+      return res.json();
+    }
+  },
+
+  admin: {
+    async getMetrics(): Promise<AdminMetrics> {
+      const res = await fetch(`${API_BASE}/admin/metrics`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) throw new Error('Failed to load admin metrics');
+      return res.json();
+    },
+
+    async getPendingPayments(): Promise<CreditTransaction[]> {
+      const res = await fetch(`${API_BASE}/admin/payments/pending`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) throw new Error('Failed to load pending payments');
+      return res.json();
+    },
+
+    async approvePayment(id: string, adminNote?: string): Promise<{ message: string }> {
+      const res = await fetch(`${API_BASE}/admin/payments/${id}/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify({ adminNote })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Approval failed' }));
+        throw new Error(err.message || 'Failed to approve payment');
+      }
+      return res.json();
+    },
+
+    async rejectPayment(id: string, adminNote?: string): Promise<{ message: string }> {
+      const res = await fetch(`${API_BASE}/admin/payments/${id}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify({ adminNote })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Rejection failed' }));
+        throw new Error(err.message || 'Failed to reject payment');
+      }
+      return res.json();
+    },
+
+    async getUsers(search?: string): Promise<AdminUserItem[]> {
+      const query = search ? `?search=${encodeURIComponent(search)}` : '';
+      const res = await fetch(`${API_BASE}/admin/users${query}`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) throw new Error('Failed to load users');
+      return res.json();
+    },
+
+    async giftCredits(userId: string, credits: number, note?: string): Promise<{ message: string; newBalance: number }> {
+      const res = await fetch(`${API_BASE}/admin/users/${userId}/gift-credits`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify({ credits, note })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Gift credits failed' }));
+        throw new Error(err.message || 'Failed to gift credits');
+      }
+      return res.json();
+    },
+
+    async getSettings(): Promise<SaaSPlatformSettings> {
+      const res = await fetch(`${API_BASE}/admin/settings`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) throw new Error('Failed to load platform settings');
+      return res.json();
+    },
+
+    async updateSettings(data: SaaSPlatformSettings): Promise<{ message: string }> {
+      const res = await fetch(`${API_BASE}/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Update settings failed' }));
+        throw new Error(err.message || 'Failed to update settings');
+      }
+      return res.json();
     }
   }
 };
