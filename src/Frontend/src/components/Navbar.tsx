@@ -11,14 +11,15 @@ import {
   ShieldCheck,
   Menu,
   X,
-  CreditCard
+  CreditCard,
+  Server
 } from 'lucide-react';
 import type { User } from '../types';
 
 interface NavbarProps {
   user: User | null;
-  activeTab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin';
-  setActiveTab: (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin') => void;
+  activeTab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint';
+  setActiveTab: (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint') => void;
   onLogout: () => void;
   onOpenAuth: () => void;
   onOpenBuyCredits: () => void;
@@ -51,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     };
   }, [isMobileMenuOpen]);
 
-  const handleNavClick = (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin') => {
+  const handleNavClick = (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint') => {
     setActiveTab(tab);
     setIsMobileMenuOpen(false);
   };
@@ -89,83 +90,100 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Desktop Navigation Links (>= md) */}
-          {user ? (
-            <nav className="hidden md:flex items-center space-x-1">
-              <button
-                onClick={() => handleNavClick('matches')}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
-                  activeTab === 'matches'
-                    ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
-                    : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Smart Matches</span>
-              </button>
-
-              <button
-                onClick={() => handleNavClick('paste')}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
-                  activeTab === 'paste'
-                    ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
-                    : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
-                }`}
-              >
-                <ClipboardCheck className="w-3.5 h-3.5" />
-                <span>Paste & Analyze</span>
-              </button>
-
-              <button
-                onClick={() => handleNavClick('profile')}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
-                  activeTab === 'profile'
-                    ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
-                    : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Resume & Profile</span>
-              </button>
-
-              <button
-                onClick={() => handleNavClick('saved')}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
-                  activeTab === 'saved'
-                    ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
-                    : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
-                }`}
-              >
-                <Bookmark className="w-3.5 h-3.5" />
-                <span>Saved Jobs</span>
-              </button>
-
-              <button
-                onClick={() => handleNavClick('companies')}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
-                  activeTab === 'companies'
-                    ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
-                    : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
-                }`}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>BD Tech</span>
-              </button>
-
-              {user.isAdmin && (
+          <nav className="hidden md:flex items-center space-x-1">
+            {user && (
+              <>
                 <button
-                  onClick={() => handleNavClick('admin')}
+                  onClick={() => handleNavClick('matches')}
                   className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
-                    activeTab === 'admin'
-                      ? 'bg-slate-900 text-teal-300 shadow-[0_4px_14px_rgba(15,23,42,0.3)] border border-teal-500/30'
-                      : 'text-slate-800 hover:text-teal-700 hover:bg-slate-100 font-extrabold'
+                    activeTab === 'matches'
+                      ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
+                      : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
                   }`}
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-                  <span>Director Console</span>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Smart Matches</span>
                 </button>
-              )}
-            </nav>
-          ) : null}
+
+                <button
+                  onClick={() => handleNavClick('paste')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
+                    activeTab === 'paste'
+                      ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
+                      : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
+                  }`}
+                >
+                  <ClipboardCheck className="w-3.5 h-3.5" />
+                  <span>Paste & Analyze</span>
+                </button>
+
+                <button
+                  onClick={() => handleNavClick('profile')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
+                    activeTab === 'profile'
+                      ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
+                      : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Resume & Profile</span>
+                </button>
+
+                <button
+                  onClick={() => handleNavClick('saved')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
+                    activeTab === 'saved'
+                      ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
+                      : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
+                  }`}
+                >
+                  <Bookmark className="w-3.5 h-3.5" />
+                  <span>Saved Jobs</span>
+                </button>
+
+                <button
+                  onClick={() => handleNavClick('companies')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
+                    activeTab === 'companies'
+                      ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
+                      : 'text-[#333333] hover:text-[#007070] hover:bg-[#E6F4F4]'
+                  }`}
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>BD Tech</span>
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={() => handleNavClick('cbs-sprint')}
+              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
+                activeTab === 'cbs-sprint'
+                  ? 'bg-[#007070] text-white shadow-[0_4px_14px_rgba(0,112,112,0.25)]'
+                  : 'text-[#007070] bg-[#E6F4F4]/80 hover:bg-[#E6F4F4] border border-[#007070]/20'
+              }`}
+            >
+              <Server className="w-3.5 h-3.5" />
+              <span>CBS Sprint</span>
+              <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-amber-400 text-slate-950 ml-0.5">
+                14D
+              </span>
+            </button>
+
+            {user?.isAdmin && (
+              <button
+                onClick={() => handleNavClick('admin')}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 ${
+                  activeTab === 'admin'
+                    ? 'bg-slate-900 text-teal-300 shadow-[0_4px_14px_rgba(15,23,42,0.3)] border border-teal-500/30'
+                    : 'text-slate-800 hover:text-teal-700 hover:bg-slate-100 font-extrabold'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                <span>Director Console</span>
+              </button>
+            )}
+          </nav>
 
           {/* Right Action Icons / User Pills */}
           <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
@@ -366,6 +384,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <Building2 className="w-4 h-4 shrink-0" />
                   <span>BD Tech Companies</span>
+                </button>
+
+                <button
+                  onClick={() => handleNavClick('cbs-sprint')}
+                  className={`w-full text-left px-3.5 py-3 rounded-xl text-xs font-bold flex items-center space-x-3 transition-all min-h-[46px] active:scale-[0.98] ${
+                    activeTab === 'cbs-sprint'
+                      ? 'bg-[#007070] text-white shadow-xs'
+                      : 'text-teal-900 bg-teal-50/70 hover:bg-teal-100/70 border border-teal-200/60'
+                  }`}
+                >
+                  <Server className="w-4 h-4 shrink-0 text-teal-600" />
+                  <div className="flex items-center space-x-2">
+                    <span>CBS Sprint (14 Days)</span>
+                    <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-amber-400 text-slate-950">
+                      Track
+                    </span>
+                  </div>
                 </button>
 
                 {user?.isAdmin && (

@@ -640,6 +640,45 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                     b.ToTable("TailoredApplications");
                 });
 
+            modelBuilder.Entity("S7JobSeeker.Core.Entities.UserCbsProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ChecklistJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompletedDaysJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LastAccessedDay")
+                        .HasColumnType("int");
+
+                    b.Property<string>("QuizScoresJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserCbsProgresses");
+                });
+
             modelBuilder.Entity("S7JobSeeker.Core.Entities.UserProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -816,6 +855,17 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("JobPosting");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("S7JobSeeker.Core.Entities.UserCbsProgress", b =>
+                {
+                    b.HasOne("S7JobSeeker.Core.Entities.ApplicationUser", "User")
+                        .WithOne()
+                        .HasForeignKey("S7JobSeeker.Core.Entities.UserCbsProgress", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

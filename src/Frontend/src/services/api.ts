@@ -11,7 +11,13 @@ import type {
   AdminMetrics,
   AdminUserItem,
   JobPrepGuide,
-  CustomJobPrepRequest
+  CustomJobPrepRequest,
+  CbsCurriculumItem,
+  CbsDayLesson,
+  CbsProgress,
+  CbsProgressUpdate,
+  CbsAiDoubtRequest,
+  CbsAiDoubtResponse
 } from '../types';
 
 const API_BASE = '/api';
@@ -460,6 +466,60 @@ export const api = {
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: 'Update settings failed' }));
         throw new Error(err.message || 'Failed to update settings');
+      }
+      return res.json();
+    }
+  },
+
+  cbsSprint: {
+    async getCurriculum(): Promise<CbsCurriculumItem[]> {
+      const res = await fetch(`${API_BASE}/cbs-sprint/curriculum`);
+      if (!res.ok) throw new Error('Failed to load CBS Sprint curriculum');
+      return res.json();
+    },
+
+    async getDayLesson(dayNumber: number): Promise<CbsDayLesson> {
+      const res = await fetch(`${API_BASE}/cbs-sprint/day/${dayNumber}`);
+      if (!res.ok) throw new Error(`Failed to load Day ${dayNumber} lesson`);
+      return res.json();
+    },
+
+    async getProgress(): Promise<CbsProgress> {
+      const res = await fetch(`${API_BASE}/cbs-sprint/progress`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) return { completedDays: [], quizScores: {}, checklist: {}, lastAccessedDay: 1, updatedAt: new Date().toISOString() };
+      return res.json();
+    },
+
+    async updateProgress(data: CbsProgressUpdate): Promise<CbsProgress> {
+      const res = await fetch(`${API_BASE}/cbs-sprint/progress`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to update progress' }));
+        throw new Error(err.message || 'Failed to update progress');
+      }
+      return res.json();
+    },
+
+    async askAi(data: CbsAiDoubtRequest): Promise<CbsAiDoubtResponse> {
+      const res = await fetch(`${API_BASE}/cbs-sprint/ask-ai`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'AI doubt inquiry failed' }));
+        throw new Error(err.message || 'AI doubt inquiry failed');
       }
       return res.json();
     }

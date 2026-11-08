@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<CreditTransaction> CreditTransactions => Set<CreditTransaction>();
     public DbSet<SaaSPlatformSetting> PlatformSettings => Set<SaaSPlatformSetting>();
     public DbSet<JobPreparationGuide> JobPreparationGuides => Set<JobPreparationGuide>();
+    public DbSet<UserCbsProgress> UserCbsProgresses => Set<UserCbsProgress>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -186,6 +187,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             b.HasOne(g => g.User)
              .WithMany()
              .HasForeignKey(g => g.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // UserCbsProgress
+        builder.Entity<UserCbsProgress>(b =>
+        {
+            b.HasKey(p => p.Id);
+            b.HasIndex(p => p.UserId).IsUnique();
+            b.Property(p => p.CompletedDaysJson).HasColumnType("nvarchar(max)").IsRequired();
+            b.Property(p => p.QuizScoresJson).HasColumnType("nvarchar(max)").IsRequired();
+            b.Property(p => p.ChecklistJson).HasColumnType("nvarchar(max)").IsRequired();
+
+            b.HasOne(p => p.User)
+             .WithOne()
+             .HasForeignKey<UserCbsProgress>(p => p.UserId)
              .OnDelete(DeleteBehavior.Cascade);
         });
     }

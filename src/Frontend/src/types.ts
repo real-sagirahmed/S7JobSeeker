@@ -269,4 +269,63 @@ export interface CustomJobPrepRequest {
   description: string;
 }
 
+// CBS 14-Day Sprint Interfaces
+export interface CbsCurriculumItem {
+  dayNumber: number;
+  title: string;
+  subtitle: string;
+  category: string;
+  estimatedMinutes: number;
+  topicTags: string[];
+}
+
+export interface CbsQuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correctOptionIndex: number;
+  explanation: string;
+}
+
+export interface CbsDayLesson {
+  dayNumber: number;
+  title: string;
+  subtitle: string;
+  targetRole: string;
+  estimatedMinutes: number;
+  objectives: string[];
+  quizzes: CbsQuizQuestion[];
+  commonMistakes: string[];
+  exportMarkdown: string;
+}
+
+export interface CbsProgress {
+  completedDays: number[];
+  quizScores: Record<string, number>;
+  checklist: Record<string, boolean>;
+  lastAccessedDay: number;
+  updatedAt: string;
+}
+
+export interface CbsProgressUpdate {
+  dayNumber: number;
+  markCompleted?: boolean;
+  quizScore?: number;
+  checklistUpdates?: Record<string, boolean>;
+}
+
+export interface CbsAiDoubtRequest {
+  dayNumber: number;
+  topic: string;
+  question: string;
+  contextSnippet?: string;
+}
+
+export interface CbsAiDoubtResponse {
+  answer: string;
+  seniorInsight: string;
+  relatedTopicsToReview: string[];
+}
+
+
 
