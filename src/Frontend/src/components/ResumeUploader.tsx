@@ -147,13 +147,13 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Header & Actions */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 mb-1">
-            <span className="p-1.5 rounded-lg bg-[#E6F4F4] text-[#007070]">
+            <span className="p-1.5 rounded-lg bg-[#E6F4F4] text-[#007070] shrink-0">
               <FileCheck className="w-5 h-5" />
             </span>
-            <h1 className="font-bold text-xl text-slate-900 tracking-tight">
+            <h1 className="font-bold text-lg sm:text-xl text-slate-900 tracking-tight leading-snug">
               Career Profile & Resume Intelligence
             </h1>
           </div>
@@ -163,10 +163,10 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
         </div>
 
         {profile && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <button
               onClick={() => setShowUploaderDrawer(!showUploaderDrawer)}
-              className="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 bg-[#F8FAFC] text-slate-700 hover:bg-[#E6F4F4] hover:text-[#007070] border border-slate-200 shrink-0"
+              className="flex-1 sm:flex-initial min-h-[44px] justify-center px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 bg-[#F8FAFC] text-slate-700 hover:bg-[#E6F4F4] hover:text-[#007070] border border-slate-200 shrink-0 active:scale-95"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>{showUploaderDrawer ? 'Hide Re-upload' : 'Update Resume'}</span>
@@ -174,7 +174,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
             {onNavigateToMatches && (
               <button
                 onClick={onNavigateToMatches}
-                className="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 bg-[#007070] text-white hover:bg-[#005a5a] shadow-xs shrink-0"
+                className="flex-1 sm:flex-initial min-h-[44px] justify-center px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 bg-[#007070] text-white hover:bg-[#005a5a] shadow-xs shrink-0 active:scale-95"
               >
                 <span>View Job Matches</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -237,7 +237,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
       {profile && (
         <div className="space-y-6">
           {/* Hero Profile Overview Card */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-6 shadow-xs relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-teal-50/60 to-transparent rounded-bl-full pointer-events-none" />
 
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-0">
@@ -438,21 +438,21 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
                 e.preventDefault();
                 handleAddSkill(newSkillName);
               }}
-              className="flex items-center space-x-2 pt-2"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2"
             >
               <input
                 type="text"
                 placeholder="Add another skill (e.g., PostgreSQL, RabbitMQ, Tailwind)..."
                 value={newSkillName}
                 onChange={(e) => setNewSkillName(e.target.value)}
-                className="px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#007070] focus:border-transparent flex-1 max-w-md shadow-2xs"
+                className="px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#007070] focus:border-transparent flex-1 shadow-2xs"
               />
               <button
                 type="submit"
                 disabled={isAddingSkill || !newSkillName.trim()}
-                className="px-4 py-2 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-bold transition-all disabled:opacity-50 flex items-center space-x-1.5 shadow-xs shrink-0"
+                className="min-h-[44px] px-5 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center space-x-1.5 shadow-xs shrink-0"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
                 <span>{isAddingSkill ? 'Adding...' : 'Add Skill'}</span>
               </button>
             </form>

@@ -167,7 +167,7 @@ export const App: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#333333] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#333333] flex flex-col font-sans overflow-x-hidden">
       <Navbar
         user={user}
         activeTab={activeTab}
@@ -287,18 +287,18 @@ export const App: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="flex items-center space-x-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     <button
                       onClick={handleSyncJobs}
                       disabled={isSyncingJobs}
-                      className="px-3.5 py-1.5 rounded-xl bg-[#E6F4F4] hover:bg-[#007070]/20 text-[#007070] border border-[#007070]/30 text-xs font-bold flex items-center space-x-1.5 transition-colors disabled:opacity-50"
+                      className="min-h-[40px] px-3.5 py-2 rounded-xl bg-[#E6F4F4] hover:bg-[#007070]/20 text-[#007070] border border-[#007070]/30 text-xs font-bold flex items-center space-x-1.5 transition-all disabled:opacity-50 active:scale-95"
                       title="Fetch latest tech jobs from BDJobs, LinkedIn, Jobicy, Himalayas, WWR, Remotive & Arbeitnow"
                     >
                       <DownloadCloud className={`w-3.5 h-3.5 ${isSyncingJobs ? 'animate-bounce' : ''}`} />
                       <span>{isSyncingJobs ? 'Syncing...' : 'Sync Tech Jobs'}</span>
                     </button>
 
-                    <label className="flex items-center space-x-2 text-xs text-[#333333] font-medium cursor-pointer">
+                    <label className="min-h-[40px] px-3 py-2 rounded-xl border border-black/10 bg-white flex items-center space-x-2 text-xs text-[#333333] font-medium cursor-pointer">
                       <input
                         type="checkbox"
                         checked={remoteOnly}
@@ -311,7 +311,7 @@ export const App: React.FC = () => {
                     <select
                       value={sourceFilter}
                       onChange={(e) => setSourceFilter(Number(e.target.value))}
-                      className="px-3 py-1.5 rounded-lg bg-white border border-black/10 text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
+                      className="min-h-[40px] px-3 py-2 rounded-xl bg-white border border-black/10 text-base sm:text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
                     >
                       <option value={0}>All Sources (৭টি সোর্স)</option>
                       <option value={7}>🇧🇩 BDJobs (Local BD)</option>
@@ -327,7 +327,7 @@ export const App: React.FC = () => {
                     <select
                       value={minScoreFilter}
                       onChange={(e) => setMinScoreFilter(Number(e.target.value))}
-                      className="px-3 py-1.5 rounded-lg bg-white border border-black/10 text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
+                      className="min-h-[40px] px-3 py-2 rounded-xl bg-white border border-black/10 text-base sm:text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
                     >
                       <option value={0}>All Scores</option>
                       <option value={60}>Min 60% Match</option>
@@ -339,7 +339,7 @@ export const App: React.FC = () => {
                       onClick={() => fetchMatches()}
                       disabled={isLoadingMatches}
                       title="Refresh Matches"
-                      className="p-2 rounded-lg border border-black/10 text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-colors disabled:opacity-50"
+                      className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl border border-black/10 text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-all disabled:opacity-50 active:scale-95"
                     >
                       <RefreshCw className={`w-4 h-4 ${isLoadingMatches ? 'animate-spin' : ''}`} />
                     </button>
@@ -511,7 +511,7 @@ export const App: React.FC = () => {
             <span>•</span>
             <span>teamS7 Intelligence</span>
           </div>
-          <div className="flex items-center space-x-4 text-[11px]">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-3 gap-y-1 text-[11px] text-center">
             <span>Semantic AI Job Matcher</span>
             <span>•</span>
             <span>RAG Tailored Application Engine</span>

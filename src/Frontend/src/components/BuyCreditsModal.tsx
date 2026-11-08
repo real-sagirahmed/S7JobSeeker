@@ -141,12 +141,16 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-black/10 relative max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-2xl w-full p-5 sm:p-8 shadow-2xl border border-black/10 relative max-h-[92vh] overflow-y-auto">
+        {/* Mobile Drag Handle */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mb-3 sm:hidden" />
+
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          aria-label="Close modal"
         >
           <X className="w-5 h-5" />
         </button>
@@ -271,7 +275,7 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPaymentMethod(1)}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                  className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] ${
                     paymentMethod === 1
                       ? 'bg-pink-600 text-white border-pink-600 shadow-sm'
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -283,7 +287,7 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPaymentMethod(2)}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                  className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] ${
                     paymentMethod === 2
                       ? 'bg-orange-600 text-white border-orange-600 shadow-sm'
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -295,7 +299,7 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPaymentMethod(3)}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                  className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] ${
                     paymentMethod === 3
                       ? 'bg-purple-700 text-white border-purple-700 shadow-sm'
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -306,28 +310,28 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
               </div>
 
               {/* Copy Number Box */}
-              <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between">
-                <div>
+              <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-2">
+                <div className="min-w-0">
                   <div className="text-[11px] text-slate-400 font-semibold uppercase">
                     {paymentMethod === 1 ? 'bKash' : paymentMethod === 2 ? 'Nagad' : 'Rocket'} Personal Number
                   </div>
-                  <div className="text-sm font-black text-slate-900 tracking-wide mt-0.5">
+                  <div className="text-sm font-black text-slate-900 tracking-wide mt-0.5 truncate font-mono">
                     {getReceiverNumber()}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleCopy(getReceiverNumber(), 'phone')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-[#E6F4F4] text-slate-700 hover:text-[#007070] transition-colors flex items-center gap-1 border border-slate-200"
+                  className="min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-[#E6F4F4] text-slate-700 hover:text-[#007070] transition-colors flex items-center gap-1.5 border border-slate-200 shrink-0 active:scale-95"
                 >
                   {copiedType === 'phone' ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <Check className="w-4 h-4 text-emerald-600" />
                       <span className="text-emerald-700">Copied</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className="w-4 h-4" />
                       <span>Copy</span>
                     </>
                   )}
@@ -357,7 +361,7 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
                     placeholder="017XXXXXXXX"
                     value={senderNumber}
                     onChange={(e) => setSenderNumber(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070] focus:border-transparent bg-white shadow-2xs font-mono"
+                    className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070] focus:border-transparent bg-white shadow-2xs font-mono"
                   />
                 </div>
 
@@ -371,21 +375,21 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
                     placeholder="e.g. BL95X8K1M2"
                     value={transactionId}
                     onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070] focus:border-transparent bg-white shadow-2xs uppercase font-mono tracking-wider"
+                    className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070] focus:border-transparent bg-white shadow-2xs uppercase font-mono tracking-wider"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-between">
-                <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#007070]" />
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="text-[11px] text-slate-400 flex items-center gap-1.5 order-2 sm:order-1">
+                  <ShieldCheck className="w-4 h-4 text-[#007070] shrink-0" />
                   <span>Manual Verification by Sagir Ahmed</span>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-extrabold shadow-md transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="order-1 sm:order-2 w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-extrabold shadow-md transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>

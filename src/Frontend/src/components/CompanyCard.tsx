@@ -25,13 +25,13 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
   const matchingSet = new Set(company.matchingSkills?.map((s) => s.toLowerCase()) ?? []);
 
   return (
-    <div className="bg-white border border-black/10 rounded-2xl p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+    <div className="bg-white border border-black/10 rounded-2xl p-4 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
       <div>
         {/* Top Header: Name, Verified Badge & Fit Score */}
         <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
-              <h3 className="font-bold text-lg text-[#0B0B0B] group-hover:text-[#007070] transition-colors leading-tight">
+              <h3 className="font-bold text-base sm:text-lg text-[#0B0B0B] group-hover:text-[#007070] transition-colors leading-tight truncate">
                 {company.name}
               </h3>
               {company.isVerified && (
@@ -40,7 +40,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
                 </span>
               )}
             </div>
-            <div className="flex items-center space-x-2 mt-1">
+            <div className="flex items-center space-x-2 mt-1 flex-wrap">
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-[#F8FAFC] text-[#555555] border border-black/5">
                 {CATEGORY_NAMES[company.category] || 'Tech'}
               </span>
@@ -126,7 +126,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
         {company.activeJobsCount > 0 ? (
           <button
             onClick={() => onViewActiveJobs(company)}
-            className="w-full py-1.5 px-3 rounded-lg text-xs font-bold bg-[#E6F4F4] text-[#007070] hover:bg-[#d0eded] transition-colors flex items-center justify-center space-x-1 border border-[#007070]/20"
+            className="w-full min-h-[40px] py-1.5 px-3 rounded-xl text-xs font-bold bg-[#E6F4F4] text-[#007070] hover:bg-[#d0eded] active:scale-[0.98] transition-colors flex items-center justify-center space-x-1.5 border border-[#007070]/20"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>{company.activeJobsCount} Active Circular{company.activeJobsCount > 1 ? 's' : ''} in S7</span>
@@ -143,7 +143,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
             href={company.careersUrl || company.website}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-2 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] transition-colors flex items-center justify-center space-x-1.5 border border-black/10"
+            className="min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] active:scale-[0.98] transition-colors flex items-center justify-center space-x-1.5 border border-black/10"
           >
             <span>Careers Portal</span>
             <ExternalLink className="w-3 h-3" />
@@ -152,7 +152,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
           {/* AI Targeted Pitch Generator Button */}
           <button
             onClick={() => onGeneratePitch(company)}
-            className="px-3 py-2 rounded-xl text-xs font-bold bg-[#007070] hover:bg-[#005a5a] text-white transition-colors flex items-center justify-center space-x-1.5 shadow-xs"
+            className="min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-[#007070] hover:bg-[#005a5a] text-white active:scale-[0.98] transition-colors flex items-center justify-center space-x-1.5 shadow-xs"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Tailor Pitch</span>

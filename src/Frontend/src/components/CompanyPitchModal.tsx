@@ -42,38 +42,42 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-white border border-black/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl bg-white border border-black/10 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+        {/* Mobile Drag Handle */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-2.5 sm:hidden" />
+
         {/* Header */}
-        <div className="px-6 py-4 border-b border-black/10 flex items-center justify-between bg-[#F8FAFC]">
+        <div className="px-5 sm:px-6 py-4 border-b border-black/10 flex items-center justify-between bg-[#F8FAFC]">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-xl bg-[#E6F4F4] text-[#007070]">
+            <div className="p-2 rounded-xl bg-[#E6F4F4] text-[#007070] shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-bold text-base text-[#0B0B0B] flex items-center gap-1.5">
+              <h2 className="font-bold text-base text-[#0B0B0B] flex items-center gap-1.5 leading-tight">
                 Targeted Pitch for <span className="text-[#007070]">{company.name}</span>
               </h2>
-              <p className="text-xs text-[#7C7C7C]">
+              <p className="text-xs text-[#7C7C7C] mt-0.5">
                 Bespoke outreach highlighting your overlapping stack & value proposition
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-1.5 rounded-lg text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-colors shrink-0"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Pitch Format Selector */}
-        <div className="px-6 py-3 bg-white border-b border-black/5 flex items-center justify-between gap-4">
+        <div className="px-5 sm:px-6 py-3 bg-white border-b border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-semibold text-[#555555]">Format:</span>
             <button
               onClick={() => onPitchTypeChange('ColdEmail')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
                 pitchType === 'ColdEmail'
                   ? 'bg-[#007070] text-white shadow-xs'
                   : 'bg-[#F8FAFC] text-[#555555] hover:bg-[#E6F4F4] border border-black/5'
@@ -83,7 +87,7 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
             </button>
             <button
               onClick={() => onPitchTypeChange('CoverLetter')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
                 pitchType === 'CoverLetter'
                   ? 'bg-[#007070] text-white shadow-xs'
                   : 'bg-[#F8FAFC] text-[#555555] hover:bg-[#E6F4F4] border border-black/5'
@@ -93,10 +97,10 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
             </button>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 self-end sm:self-auto">
             <button
               onClick={handleDownload}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10"
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95"
               title="Download as .txt"
             >
               <Download className="w-3.5 h-3.5" />
@@ -104,7 +108,7 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
             </button>
             <button
               onClick={handleCopy}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10"
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? 'Copied' : 'Copy'}</span>
@@ -113,7 +117,7 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
           {isLoading ? (
             <div className="py-12 flex flex-col items-center justify-center space-y-3">
               <div className="w-8 h-8 border-3 border-[#007070] border-t-transparent rounded-full animate-spin"></div>

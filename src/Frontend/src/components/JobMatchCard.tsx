@@ -74,17 +74,17 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
   const directUrl = getDirectApplicationUrl(match.url);
 
   return (
-    <div className="rounded-2xl border border-black/8 bg-white p-6 space-y-5 hover:border-[#007070] transition-all shadow-[0_8px_25px_rgba(0,0,0,0.04)]">
+    <div className="rounded-2xl border border-black/8 bg-white p-4 sm:p-6 space-y-4 sm:space-y-5 hover:border-[#007070] transition-all shadow-[0_8px_25px_rgba(0,0,0,0.04)]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-lg font-black text-[#0B0B0B] transition-colors">
+            <h3 className="text-base sm:text-lg font-black text-[#0B0B0B] transition-colors leading-snug">
               {match.title}
             </h3>
             {getSourceBadge()}
             {match.isRemote && (
-              <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-[#E6F4F4] text-[#007070] border border-[#007070]/20">
+              <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-[#E6F4F4] text-[#007070] border border-[#007070]/20">
                 Remote
               </span>
             )}
@@ -101,11 +101,11 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
         </div>
 
         {/* Overall Match Badge */}
-        <div className="flex items-center space-x-3 self-start">
+        <div className="flex items-center space-x-3 self-start sm:self-auto shrink-0">
           <button
             onClick={() => onToggleBookmark(match.jobId)}
             title={match.isBookmarked ? 'Remove Bookmark' : 'Save Job'}
-            className={`p-2.5 rounded-xl border transition-colors ${
+            className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border transition-colors active:scale-95 ${
               match.isBookmarked
                 ? 'bg-amber-100 border-amber-300 text-amber-700'
                 : 'border-black/10 text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-[#F8FAFC]'
@@ -114,9 +114,9 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
             <Bookmark className={`w-4 h-4 ${match.isBookmarked ? 'fill-current' : ''}`} />
           </button>
 
-          <div className={`px-4 py-2 rounded-xl border text-center font-bold ${getScoreColor(match.overallScore)}`}>
-            <div className="text-xl leading-none font-black">{match.overallScore}%</div>
-            <div className="text-[10px] font-bold uppercase tracking-wider mt-0.5 opacity-80">Match Score</div>
+          <div className={`px-3.5 py-2 rounded-xl border text-center font-bold ${getScoreColor(match.overallScore)}`}>
+            <div className="text-lg sm:text-xl leading-none font-black">{match.overallScore}%</div>
+            <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-0.5 opacity-80">Match Score</div>
           </div>
         </div>
       </div>
@@ -183,11 +183,11 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
       )}
 
       {/* Footer Actions */}
-      <div className="pt-3 border-t border-black/8 flex flex-wrap items-center justify-between gap-3">
+      <div className="pt-3 border-t border-black/8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
         <button
           onClick={() => onGenerateApplication(match.jobId)}
           disabled={isGenerating}
-          className="px-4 py-2 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-bold flex items-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(0,112,112,0.20)]"
+          className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(0,112,112,0.20)]"
         >
           <FileEdit className="w-3.5 h-3.5" />
           <span>{isGenerating ? 'Drafting Application...' : 'Generate Cover Letter & Tips'}</span>
@@ -198,7 +198,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
             href={directUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] text-xs font-bold flex items-center space-x-1.5 transition-colors border border-black/8"
+            className="w-full sm:w-auto min-h-[44px] px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] active:scale-[0.98] text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors border border-black/8"
           >
             <span>Apply on {match.sourceName || 'Portal'}</span>
             <ExternalLink className="w-3.5 h-3.5" />

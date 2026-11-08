@@ -216,13 +216,13 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="bg-white border border-black/10 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-black/10 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 mb-1">
-            <span className="p-1.5 rounded-lg bg-[#E6F4F4] text-[#007070]">
+            <span className="p-1.5 rounded-lg bg-[#E6F4F4] text-[#007070] shrink-0">
               <Building2 className="w-5 h-5" />
             </span>
-            <h2 className="font-bold text-xl text-[#0B0B0B]">
+            <h2 className="font-bold text-lg sm:text-xl text-[#0B0B0B] leading-snug">
               180+ BD Global Tech Companies Ecosystem
             </h2>
           </div>
@@ -231,11 +231,11 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
           {/* Suggest a Company Button */}
           <button
             onClick={() => setIsSuggestModalOpen(true)}
-            className="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 bg-[#E6F4F4] text-[#007070] hover:bg-[#007070] hover:text-white border border-[#007070]/20 shrink-0"
+            className="flex-1 sm:flex-initial min-h-[44px] justify-center px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 bg-[#E6F4F4] text-[#007070] hover:bg-[#007070] hover:text-white border border-[#007070]/20 shrink-0 active:scale-95"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Suggest a Company</span>
@@ -248,7 +248,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
                 setIsBestFitMode(!isBestFitMode);
                 setCurrentPage(1);
               }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 shrink-0 ${
+              className={`flex-1 sm:flex-initial min-h-[44px] justify-center px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 shrink-0 active:scale-95 ${
                 isBestFitMode
                   ? 'bg-[#007070] text-white shadow-md'
                   : 'bg-[#F8FAFC] text-[#333333] hover:bg-[#E6F4F4] hover:text-[#007070] border border-black/10'
@@ -262,7 +262,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
       </div>
 
       {/* Visual Cluster Category Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
         {CLUSTERS.map((cl) => {
           const Icon = cl.icon;
           const isSelected = selectedCategory === cl.id;
@@ -273,7 +273,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
                 setSelectedCategory(isSelected ? 0 : cl.id);
                 setCurrentPage(1);
               }}
-              className={`text-left p-3.5 rounded-2xl border transition-all relative flex flex-col justify-between ${
+              className={`text-left p-3 sm:p-3.5 rounded-2xl border transition-all relative flex flex-col justify-between active:scale-[0.98] ${
                 isSelected
                   ? 'border-[#007070] bg-[#E6F4F4] ring-2 ring-[#007070]/20 shadow-xs'
                   : 'border-slate-200 bg-white hover:border-[#007070]/40 hover:shadow-xs'
@@ -319,28 +319,29 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-black/10 rounded-xl text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-hidden focus:border-[#007070] focus:bg-white transition-colors"
+              className="w-full pl-10 pr-10 py-2.5 min-h-[44px] bg-[#F8FAFC] border border-black/10 rounded-xl text-base sm:text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-hidden focus:border-[#007070] focus:bg-white transition-colors"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7C7C7C] hover:text-[#0B0B0B]"
+                className="absolute right-1 top-1/2 -translate-y-1/2 text-[#7C7C7C] hover:text-[#0B0B0B] min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Clear search"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
 
           {/* Work Model Selector */}
           <div className="flex items-center space-x-2 shrink-0">
-            <Filter className="w-3.5 h-3.5 text-[#7C7C7C]" />
+            <Filter className="w-4 h-4 text-[#7C7C7C] shrink-0" />
             <select
               value={workModel}
               onChange={(e) => {
                 setWorkModel(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2.5 bg-[#F8FAFC] border border-black/10 rounded-xl text-xs text-[#333333] font-medium focus:outline-hidden focus:border-[#007070]"
+              className="w-full sm:w-auto px-3 py-2.5 min-h-[44px] bg-[#F8FAFC] border border-black/10 rounded-xl text-base sm:text-xs text-[#333333] font-medium focus:outline-hidden focus:border-[#007070]"
             >
               <option value="All">All Work Models</option>
               <option value="Remote">Remote</option>
@@ -359,7 +360,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
                 setSelectedCategory(cat.id);
                 setCurrentPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
                 selectedCategory === cat.id
                   ? 'bg-[#007070] text-white shadow-xs'
                   : 'bg-[#F8FAFC] text-[#555555] hover:bg-[#E6F4F4] hover:text-[#007070] border border-black/5'

@@ -203,14 +203,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-teal-500/20 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-5 sm:p-8 shadow-xl border border-teal-500/20 relative overflow-hidden">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#007070]/30 border border-[#007070]/50 text-teal-300 text-xs font-bold mb-2">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Director Administration Console · Sagir Ahmed</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight leading-snug">
               SaaS Operations & Payment Control
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
@@ -221,7 +221,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
           <button
             onClick={loadAllAdminData}
             disabled={isLoading}
-            className="self-start sm:self-auto px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all flex items-center gap-2"
+            className="self-stretch sm:self-auto min-h-[44px] justify-center px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 text-white text-xs font-bold transition-all flex items-center gap-2"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             <span>Refresh Dashboard</span>
@@ -230,10 +230,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
       </div>
 
       {/* KPI Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Revenue */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
             <DollarSign className="w-6 h-6" />
           </div>
           <div>
@@ -248,10 +248,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
         </div>
 
         {/* Pending Approvals */}
-        <div className={`bg-white rounded-2xl p-5 border shadow-xs flex items-center gap-4 ${
+        <div className={`bg-white rounded-2xl p-4 sm:p-5 border shadow-xs flex items-center gap-4 ${
           (metrics?.pendingPaymentsCount ?? 0) > 0 ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-slate-200/80'
         }`}>
-          <div className="p-3 rounded-xl bg-amber-50 text-amber-600 relative">
+          <div className="p-3 rounded-xl bg-amber-50 text-amber-600 relative shrink-0">
             <CreditCard className="w-6 h-6" />
             {(metrics?.pendingPaymentsCount ?? 0) > 0 && (
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full animate-ping" />
@@ -269,8 +269,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
         </div>
 
         {/* Candidates */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-blue-50 text-blue-600 shrink-0">
             <Users className="w-6 h-6" />
           </div>
           <div>
@@ -285,8 +285,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
         </div>
 
         {/* Active Jobs */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-teal-50 text-[#007070]">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-teal-50 text-[#007070] shrink-0">
             <Briefcase className="w-6 h-6" />
           </div>
           <div>
@@ -404,18 +404,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                       <strong>Candidate:</strong> {trx.userFullName} ({trx.userEmail})
                     </div>
 
-                    <div className="text-xs text-slate-600 flex items-center gap-4">
+                    <div className="text-xs text-slate-600 flex flex-wrap items-center gap-2 sm:gap-4">
                       <span>Sender Phone: <strong className="font-mono text-slate-900">{trx.senderNumber}</strong></span>
                       <span>Amount: <strong className="text-emerald-700">৳ {trx.amountPaidBdt}</strong></span>
                       <span>Bundle: <strong className="text-[#007070]">+{trx.creditsAmount} AI Credits</strong></span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 self-end md:self-center">
+                  <div className="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
                     <button
                       onClick={() => handleReject(trx.id)}
                       disabled={actionInProgressId === trx.id}
-                      className="px-4 py-2 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5"
+                      className="flex-1 md:flex-initial min-h-[44px] justify-center px-4 py-2 rounded-xl border border-rose-200 hover:bg-rose-50 active:scale-[0.98] text-rose-600 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       <span>Reject</span>
@@ -424,7 +424,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                     <button
                       onClick={() => handleApprove(trx.id)}
                       disabled={actionInProgressId === trx.id}
-                      className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-sm transition-all disabled:opacity-50 flex items-center gap-1.5"
+                      className="flex-1 md:flex-initial min-h-[44px] justify-center px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-extrabold shadow-sm transition-all disabled:opacity-50 flex items-center gap-1.5"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>{actionInProgressId === trx.id ? 'Approving...' : 'Approve & Credit'}</span>
@@ -441,20 +441,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
       {activeTab === 'users' && (
         <div className="space-y-4">
           {/* User Search Form */}
-          <form onSubmit={handleSearchUsers} className="flex gap-2">
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+          <form onSubmit={handleSearchUsers} className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search candidate by name, email, or role..."
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070] bg-white shadow-2xs"
+                className="w-full pl-9 pr-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070] bg-white shadow-2xs"
               />
             </div>
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-bold transition-all"
+              className="min-h-[44px] px-6 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-bold transition-all flex items-center justify-center"
             >
               Search
             </button>
@@ -463,7 +463,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
           {/* Table */}
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs min-w-[640px]">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
                   <tr>
                     <th className="py-3 px-4">Candidate</th>
@@ -513,7 +513,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                       <td className="py-3 px-4 text-right">
                         <button
                           onClick={() => setGiftUser(u)}
-                          className="px-3 py-1.5 rounded-lg border border-[#007070]/30 text-[#007070] hover:bg-[#E6F4F4] font-bold text-xs transition-colors inline-flex items-center gap-1"
+                          className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-[#007070]/30 text-[#007070] hover:bg-[#E6F4F4] active:scale-95 font-bold text-xs transition-all inline-flex items-center gap-1"
                         >
                           <Gift className="w-3.5 h-3.5" />
                           <span>Gift Credits</span>
@@ -554,7 +554,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                 value={bkashNumber}
                 onChange={(e) => setBkashNumber(e.target.value)}
                 placeholder="017XXXXXXXX (Personal / Send Money)"
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
+                className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
               />
             </div>
 
@@ -568,7 +568,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                 value={nagadNumber}
                 onChange={(e) => setNagadNumber(e.target.value)}
                 placeholder="017XXXXXXXX (Personal / Send Money)"
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
+                className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
               />
             </div>
 
@@ -582,11 +582,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                 value={rocketNumber}
                 onChange={(e) => setRocketNumber(e.target.value)}
                 placeholder="017XXXXXXXX (Personal / Send Money)"
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
+                className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Welcome Free Credits
@@ -597,7 +597,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                   max={100}
                   value={welcomeCredits}
                   onChange={(e) => setWelcomeCredits(parseInt(e.target.value) || 20)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
+                  className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
                 />
               </div>
 
@@ -611,7 +611,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                   max={365}
                   value={trialDays}
                   onChange={(e) => setTrialDays(parseInt(e.target.value) || 30)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
+                  className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
                 />
               </div>
             </div>
@@ -624,14 +624,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                 rows={3}
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
+                className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSavingSettings}
-              className="px-6 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-bold transition-all disabled:opacity-50"
+              className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-bold transition-all disabled:opacity-50"
             >
               {isSavingSettings ? 'Saving Changes...' : 'Save Settings'}
             </button>
@@ -670,7 +670,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
             <button
               onClick={handleSyncJobs}
               disabled={isSyncing}
-              className="px-6 py-3 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-extrabold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+              className="w-full sm:w-auto min-h-[44px] justify-center px-6 py-3 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-extrabold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
               <span>{isSyncing ? 'Ingesting Jobs from 7 Sources...' : 'Trigger Live Sync Now'}</span>
@@ -681,8 +681,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
 
       {/* Gift Credits Modal */}
       {giftUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-black/10 relative">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 relative max-h-[92vh] overflow-y-auto">
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mb-2.5 sm:hidden" />
+
             <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
               <Gift className="w-5 h-5 text-[#007070]" />
               <span>Gift AI Credits to Candidate</span>
@@ -697,13 +700,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Credits to Add
                 </label>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   {[5, 10, 20, 50].map((num) => (
                     <button
                       key={num}
                       type="button"
                       onClick={() => setGiftAmount(num)}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                      className={`min-h-[44px] py-1.5 rounded-xl text-xs font-bold border transition-all active:scale-95 ${
                         giftAmount === num
                           ? 'bg-[#007070] text-white border-[#007070]'
                           : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -725,7 +728,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                   max={500}
                   value={giftAmount}
                   onChange={(e) => setGiftAmount(parseInt(e.target.value) || 1)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
+                  className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
                 />
               </div>
 
@@ -738,22 +741,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                   value={giftNote}
                   onChange={(e) => setGiftNote(e.target.value)}
                   placeholder="e.g. Complimentary test credits or prize"
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
+                  className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#007070]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setGiftUser(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50"
+                  className="order-2 sm:order-1 min-h-[44px] px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isGifting}
-                  className="px-5 py-2 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-bold shadow-sm transition-all"
+                  className="order-1 sm:order-2 min-h-[44px] px-6 py-2 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
                 >
                   {isGifting ? 'Adding...' : 'Confirm Gift'}
                 </button>

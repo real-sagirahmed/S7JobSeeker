@@ -73,21 +73,21 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-black/8 bg-white p-6 space-y-5 shadow-[0_8px_25px_rgba(0,0,0,0.04)]">
-        <div className="flex items-center justify-between pb-4 border-b border-black/8">
+      <div className="rounded-2xl border border-black/8 bg-white p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-[0_8px_25px_rgba(0,0,0,0.04)]">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-black/8">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#E6F4F4] border border-[#007070]/20 flex items-center justify-center text-[#007070]">
+            <div className="w-8 h-8 rounded-lg bg-[#E6F4F4] border border-[#007070]/20 flex items-center justify-center text-[#007070] shrink-0">
               <ClipboardCheck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-black text-[#0B0B0B] text-base">Paste & Analyze Custom Circular</h3>
-              <p className="text-xs text-[#7C7C7C]">Paste any job circular from LinkedIn, BDJobs or an email to evaluate candidate fit</p>
+              <h3 className="font-black text-[#0B0B0B] text-base leading-tight">Paste & Analyze Custom Circular</h3>
+              <p className="text-xs text-[#7C7C7C] mt-0.5">Paste any job circular from LinkedIn, BDJobs or an email to evaluate candidate fit</p>
             </div>
           </div>
           {evaluatedMatch && (
             <button
               onClick={handleReset}
-              className="px-3 py-1.5 rounded-lg border border-black/10 hover:bg-black/5 text-xs text-[#333333] font-semibold flex items-center space-x-1.5 transition-colors"
+              className="w-full sm:w-auto min-h-[40px] px-3.5 py-2 rounded-xl border border-black/10 hover:bg-black/5 text-xs text-[#333333] font-semibold flex items-center justify-center space-x-1.5 transition-colors active:scale-95 shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5 text-[#7C7C7C]" />
               <span>Clear & Paste Another</span>
@@ -96,7 +96,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-bold text-[#333333] mb-1">Job Title (Optional)</label>
               <input
@@ -104,7 +104,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
                 placeholder="e.g. Senior .NET Architect"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
+                className="w-full px-3.5 py-2.5 min-h-[44px] rounded-xl bg-[#F8FAFC] border border-black/10 text-base sm:text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
               />
             </div>
             <div>
@@ -114,7 +114,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
                 placeholder="e.g. Microsoft / Acme Corp"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
+                className="w-full px-3.5 py-2.5 min-h-[44px] rounded-xl bg-[#F8FAFC] border border-black/10 text-base sm:text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
               />
             </div>
             <div>
@@ -124,7 +124,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
                 placeholder="https://..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
+                className="w-full px-3.5 py-2.5 min-h-[44px] rounded-xl bg-[#F8FAFC] border border-black/10 text-base sm:text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
               />
             </div>
           </div>
@@ -139,7 +139,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
               placeholder="Paste the job requirements, responsibilities, or entire circular text here..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070] font-mono leading-relaxed"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-base sm:text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070] font-mono leading-relaxed"
             />
           </div>
 
@@ -150,12 +150,12 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
             </div>
           )}
 
-          <div className="flex justify-end space-x-3">
+          <div className="flex flex-col sm:flex-row justify-end gap-2.5 sm:gap-3">
             {evaluatedMatch && (
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-4 py-2.5 rounded-xl border border-black/10 hover:bg-black/5 text-xs text-[#333333] font-semibold transition-colors"
+                className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl border border-black/10 hover:bg-black/5 text-xs text-[#333333] font-semibold transition-colors active:scale-95"
               >
                 Reset
               </button>
@@ -163,7 +163,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
             <button
               type="submit"
               disabled={isAnalyzing}
-              className="px-5 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white font-bold text-xs flex items-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(0,112,112,0.25)]"
+              className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(0,112,112,0.25)]"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{isAnalyzing ? 'Evaluating Match via Gemini RAG...' : 'Evaluate Match with My Resume'}</span>
@@ -204,14 +204,14 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
                     key={skill}
                     type="button"
                     onClick={() => toggleSkillCheck(skill)}
-                    className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl border text-xs text-left transition-all ${
+                    className={`flex items-center space-x-2.5 px-3.5 py-2.5 min-h-[44px] rounded-xl border text-xs text-left transition-all active:scale-[0.98] ${
                       checkedSkills[skill]
                         ? 'bg-emerald-50 border-emerald-300 text-emerald-800 line-through opacity-70'
                         : 'bg-white border-amber-200/80 text-[#333333] hover:border-amber-400'
                     }`}
                   >
                     <CheckSquare
-                      className={`w-3.5 h-3.5 flex-shrink-0 ${
+                      className={`w-4 h-4 flex-shrink-0 ${
                         checkedSkills[skill] ? 'text-emerald-600' : 'text-amber-500'
                       }`}
                     />
