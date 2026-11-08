@@ -64,7 +64,21 @@ public class CompaniesController : ControllerBase
         if (!string.IsNullOrWhiteSpace(tech))
         {
             var techTerm = tech.Trim();
-            query = query.Where(c => c.PrimaryTechStackJson.Contains(techTerm));
+            if (techTerm.Equals(".NET", StringComparison.OrdinalIgnoreCase) ||
+                techTerm.Equals("dotnet", StringComparison.OrdinalIgnoreCase) ||
+                techTerm.Equals("C#", StringComparison.OrdinalIgnoreCase) ||
+                techTerm.Equals("csharp", StringComparison.OrdinalIgnoreCase) ||
+                techTerm.Equals("ASP.NET", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(c => c.PrimaryTechStackJson.Contains(".NET") ||
+                                         c.PrimaryTechStackJson.Contains("C#") ||
+                                         c.PrimaryTechStackJson.Contains("dotnet") ||
+                                         c.PrimaryTechStackJson.Contains("ASP.NET"));
+            }
+            else
+            {
+                query = query.Where(c => c.PrimaryTechStackJson.Contains(techTerm));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(workModel) && !workModel.Equals("All", StringComparison.OrdinalIgnoreCase))
@@ -121,6 +135,78 @@ public class CompaniesController : ControllerBase
         }).ToList();
 
         return Ok(new CompanyListResponse(items, totalCount, pageClamped, pageSizeClamped, totalPages));
+    }
+
+    [HttpGet("clusters-summary")]
+    public async Task<ActionResult<List<ClusterSummaryDto>>> GetClustersSummary(CancellationToken cancellationToken = default)
+    {
+        var companies = await _dbContext.BdTechCompanies
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        // Pre-fetch active jobs count by company name
+        var activeJobCounts = await _dbContext.JobPostings
+            .AsNoTracking()
+            .GroupBy(j => j.Company)
+            .Select(g => new { Company = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(g => g.Company, g => g.Count, StringComparer.OrdinalIgnoreCase, cancellationToken);
+
+        // 1. Premier .NET & C# Enterprise Tech Cluster
+        var dotNetCompanies = companies
+            .Where(c => !string.IsNullOrEmpty(c.PrimaryTechStackJson) &&
+                       (c.PrimaryTechStackJson.Contains(".NET", StringComparison.OrdinalIgnoreCase) ||
+                        c.PrimaryTechStackJson.Contains("C#", StringComparison.OrdinalIgnoreCase) ||
+                        c.PrimaryTechStackJson.Contains("dotnet", StringComparison.OrdinalIgnoreCase) ||
+                        c.PrimaryTechStackJson.Contains("ASP.NET", StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+        var dotNetJobsCount = dotNetCompanies.Sum(c => activeJobCounts.GetValueOrDefault(c.Name, 0));
+        var dotNetFeatured = dotNetCompanies.Take(3).Select(c => c.Name).ToList();
+
+        var summaries = new List<ClusterSummaryDto>
+        {
+            new(
+                ClusterKey: "dotnet",
+                Title: ".NET & C# Enterprise",
+                Tagline: "Top Bangladeshi firms building with .NET Core & Azure",
+                CategoryId: 0,
+                TotalCompanies: dotNetCompanies.Count,
+                ActiveJobsCount: dotNetJobsCount,
+                FeaturedCompanies: dotNetFeatured,
+                IsSpecial: true
+            )
+        };
+
+        // 2. Standard Industry Clusters
+        var clusterMeta = new (CompanyCategory Category, string Title, string Tagline)[]
+        {
+            (CompanyCategory.GlobalSaaSAndProduct, "Global SaaS & Products", "World-class SaaS built in Bangladesh"),
+            (CompanyCategory.EnterpriseOutsourcing, "Enterprise & Global IT", "Global Fortune 500 engineering"),
+            (CompanyCategory.FintechAndHighScale, "Fintech & Scale Platforms", "High-throughput transactional systems"),
+            (CompanyCategory.CloudDevOpsAndInfra, "Cloud, DevOps & Infra", "Reliability & enterprise cloud scale"),
+            (CompanyCategory.AIAndDataIntelligence, "AI & Data Intelligence", "Computer vision, NLP & LLMs"),
+            (CompanyCategory.DigitalAgencyAndConsulting, "Digital Agency & Creative Tech", "UI/UX, web engineering & scale")
+        };
+
+        foreach (var meta in clusterMeta)
+        {
+            var clusterCompanies = companies.Where(c => c.Category == meta.Category).ToList();
+            var jobsCount = clusterCompanies.Sum(c => activeJobCounts.GetValueOrDefault(c.Name, 0));
+            var featured = clusterCompanies.Take(3).Select(c => c.Name).ToList();
+
+            summaries.Add(new(
+                ClusterKey: meta.Category.ToString(),
+                Title: meta.Title,
+                Tagline: meta.Tagline,
+                CategoryId: (int)meta.Category,
+                TotalCompanies: clusterCompanies.Count,
+                ActiveJobsCount: jobsCount,
+                FeaturedCompanies: featured,
+                IsSpecial: false
+            ));
+        }
+
+        return Ok(summaries);
     }
 
     [Authorize]

@@ -312,7 +312,52 @@ public static class BdTechCompaniesData
             Create("Southtech Limited", "southtech-group", "https://southtechgroup.com", "https://southtechgroup.com/career", "https://linkedin.com/company/southtech-limited",
                 CompanyCategory.EnterpriseOutsourcing, "Ascent Financial Suite, HRIS, Microfinance Banking",
                 "CMMI Level 5 software house with 28+ years of experience engineering core financial systems globally.",
-                ["Java", "C#", ".NET", "SQL Server", "Oracle", "Angular", "Cloud"], "Dhaka, Bangladesh", "UK, USA, Bhutan, Myanmar", "Onsite", "100-250")
+                ["Java", "C#", ".NET", "SQL Server", "Oracle", "Angular", "Cloud"], "Dhaka, Bangladesh", "UK, USA, Bhutan, Myanmar", "Onsite", "100-250"),
+
+            Create("Orbitax Bangladesh", "orbitax-bangladesh", "https://orbitax.com", "https://orbitax.com/careers", "https://linkedin.com/company/orbitax",
+                CompanyCategory.GlobalSaaSAndProduct, "International Tax Platform, Global Compliance Suite, Automated Tax Rules Engine",
+                "Silicon Valley multinational delivering global enterprise tax software for Fortune 500 corporations with a major engineering hub in Dhaka.",
+                ["C#", ".NET", "ASP.NET Core", "React", "Azure", "Microservices", "SQL Server", "Docker"], "Dhaka, Bangladesh", "San Francisco (USA), Netherlands, Ireland", "Hybrid", "200-500"),
+
+            Create("Dynamic Solution Innovators (DSI)", "dynamic-solution-innovators", "https://dsinnovators.com", "https://dsinnovators.com/careers", "https://linkedin.com/company/dsinnovators",
+                CompanyCategory.EnterpriseOutsourcing, "FinTech Core Engines, Telecommunications Platforms, High-Volume Data Systems",
+                "Prestigious software engineering firm with 22+ years of architecting mission-critical platforms for international clients.",
+                ["Java", "Spring Boot", "C#", ".NET", "React", "PostgreSQL", "AWS", "Docker"], "Dhaka, Bangladesh", "USA, Europe", "Hybrid", "200-500"),
+
+            Create("LeadSoft Bangladesh Limited", "leadsoft-bangladesh", "https://leadsoft.com.bd", "https://leadsoft.com.bd/careers", "https://linkedin.com/company/leadsoft-bangladesh-ltd",
+                CompanyCategory.EnterpriseOutsourcing, "BankUltimus Core Banking, Capitar Capital Market Suite, AutoFin",
+                "CMMI Level 3 pioneer software house specializing in core banking, fintech, and enterprise automation across Asia.",
+                ["C#", ".NET", "ASP.NET Core", "SQL Server", "Oracle", "Angular", "Docker"], "Dhaka, Bangladesh", "Japan, UK", "Onsite", "150-300"),
+
+            Create("DataSoft Systems Bangladesh", "datasoft-systems", "https://datasoft-bd.com", "https://datasoft-bd.com/careers", "https://linkedin.com/company/datasoft-systems-bd-limited",
+                CompanyCategory.EnterpriseOutsourcing, "TOS (Chittagong Port Terminal Operating System), Microfin, Smart IoT",
+                "Bangladesh's first CMMI Level 5 software powerhouse powering national ports, banking, and microfinance networks.",
+                ["Java", "C#", ".NET", "Python", "SQL Server", "Oracle", "IoT", "Angular"], "Dhaka, Bangladesh", "USA, Japan, Netherlands", "Onsite", "300-500"),
+
+            Create("Craftsmen Software", "craftsmen-software", "https://craftsmenltd.com", "https://craftsmenltd.com/careers", "https://linkedin.com/company/craftsmenltd",
+                CompanyCategory.EnterpriseOutsourcing, "European Enterprise Cloud Platforms, FinTech Solutions, High-Scale Web Architecture",
+                "High-caliber agile engineering house delivering high-standard software solutions for European enterprise clients.",
+                ["C#", ".NET", "ASP.NET Core", "React", "TypeScript", "Azure", "Docker", "PostgreSQL"], "Dhaka, Bangladesh", "Amsterdam (Netherlands), Norway", "Hybrid", "50-100"),
+
+            Create("Millennium Information Solution", "millennium-info-solution", "https://mislbd.com", "https://mislbd.com/careers", "https://linkedin.com/company/millennium-information-solution-ltd",
+                CompanyCategory.EnterpriseOutsourcing, "Ababil Islamic Banking Suite, Millennium HRIS, Core Microfinance",
+                "Global Islamic Banking software leader deployed in financial institutions across Asia, Africa, and Middle East.",
+                ["Java", "C#", ".NET", "SQL Server", "Oracle", "Spring Boot", "React"], "Dhaka, Bangladesh", "Malaysia, Bahrain, UAE", "Onsite", "100-200"),
+
+            Create("Infocrat Solutions", "infocrat-solutions", "https://infocratsolutions.com", "https://infocratsolutions.com/careers", "https://linkedin.com/company/infocrat-solutions",
+                CompanyCategory.EnterpriseOutsourcing, "Enterprise Healthcare SaaS, Clinical Portals, US Medical EHR Solutions",
+                "Specialized engineering firm developing healthcare tech, cloud workflows, and data pipelines for North American providers.",
+                ["C#", ".NET", "ASP.NET Core", "SQL Server", "Angular", "Azure", "Docker"], "Dhaka, Bangladesh", "USA", "Hybrid", "50-150"),
+
+            Create("Divine IT Limited", "divine-it-limited", "https://divineit.net", "https://divineit.net/career", "https://linkedin.com/company/divine-it-limited",
+                CompanyCategory.EnterpriseOutsourcing, "PrismERP, LinesPay Payroll, Centrix Contact Center Engine",
+                "National ICT award-winning enterprise software company powering ERP and financial systems for 1,000+ businesses.",
+                ["Python", "C#", ".NET", "PostgreSQL", "React", "Linux", "Docker"], "Dhaka, Bangladesh", "Switzerland, USA", "Onsite", "150-300"),
+
+            Create("Nascenia Limited", "nascenia-limited", "https://nascenia.com", "https://nascenia.com/careers", "https://linkedin.com/company/nascenia",
+                CompanyCategory.EnterpriseOutsourcing, "Bespoke Web & Mobile Applications, Cloud Platforms, AI Integration",
+                "European & North American custom software partner, recognized with national export trophies for tech innovation.",
+                ["Ruby on Rails", "C#", ".NET", "Python", "React", "AWS", "Docker"], "Dhaka, Bangladesh", "Denmark, UK, Canada", "Hybrid", "100-200")
         ];
     }
 

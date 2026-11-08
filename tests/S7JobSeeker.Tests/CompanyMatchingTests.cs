@@ -61,4 +61,51 @@ public class CompanyMatchingTests
         Assert.Contains(CompanyCategory.CloudDevOpsAndInfra, categories);
         Assert.Contains(CompanyCategory.AIAndDataIntelligence, categories);
     }
+
+    [Fact]
+    public void DotNetEcosystem_IdentifiesAllKeyDotNetFirms()
+    {
+        var companies = BdTechCompaniesData.GetSeedCompanies();
+
+        var dotNetCompanies = companies.Where(c =>
+            c.PrimaryTechStackJson.Contains(".NET", StringComparison.OrdinalIgnoreCase) ||
+            c.PrimaryTechStackJson.Contains("C#", StringComparison.OrdinalIgnoreCase)
+        ).ToList();
+
+        Assert.True(dotNetCompanies.Count >= 25, $"Expected at least 25 .NET companies, found {dotNetCompanies.Count}");
+
+        var companyNames = dotNetCompanies.Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        Assert.Contains("Brain Station 23", companyNames);
+        Assert.Contains("BJIT Group", companyNames);
+        Assert.Contains("Enosis Solutions", companyNames);
+        Assert.Contains("Cefalo Bangladesh", companyNames);
+        Assert.Contains("Orbitax Bangladesh", companyNames);
+        Assert.Contains("LeadSoft Bangladesh Limited", companyNames);
+        Assert.Contains("Southtech Limited", companyNames);
+        Assert.Contains("DataSoft Systems Bangladesh", companyNames);
+        Assert.Contains("Craftsmen Software", companyNames);
+    }
+
+    [Fact]
+    public void ClusterSummary_StructureSupportsDotNetSpecialPremierCategory()
+    {
+        var summary = new ClusterSummaryDto(
+            ClusterKey: "dotnet",
+            Title: ".NET & C# Enterprise",
+            Tagline: "Top firms building with .NET Core & Azure",
+            CategoryId: 0,
+            TotalCompanies: 32,
+            ActiveJobsCount: 45,
+            FeaturedCompanies: ["Brain Station 23", "Orbitax Bangladesh", "Enosis Solutions"],
+            IsSpecial: true
+        );
+
+        Assert.True(summary.IsSpecial);
+        Assert.Equal("dotnet", summary.ClusterKey);
+        Assert.Equal(0, summary.CategoryId);
+        Assert.Equal(32, summary.TotalCompanies);
+        Assert.Equal(45, summary.ActiveJobsCount);
+        Assert.Equal(3, summary.FeaturedCompanies.Count);
+    }
 }

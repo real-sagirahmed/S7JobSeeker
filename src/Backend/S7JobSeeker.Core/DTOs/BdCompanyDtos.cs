@@ -53,3 +53,14 @@ public record TailoredPitchDto(
     string Content,
     List<string> HighlightedSkills
 );
+
+public record ClusterSummaryDto(
+    string ClusterKey,
+    string Title,
+    string Tagline,
+    int CategoryId,
+    int TotalCompanies,
+    int ActiveJobsCount,
+    List<string> FeaturedCompanies,
+    bool IsSpecial = false
+);

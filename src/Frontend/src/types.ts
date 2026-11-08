@@ -98,6 +98,17 @@ export interface CompanyListResponse {
   totalPages: number;
 }
 
+export interface ClusterSummary {
+  clusterKey: string;
+  title: string;
+  tagline: string;
+  categoryId: number;
+  totalCompanies: number;
+  activeJobsCount: number;
+  featuredCompanies: string[];
+  isSpecial: boolean;
+}
+
 export interface TailoredPitch {
   companyName: string;
   pitchType: string;

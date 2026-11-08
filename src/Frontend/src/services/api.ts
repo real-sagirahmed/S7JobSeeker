@@ -223,6 +223,14 @@ export const api = {
       return res.json();
     },
 
+    async getClustersSummary(): Promise<import('../types').ClusterSummary[]> {
+      const res = await fetch(`${API_BASE}/companies/clusters-summary`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) throw new Error('Failed to load clusters summary');
+      return res.json();
+    },
+
     async getTopMatches(limit: number = 30): Promise<import('../types').BdCompany[]> {
       const res = await fetch(`${API_BASE}/companies/top-matches?limit=${limit}`, {
         headers: { ...getAuthHeader() }

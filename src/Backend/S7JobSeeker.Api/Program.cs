@@ -220,14 +220,16 @@ using (var scope = app.Services.CreateScope())
             logger.LogInformation("Database migrations applied successfully.");
         }
 
-        // Auto-seed BD Global Tech Companies if empty
-        if (!dbContext.BdTechCompanies.Any())
+        // Auto-seed BD Global Tech Companies and merge any missing entries
+        var seedCompanies = S7JobSeeker.Infrastructure.Data.Seed.BdTechCompaniesData.GetSeedCompanies();
+        var existingSlugs = dbContext.BdTechCompanies.Select(c => c.Slug).ToHashSet();
+        var missingCompanies = seedCompanies.Where(c => !existingSlugs.Contains(c.Slug)).ToList();
+        if (missingCompanies.Any())
         {
-            logger.LogInformation("Seeding curated BD Global Tech Companies master registry...");
-            var seedCompanies = S7JobSeeker.Infrastructure.Data.Seed.BdTechCompaniesData.GetSeedCompanies();
-            dbContext.BdTechCompanies.AddRange(seedCompanies);
+            logger.LogInformation("Seeding {Count} new/missing verified BD Tech Companies...", missingCompanies.Count);
+            dbContext.BdTechCompanies.AddRange(missingCompanies);
             dbContext.SaveChanges();
-            logger.LogInformation("Seeded {Count} verified BD Tech Companies successfully.", seedCompanies.Count);
+            logger.LogInformation("Seeded {Count} new verified BD Tech Companies successfully.", missingCompanies.Count);
         }
 
         // Auto-heal legacy BDJobs URLs in JobPostings table to modern Angular SPA details route

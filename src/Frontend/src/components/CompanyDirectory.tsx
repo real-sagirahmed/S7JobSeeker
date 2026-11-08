@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { BdCompany, TailoredPitch, JobMatch } from '../types';
+import type { BdCompany, TailoredPitch, JobMatch, ClusterSummary } from '../types';
 import { CompanyCard } from './CompanyCard';
 import { CompanyPitchModal } from './CompanyPitchModal';
 import { SuggestCompanyModal } from './SuggestCompanyModal';
@@ -17,7 +17,9 @@ import {
   CreditCard,
   Cloud,
   Cpu,
-  Palette
+  Palette,
+  Code2,
+  Check
 } from 'lucide-react';
 
 interface CompanyDirectoryProps {
@@ -36,68 +38,71 @@ const CATEGORIES = [
   { id: 6, name: 'Digital Agencies' }
 ];
 
-const CLUSTERS = [
-  {
-    id: 2,
-    title: 'Global SaaS & Products',
+const CLUSTER_STYLES: Record<string, {
+  icon: typeof Rocket;
+  gradient: string;
+  border: string;
+  iconColor: string;
+  activeRing: string;
+  badgeBg: string;
+}> = {
+  dotnet: {
+    icon: Code2,
+    gradient: 'from-purple-600/20 to-indigo-600/10',
+    border: 'border-purple-300',
+    iconColor: 'text-purple-700',
+    activeRing: 'ring-purple-600/30 border-purple-500 bg-purple-50/60',
+    badgeBg: 'bg-purple-100 text-purple-800 border-purple-200'
+  },
+  GlobalSaaSAndProduct: {
     icon: Rocket,
-    tagline: 'World-class SaaS built from BD',
-    gradient: 'from-emerald-500/10 to-teal-500/5',
+    gradient: 'from-emerald-500/15 to-teal-500/5',
     border: 'border-emerald-200',
     iconColor: 'text-emerald-700',
-    badge: 'Optimizely, NewsCred, DSI'
+    activeRing: 'ring-emerald-600/30 border-emerald-500 bg-emerald-50/60',
+    badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200'
   },
-  {
-    id: 1,
-    title: 'Enterprise & Global IT',
+  EnterpriseOutsourcing: {
     icon: Building2,
-    tagline: 'Global Fortune 500 engineering',
-    gradient: 'from-blue-500/10 to-indigo-500/5',
+    gradient: 'from-blue-500/15 to-indigo-500/5',
     border: 'border-blue-200',
     iconColor: 'text-blue-700',
-    badge: 'Brain Station, BJIT, Enosis'
+    activeRing: 'ring-blue-600/30 border-blue-500 bg-blue-50/60',
+    badgeBg: 'bg-blue-50 text-blue-700 border-blue-200'
   },
-  {
-    id: 3,
-    title: 'Fintech & Scale Platforms',
+  FintechAndHighScale: {
     icon: CreditCard,
-    tagline: 'High-throughput transactional systems',
-    gradient: 'from-amber-500/10 to-orange-500/5',
+    gradient: 'from-amber-500/15 to-orange-500/5',
     border: 'border-amber-200',
     iconColor: 'text-amber-700',
-    badge: 'bKash, Nagad, Pathao'
+    activeRing: 'ring-amber-600/30 border-amber-500 bg-amber-50/60',
+    badgeBg: 'bg-amber-50 text-amber-700 border-amber-200'
   },
-  {
-    id: 4,
-    title: 'Cloud, DevOps & Infra',
+  CloudDevOpsAndInfra: {
     icon: Cloud,
-    tagline: 'Reliability & enterprise cloud scale',
-    gradient: 'from-cyan-500/10 to-sky-500/5',
+    gradient: 'from-cyan-500/15 to-sky-500/5',
     border: 'border-cyan-200',
     iconColor: 'text-cyan-700',
-    badge: 'AWS/Azure Partners, Therap'
+    activeRing: 'ring-cyan-600/30 border-cyan-500 bg-cyan-50/60',
+    badgeBg: 'bg-cyan-50 text-cyan-700 border-cyan-200'
   },
-  {
-    id: 5,
-    title: 'AI & Data Intelligence',
+  AIAndDataIntelligence: {
     icon: Cpu,
-    tagline: 'Computer vision, NLP & LLMs',
-    gradient: 'from-purple-500/10 to-pink-500/5',
+    gradient: 'from-purple-500/15 to-pink-500/5',
     border: 'border-purple-200',
     iconColor: 'text-purple-700',
-    badge: 'Intelligent Machines, TigerIT'
+    activeRing: 'ring-purple-600/30 border-purple-500 bg-purple-50/60',
+    badgeBg: 'bg-purple-50 text-purple-700 border-purple-200'
   },
-  {
-    id: 6,
-    title: 'Digital Agency & Creative Tech',
+  DigitalAgencyAndConsulting: {
     icon: Palette,
-    tagline: 'UI/UX, web engineering & scale',
-    gradient: 'from-rose-500/10 to-pink-500/5',
+    gradient: 'from-rose-500/15 to-pink-500/5',
     border: 'border-rose-200',
     iconColor: 'text-rose-700',
-    badge: 'Ollyo, Dcastalia, Bondstein'
+    activeRing: 'ring-rose-600/30 border-rose-500 bg-rose-50/60',
+    badgeBg: 'bg-rose-50 text-rose-700 border-rose-200'
   }
-];
+};
 
 export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
   hasProfile,
@@ -105,14 +110,18 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
   showToast
 }) => {
   const [companies, setCompanies] = useState<BdCompany[]>([]);
+  const [clustersSummary, setClustersSummary] = useState<ClusterSummary[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingClusters, setIsLoadingClusters] = useState(false);
 
   // Filters
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number>(0);
+  const [selectedClusterKey, setSelectedClusterKey] = useState<string>('all');
+  const [selectedTech, setSelectedTech] = useState<string>('');
   const [workModel, setWorkModel] = useState<string>('All');
   const [isBestFitMode, setIsBestFitMode] = useState(false);
 
@@ -130,34 +139,72 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
   const [activeJobs, setActiveJobs] = useState<JobMatch[]>([]);
   const [isLoadingActiveJobs, setIsLoadingActiveJobs] = useState(false);
 
+  // Fetch dynamic clusters summary
+  const fetchClustersSummary = useCallback(async () => {
+    setIsLoadingClusters(true);
+    try {
+      const summaries = await api.companies.getClustersSummary();
+      setClustersSummary(summaries);
+    } catch (err) {
+      console.error('Failed to load clusters summary:', err);
+    } finally {
+      setIsLoadingClusters(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchClustersSummary();
+  }, [fetchClustersSummary]);
+
   const fetchCompanies = useCallback(async () => {
     setIsLoading(true);
     try {
+      const activeTechFilter = selectedTech || (selectedClusterKey === 'dotnet' ? '.NET' : undefined);
+
       if (isBestFitMode && hasProfile) {
-        const matches = await api.companies.getTopMatches(50);
+        const matches = await api.companies.getTopMatches(60);
         let filtered = matches;
-        if (selectedCategory > 0) {
+
+        if (selectedClusterKey === 'dotnet') {
+          filtered = filtered.filter((c) =>
+            c.primaryTechStack.some((t) =>
+              ['.net', 'c#', 'dotnet', 'asp.net', 'ef core'].includes(t.toLowerCase())
+            )
+          );
+        } else if (selectedCategory > 0) {
           filtered = filtered.filter((c) => c.category === selectedCategory);
         }
+
+        if (activeTechFilter && selectedClusterKey !== 'dotnet') {
+          const t = activeTechFilter.toLowerCase();
+          filtered = filtered.filter((c) =>
+            c.primaryTechStack.some((s) => s.toLowerCase() === t)
+          );
+        }
+
         if (workModel !== 'All') {
           filtered = filtered.filter((c) => c.workModel === workModel);
         }
+
         if (search.trim()) {
-          const t = search.toLowerCase();
+          const term = search.toLowerCase();
           filtered = filtered.filter(
             (c) =>
-              c.name.toLowerCase().includes(t) ||
-              c.description.toLowerCase().includes(t) ||
-              c.primaryTechStack.some((s) => s.toLowerCase().includes(t))
+              c.name.toLowerCase().includes(term) ||
+              c.description.toLowerCase().includes(term) ||
+              c.globalProducts.toLowerCase().includes(term) ||
+              c.primaryTechStack.some((s) => s.toLowerCase().includes(term))
           );
         }
+
         setCompanies(filtered);
         setTotalCount(filtered.length);
         setTotalPages(1);
       } else {
         const res = await api.companies.getAll({
           search: search.trim() || undefined,
-          category: selectedCategory > 0 ? selectedCategory : undefined,
+          category: selectedClusterKey === 'dotnet' ? undefined : (selectedCategory > 0 ? selectedCategory : undefined),
+          tech: activeTechFilter,
           workModel: workModel !== 'All' ? workModel : undefined,
           page: currentPage,
           pageSize: 18
@@ -172,11 +219,64 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [isBestFitMode, hasProfile, selectedCategory, workModel, search, currentPage, showToast]);
+  }, [
+    isBestFitMode,
+    hasProfile,
+    selectedCategory,
+    selectedClusterKey,
+    selectedTech,
+    workModel,
+    search,
+    currentPage,
+    showToast
+  ]);
 
   useEffect(() => {
     fetchCompanies();
   }, [fetchCompanies]);
+
+  const handleClusterClick = (clusterKey: string, categoryId: number) => {
+    if (selectedClusterKey === clusterKey) {
+      // Toggle off
+      setSelectedClusterKey('all');
+      setSelectedCategory(0);
+      if (clusterKey === 'dotnet') {
+        setSelectedTech('');
+      }
+    } else {
+      setSelectedClusterKey(clusterKey);
+      if (clusterKey === 'dotnet') {
+        setSelectedTech('.NET');
+        setSelectedCategory(0);
+      } else {
+        setSelectedCategory(categoryId);
+        if (selectedTech === '.NET') setSelectedTech('');
+      }
+    }
+    setCurrentPage(1);
+  };
+
+  const handleSelectTech = (tech: string) => {
+    if (selectedTech.toLowerCase() === tech.toLowerCase()) {
+      setSelectedTech('');
+    } else {
+      setSelectedTech(tech);
+      if (['.net', 'c#', 'dotnet', 'asp.net', 'ef core'].includes(tech.toLowerCase())) {
+        setSelectedClusterKey('dotnet');
+        setSelectedCategory(0);
+      }
+    }
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearch('');
+    setSelectedCategory(0);
+    setSelectedClusterKey('all');
+    setSelectedTech('');
+    setWorkModel('All');
+    setCurrentPage(1);
+  };
 
   const handleGeneratePitch = async (company: BdCompany, type: string = 'ColdEmail') => {
     setPitchCompany(company);
@@ -213,16 +313,24 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
     }
   };
 
+  const hasActiveFilters = Boolean(
+    search.trim() ||
+    selectedCategory > 0 ||
+    selectedClusterKey !== 'all' ||
+    selectedTech ||
+    workModel !== 'All'
+  );
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
       <div className="bg-white border border-black/10 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 mb-1">
-            <span className="p-1.5 rounded-lg bg-[#E6F4F4] text-[#007070] shrink-0">
+            <span className="p-1.5 rounded-lg bg-[#E6F4F4] text-[#007070]">
               <Building2 className="w-5 h-5" />
             </span>
-            <h2 className="font-bold text-lg sm:text-xl text-[#0B0B0B] leading-snug">
+            <h2 className="font-bold text-lg sm:text-xl text-[#0B0B0B]">
               180+ BD Global Tech Companies Ecosystem
             </h2>
           </div>
@@ -261,48 +369,83 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
         </div>
       </div>
 
-      {/* Visual Cluster Category Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-        {CLUSTERS.map((cl) => {
-          const Icon = cl.icon;
-          const isSelected = selectedCategory === cl.id;
-          return (
-            <button
-              key={cl.id}
-              onClick={() => {
-                setSelectedCategory(isSelected ? 0 : cl.id);
-                setCurrentPage(1);
-              }}
-              className={`text-left p-3 sm:p-3.5 rounded-2xl border transition-all relative flex flex-col justify-between active:scale-[0.98] ${
-                isSelected
-                  ? 'border-[#007070] bg-[#E6F4F4] ring-2 ring-[#007070]/20 shadow-xs'
-                  : 'border-slate-200 bg-white hover:border-[#007070]/40 hover:shadow-xs'
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className={`p-2 rounded-xl bg-gradient-to-br ${cl.gradient} ${cl.iconColor}`}>
-                    <Icon className="w-4 h-4" />
+      {/* Dynamic Visual Clusters Section (Header + Grid) */}
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+          <span className="font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+            Interactive Industry Clusters & .NET Hub
+          </span>
+          {isLoadingClusters && (
+            <span className="text-[11px] text-slate-400 animate-pulse">Syncing real-time stats...</span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2.5 sm:gap-3">
+          {clustersSummary.map((cl) => {
+            const style = CLUSTER_STYLES[cl.clusterKey] || CLUSTER_STYLES.EnterpriseOutsourcing;
+            const Icon = style.icon;
+            const isSelected = selectedClusterKey === cl.clusterKey;
+
+            return (
+              <button
+                key={cl.clusterKey}
+                onClick={() => handleClusterClick(cl.clusterKey, cl.categoryId)}
+                className={`text-left p-3 sm:p-3.5 rounded-2xl border transition-all relative flex flex-col justify-between active:scale-[0.98] ${
+                  isSelected
+                    ? `${style.activeRing} ring-2 shadow-sm`
+                    : cl.isSpecial
+                    ? 'border-purple-300 bg-gradient-to-br from-purple-50/50 to-white hover:border-purple-500 hover:shadow-xs'
+                    : 'border-slate-200 bg-white hover:border-[#007070]/40 hover:shadow-xs'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className={`p-2 rounded-xl bg-gradient-to-br ${style.gradient} ${style.iconColor} shrink-0`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+
+                    {cl.isSpecial ? (
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-purple-600 text-white shadow-2xs">
+                        .NET Special
+                      </span>
+                    ) : isSelected ? (
+                      <span className="text-[10px] font-bold text-[#007070] bg-white px-1.5 py-0.5 rounded-md border border-[#007070]/30 flex items-center gap-0.5">
+                        <Check className="w-2.5 h-2.5" /> Active
+                      </span>
+                    ) : cl.activeJobsCount > 0 ? (
+                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        {cl.activeJobsCount} jobs
+                      </span>
+                    ) : null}
                   </div>
-                  {isSelected && (
-                    <span className="text-[10px] font-bold text-[#007070] bg-white px-1.5 py-0.5 rounded-md border border-[#007070]/30">
-                      Active
-                    </span>
-                  )}
+
+                  <h4 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 mb-1">
+                    {cl.title}
+                  </h4>
+
+                  <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-[#007070] mb-1">
+                    <span>{cl.totalCompanies} Companies</span>
+                    {cl.activeJobsCount > 0 && (
+                      <span className="text-[10px] font-medium text-emerald-600">
+                        • {cl.activeJobsCount} open
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-[10px] text-slate-500 line-clamp-1 mb-2">
+                    {cl.tagline}
+                  </p>
                 </div>
-                <h4 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 mb-1">
-                  {cl.title}
-                </h4>
-                <p className="text-[10px] text-slate-500 line-clamp-1 mb-2">
-                  {cl.tagline}
-                </p>
-              </div>
-              <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-medium truncate">
-                {cl.badge}
-              </div>
-            </button>
-          );
-        })}
+
+                <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-medium truncate" title={cl.featuredCompanies.join(', ')}>
+                  {cl.featuredCompanies.length > 0 ? cl.featuredCompanies.join(', ') : 'Verified BD firms'}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Filter Toolbar */}
@@ -334,7 +477,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
 
           {/* Work Model Selector */}
           <div className="flex items-center space-x-2 shrink-0">
-            <Filter className="w-4 h-4 text-[#7C7C7C] shrink-0" />
+            <Filter className="w-3.5 h-3.5 text-[#7C7C7C]" />
             <select
               value={workModel}
               onChange={(e) => {
@@ -351,17 +494,18 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
           </div>
         </div>
 
-        {/* Category Pills */}
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-black/5">
+        {/* Category Pills & Active Filter Tags */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-black/5">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => {
                 setSelectedCategory(cat.id);
+                if (selectedClusterKey === 'dotnet') setSelectedClusterKey('all');
                 setCurrentPage(1);
               }}
-              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
-                selectedCategory === cat.id
+              className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+                selectedCategory === cat.id && selectedClusterKey !== 'dotnet'
                   ? 'bg-[#007070] text-white shadow-xs'
                   : 'bg-[#F8FAFC] text-[#555555] hover:bg-[#E6F4F4] hover:text-[#007070] border border-black/5'
               }`}
@@ -369,6 +513,45 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
               {cat.name}
             </button>
           ))}
+
+          {/* Active Quick Filters */}
+          {selectedClusterKey === 'dotnet' && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300 shadow-2xs">
+              <span>🟣 .NET & C# Companies</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedClusterKey('all');
+                  setSelectedTech('');
+                }}
+                className="hover:text-rose-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </span>
+          )}
+
+          {selectedTech && selectedClusterKey !== 'dotnet' && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-[#E6F4F4] text-[#007070] border border-[#007070]/30 shadow-2xs">
+              <span>Tech: {selectedTech}</span>
+              <button
+                type="button"
+                onClick={() => setSelectedTech('')}
+                className="hover:text-rose-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </span>
+          )}
+
+          {hasActiveFilters && (
+            <button
+              onClick={handleClearFilters}
+              className="text-xs font-medium text-slate-500 hover:text-rose-600 ml-auto transition-colors"
+            >
+              Clear all filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -377,6 +560,11 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
         <span>
           Showing <strong className="text-[#0B0B0B]">{companies.length}</strong> of{' '}
           <strong className="text-[#0B0B0B]">{totalCount}</strong> verified tech companies
+          {selectedClusterKey === 'dotnet' && (
+            <span className="text-purple-700 font-bold ml-1.5 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+              (.NET Ecosystem)
+            </span>
+          )}
         </span>
         {isBestFitMode && (
           <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
@@ -396,6 +584,14 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
           <Building2 className="w-10 h-10 mx-auto text-[#7C7C7C]" />
           <h3 className="font-bold text-sm text-[#0B0B0B]">No companies matched your filter criteria</h3>
           <p className="text-xs text-[#7C7C7C]">Try clearing the search term or choosing "All Sectors".</p>
+          {hasActiveFilters && (
+            <button
+              onClick={handleClearFilters}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-[#007070] text-white hover:bg-[#005a5a] transition-all inline-flex items-center gap-1.5"
+            >
+              Reset Filters
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -405,6 +601,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
               company={company}
               onGeneratePitch={(c) => handleGeneratePitch(c, 'ColdEmail')}
               onViewActiveJobs={handleViewActiveJobs}
+              onSelectTech={handleSelectTech}
             />
           ))}
         </div>
@@ -416,7 +613,8 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="p-2 rounded-xl border border-black/10 bg-white hover:bg-[#F8FAFC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-xl border border-black/10 bg-white hover:bg-[#F8FAFC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Previous page"
           >
             <ArrowLeft className="w-4 h-4 text-[#333333]" />
           </button>
@@ -426,7 +624,8 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="p-2 rounded-xl border border-black/10 bg-white hover:bg-[#F8FAFC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-xl border border-black/10 bg-white hover:bg-[#F8FAFC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Next page"
           >
             <ArrowRight className="w-4 h-4 text-[#333333]" />
           </button>
@@ -463,7 +662,8 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
               </div>
               <button
                 onClick={() => setActiveJobsCompany(null)}
-                className="p-1.5 rounded-lg text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5"
+                className="p-1.5 rounded-lg text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -525,6 +725,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
         onSuccess={() => {
           showToast('Company submitted successfully! Added to BD Tech Directory.', 'success');
           fetchCompanies();
+          fetchClustersSummary();
         }}
       />
     </div>

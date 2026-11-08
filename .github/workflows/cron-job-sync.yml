@@ -20,9 +20,13 @@ jobs:
           exit 1
         fi
         
-        echo "Triggering secure API Job Sync endpoint..."
-        curl -s -S -X POST "${APP_URL}/api/jobs/sync" \
-          -H "X-Cron-Key: ${CRON_KEY}" \
+        # Clean potential carriage returns, quotation marks, or trailing slashes
+        CLEAN_KEY=$(echo -n "$CRON_KEY" | tr -d '\r\n\" ' | sed -e "s/'//g")
+        CLEAN_URL=$(echo -n "$APP_URL" | tr -d '\r\n ' | sed -e 's|/*$||')
+        
+        echo "Triggering secure API Job Sync endpoint at ${CLEAN_URL}/api/jobs/sync..."
+        curl -s -S -X POST "${CLEAN_URL}/api/jobs/sync" \
+          -H "X-Cron-Key: ${CLEAN_KEY}" \
           -H "Content-Type: application/json" \
           -H "Content-Length: 0" \
           -d '' \

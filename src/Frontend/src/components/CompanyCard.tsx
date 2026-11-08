@@ -6,6 +6,7 @@ interface CompanyCardProps {
   company: BdCompany;
   onGeneratePitch: (company: BdCompany) => void;
   onViewActiveJobs: (company: BdCompany) => void;
+  onSelectTech?: (tech: string) => void;
 }
 
 const CATEGORY_NAMES: Record<number, string> = {
@@ -20,12 +21,19 @@ const CATEGORY_NAMES: Record<number, string> = {
 export const CompanyCard: React.FC<CompanyCardProps> = ({
   company,
   onGeneratePitch,
-  onViewActiveJobs
+  onViewActiveJobs,
+  onSelectTech
 }) => {
   const matchingSet = new Set(company.matchingSkills?.map((s) => s.toLowerCase()) ?? []);
 
+  const isDotNetCompany = company.primaryTechStack.some((t) =>
+    ['c#', '.net', 'dotnet', 'asp.net', 'ef core'].includes(t.toLowerCase())
+  );
+
   return (
-    <div className="bg-white border border-black/10 rounded-2xl p-4 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+    <div className={`bg-white border rounded-2xl p-4 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group ${
+      isDotNetCompany ? 'border-purple-200/80 hover:border-purple-400' : 'border-black/10 hover:border-[#007070]/40'
+    }`}>
       <div>
         {/* Top Header: Name, Verified Badge & Fit Score */}
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -40,7 +48,13 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
                 </span>
               )}
             </div>
-            <div className="flex items-center space-x-2 mt-1 flex-wrap">
+            <div className="flex items-center space-x-2 mt-1.5 flex-wrap gap-y-1">
+              {isDotNetCompany && (
+                <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-600 mr-1.5"></span>
+                  .NET Stack
+                </span>
+              )}
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-[#F8FAFC] text-[#555555] border border-black/5">
                 {CATEGORY_NAMES[company.category] || 'Tech'}
               </span>
@@ -81,24 +95,32 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
 
         {/* Primary Tech Stack Pills */}
         <div className="mb-4">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#7C7C7C] mb-1.5">
-            Core Tech Stack
+          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#7C7C7C] mb-1.5">
+            <span>Core Tech Stack</span>
+            <span className="text-[10px] text-slate-400 font-normal lowercase">(click to filter)</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {company.primaryTechStack.map((tech) => {
-              const isMatch = matchingSet.has(tech.toLowerCase());
+              const lower = tech.toLowerCase();
+              const isMatch = matchingSet.has(lower);
+              const isDotNetTech = ['c#', '.net', 'dotnet', 'asp.net', 'ef core'].includes(lower);
               return (
-                <span
+                <button
                   key={tech}
-                  className={`text-[11px] font-medium px-2 py-0.5 rounded-md border transition-colors ${
+                  type="button"
+                  onClick={() => onSelectTech?.(tech)}
+                  title={`Click to filter companies using ${tech}`}
+                  className={`text-[11px] font-medium px-2 py-0.5 rounded-md border transition-all cursor-pointer hover:scale-105 active:scale-95 ${
                     isMatch
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold'
-                      : 'bg-[#F8FAFC] text-[#444444] border-black/5'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold hover:bg-emerald-100'
+                      : isDotNetTech
+                      ? 'bg-purple-50 text-purple-700 border-purple-200 font-semibold hover:bg-purple-100'
+                      : 'bg-[#F8FAFC] text-[#444444] border-black/5 hover:border-[#007070] hover:text-[#007070]'
                   }`}
                 >
                   {isMatch && '✓ '}
                   {tech}
-                </span>
+                </button>
               );
             })}
           </div>
