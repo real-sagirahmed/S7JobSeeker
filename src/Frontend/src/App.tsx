@@ -4,13 +4,14 @@ import { ResumeUploader } from './components/ResumeUploader';
 import { JobMatchCard } from './components/JobMatchCard';
 import { PasteAndAnalyze } from './components/PasteAndAnalyze';
 import { TailoredModal } from './components/TailoredModal';
+import { JobPrepModal } from './components/JobPrepModal';
 import { AuthModal } from './components/AuthModal';
 import { CompanyDirectory } from './components/CompanyDirectory';
 import { BuyCreditsModal } from './components/BuyCreditsModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ToastContainer, type ToastMessage } from './components/Toast';
 import { api } from './services/api';
-import type { User, ResumeProfile, JobMatch, TailoredApplication } from './types';
+import type { User, ResumeProfile, JobMatch, TailoredApplication, JobPrepGuide } from './types';
 import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu, DownloadCloud } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -25,6 +26,9 @@ export const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isBuyCreditsOpen, setIsBuyCreditsOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<TailoredApplication | null>(null);
+  const [selectedPrepGuide, setSelectedPrepGuide] = useState<JobPrepGuide | null>(null);
+  const [isLoadingPrepGuide, setIsLoadingPrepGuide] = useState(false);
+  const [isPrepModalOpen, setIsPrepModalOpen] = useState(false);
   const [generatingAppId, setGeneratingAppId] = useState<string | null>(null);
   const [minScoreFilter, setMinScoreFilter] = useState<number>(0);
   const [sourceFilter, setSourceFilter] = useState<number>(0);
@@ -138,6 +142,31 @@ export const App: React.FC = () => {
       }
     } finally {
       setGeneratingAppId(null);
+    }
+  };
+
+  const handleOpenPrepGuide = async (job: JobMatch) => {
+    setIsPrepModalOpen(true);
+    setSelectedPrepGuide(null);
+    setIsLoadingPrepGuide(true);
+
+    try {
+      // Backend checks DB cache first (0 credits if already generated, 1 credit if new)
+      const guide = await api.jobs.generatePreparationGuide(job.jobId);
+      setSelectedPrepGuide(guide);
+      api.auth.getMe().then(setUser).catch(() => {});
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to generate preparation guide.';
+      if (errorMsg.includes('Credit') || errorMsg.includes('402')) {
+        showToast('আপনার এআই ক্রেডিট শেষ হয়ে গেছে। দয়া করে ক্রেডিট টপ-আপ করুন।', 'error');
+        setIsBuyCreditsOpen(true);
+        setIsPrepModalOpen(false);
+      } else {
+        showToast(errorMsg, 'error');
+        setIsPrepModalOpen(false);
+      }
+    } finally {
+      setIsLoadingPrepGuide(false);
     }
   };
 
@@ -359,6 +388,7 @@ export const App: React.FC = () => {
                         match={match}
                         onGenerateApplication={handleGenerateApplication}
                         onToggleBookmark={handleToggleBookmark}
+                        onOpenPrepGuide={handleOpenPrepGuide}
                         isGenerating={generatingAppId === match.jobId}
                       />
                     ))}
@@ -388,6 +418,7 @@ export const App: React.FC = () => {
               <PasteAndAnalyze
                 onGenerateApplication={handleGenerateApplication}
                 onToggleBookmark={handleToggleBookmark}
+                onOpenPrepGuide={handleOpenPrepGuide}
               />
             )}
 
@@ -436,6 +467,7 @@ export const App: React.FC = () => {
                         match={match}
                         onGenerateApplication={handleGenerateApplication}
                         onToggleBookmark={handleToggleBookmark}
+                        onOpenPrepGuide={handleOpenPrepGuide}
                         isGenerating={generatingAppId === match.jobId}
                       />
                     ))}
@@ -496,6 +528,17 @@ export const App: React.FC = () => {
         application={selectedApplication}
         onClose={() => setSelectedApplication(null)}
       />
+
+      {isPrepModalOpen && (
+        <JobPrepModal
+          guide={selectedPrepGuide}
+          isLoading={isLoadingPrepGuide}
+          onClose={() => {
+            setIsPrepModalOpen(false);
+            setSelectedPrepGuide(null);
+          }}
+        />
+      )}
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 

@@ -13,6 +13,7 @@ public interface IApplicationDbContext
     DbSet<TailoredApplication> TailoredApplications { get; }
     DbSet<CreditTransaction> CreditTransactions { get; }
     DbSet<SaaSPlatformSetting> PlatformSettings { get; }
+    DbSet<JobPreparationGuide> JobPreparationGuides { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

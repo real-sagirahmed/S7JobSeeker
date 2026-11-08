@@ -7,11 +7,15 @@ import { JobMatchCard } from './JobMatchCard';
 interface PasteAndAnalyzeProps {
   onGenerateApplication: (jobId: string) => void;
   onToggleBookmark: (jobId: string) => void;
+  onOpenPrepGuide?: (match: JobMatch) => void;
+  isGeneratingPrep?: boolean;
 }
 
 export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
   onGenerateApplication,
-  onToggleBookmark
+  onToggleBookmark,
+  onOpenPrepGuide,
+  isGeneratingPrep
 }) => {
   const [title, setTitle] = useState('');
   const [company, setCompany] = useState('');
@@ -187,13 +191,26 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
             match={evaluatedMatch}
             onGenerateApplication={onGenerateApplication}
             onToggleBookmark={handleLocalToggleBookmark}
+            onOpenPrepGuide={onOpenPrepGuide}
+            isGeneratingPrep={isGeneratingPrep}
           />
 
           {evaluatedMatch.missingSkills && evaluatedMatch.missingSkills.length > 0 && (
             <div className="p-5 rounded-2xl border border-amber-500/20 bg-amber-50/50 space-y-3">
-              <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
-                <BookOpen className="w-4 h-4 text-amber-600" />
-                <span>Skill Gap Bridge & Interview Preparation Checklist</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
+                  <BookOpen className="w-4 h-4 text-amber-600" />
+                  <span>Skill Gap Bridge & Interview Preparation Checklist</span>
+                </div>
+                {onOpenPrepGuide && (
+                  <button
+                    onClick={() => onOpenPrepGuide(evaluatedMatch)}
+                    className="min-h-[36px] px-3 py-1.5 rounded-xl bg-[#007070] hover:bg-[#005a5a] text-white text-xs font-bold flex items-center space-x-1.5 transition-colors self-start sm:self-auto shadow-xs active:scale-95"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Open 4-Stage Interview & Assessment Blueprint</span>
+                  </button>
+                )}
               </div>
               <p className="text-xs text-amber-800 leading-relaxed">
                 এই সার্কুলারে উল্লিখিত নিচের স্কিলগুলো আপনার রেজুমিতে পাওয়া যায়নি। ইন্টারভিউতে অংশ নেওয়ার আগে বা কভার লেটারে হাইলাইট করার জন্য এগুলো রিভিশন দিন:

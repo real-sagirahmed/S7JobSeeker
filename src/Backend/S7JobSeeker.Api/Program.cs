@@ -139,6 +139,7 @@ builder.Services.AddGoogleAIEmbeddingGeneration(geminiEmbedModel, geminiApiKey);
 
 builder.Services.AddScoped<ISkillExtractorService, SkillExtractorService>();
 builder.Services.AddScoped<IJobMatcherService, JobMatcherService>();
+builder.Services.AddScoped<IJobPreparationService, JobPreparationService>();
 
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();

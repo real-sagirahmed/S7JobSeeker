@@ -66,6 +66,7 @@ public class DependencyInjectionTests
 
         services.AddScoped<ISkillExtractorService, SkillExtractorService>();
         services.AddScoped<IJobMatcherService, JobMatcherService>();
+        services.AddScoped<IJobPreparationService, JobPreparationService>();
 
         // Register Controllers
         services.AddScoped<ProfileController>();

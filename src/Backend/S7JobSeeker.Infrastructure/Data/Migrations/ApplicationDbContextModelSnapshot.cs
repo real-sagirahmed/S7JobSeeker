@@ -505,6 +505,54 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                     b.ToTable("JobPostings");
                 });
 
+            modelBuilder.Entity("S7JobSeeker.Core.Entities.JobPreparationGuide", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ContentJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExportMarkdown")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("JobId")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("TargetRole")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId", "JobId");
+
+                    b.ToTable("JobPreparationGuides");
+                });
+
             modelBuilder.Entity("S7JobSeeker.Core.Entities.SaaSPlatformSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -738,6 +786,17 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("JobPosting");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("S7JobSeeker.Core.Entities.JobPreparationGuide", b =>
+                {
+                    b.HasOne("S7JobSeeker.Core.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

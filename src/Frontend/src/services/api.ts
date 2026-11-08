@@ -9,7 +9,9 @@ import type {
   SubscriptionStatus,
   SaaSPlatformSettings,
   AdminMetrics,
-  AdminUserItem
+  AdminUserItem,
+  JobPrepGuide,
+  CustomJobPrepRequest
 } from '../types';
 
 const API_BASE = '/api';
@@ -196,6 +198,45 @@ export const api = {
       if (!res.ok) throw new Error('Failed to toggle bookmark');
       const data = await res.json();
       return data.isBookmarked;
+    },
+
+    async getPreparationGuide(jobId: string): Promise<JobPrepGuide> {
+      const res = await fetch(`${API_BASE}/jobs/${jobId}/preparation-guide`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to load preparation guide' }));
+        throw new Error(err.message || 'Preparation guide not found');
+      }
+      return res.json();
+    },
+
+    async generatePreparationGuide(jobId: string): Promise<JobPrepGuide> {
+      const res = await fetch(`${API_BASE}/jobs/${jobId}/preparation-guide`, {
+        method: 'POST',
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Generation failed' }));
+        throw new Error(err.message || 'Failed to generate preparation guide');
+      }
+      return res.json();
+    },
+
+    async generateCustomPreparationGuide(data: CustomJobPrepRequest): Promise<JobPrepGuide> {
+      const res = await fetch(`${API_BASE}/jobs/custom/preparation-guide`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Generation failed' }));
+        throw new Error(err.message || 'Failed to generate custom preparation guide');
+      }
+      return res.json();
     }
   },
 

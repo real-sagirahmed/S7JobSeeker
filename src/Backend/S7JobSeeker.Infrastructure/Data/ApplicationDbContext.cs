@@ -20,6 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<BdTechCompany> BdTechCompanies => Set<BdTechCompany>();
     public DbSet<CreditTransaction> CreditTransactions => Set<CreditTransaction>();
     public DbSet<SaaSPlatformSetting> PlatformSettings => Set<SaaSPlatformSetting>();
+    public DbSet<JobPreparationGuide> JobPreparationGuides => Set<JobPreparationGuide>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -167,6 +168,25 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
                 TrialDays = 30,
                 UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             });
+        });
+
+        // JobPreparationGuide
+        builder.Entity<JobPreparationGuide>(b =>
+        {
+            b.HasKey(g => g.Id);
+            b.Property(g => g.JobId).HasMaxLength(150).IsRequired();
+            b.Property(g => g.TargetRole).HasMaxLength(300);
+            b.Property(g => g.CompanyName).HasMaxLength(200);
+            b.Property(g => g.ContentJson).HasColumnType("nvarchar(max)").IsRequired();
+            b.Property(g => g.ExportMarkdown).HasColumnType("nvarchar(max)").IsRequired();
+
+            b.HasIndex(g => new { g.UserId, g.JobId });
+            b.HasIndex(g => g.CreatedAt);
+
+            b.HasOne(g => g.User)
+             .WithMany()
+             .HasForeignKey(g => g.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

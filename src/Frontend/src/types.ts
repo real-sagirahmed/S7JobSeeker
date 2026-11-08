@@ -207,3 +207,66 @@ export interface AdminUserItem {
   totalTransactions: number;
 }
 
+export interface TopicItem {
+  title: string;
+  description: string;
+  whyItMattersInRole: string;
+}
+
+export interface DomainFundamentalsSection {
+  overview: string;
+  coreTopics: TopicItem[];
+  candidateGapHighlights: string[];
+}
+
+export interface CodeSnippetItem {
+  scenario: string;
+  commandOrCode: string;
+  explanation: string;
+  expectedOutputOrAction: string;
+}
+
+export interface DiagnosticLabsSection {
+  sqlQueries: CodeSnippetItem[];
+  linuxCommands: CodeSnippetItem[];
+  dockerOps: CodeSnippetItem[];
+}
+
+export interface InterviewQuestionItem {
+  question: string;
+  seniorAnswerGuide: string;
+  commonPitfallsToAvoid: string;
+}
+
+export interface MockAssessmentSection {
+  technicalQuestions: InterviewQuestionItem[];
+  scenarioTroubleshooting: InterviewQuestionItem[];
+  behavioralAgility: InterviewQuestionItem[];
+}
+
+export interface ReadinessChecklistSection {
+  preTestActions: string[];
+  practicalDrills: string[];
+  resumeKeywordsToHighlight: string[];
+}
+
+export interface JobPrepGuide {
+  id: string;
+  jobId: string;
+  targetRole: string;
+  companyName: string;
+  domainFundamentals: DomainFundamentalsSection;
+  diagnosticLabs: DiagnosticLabsSection;
+  mockAssessment: MockAssessmentSection;
+  readinessChecklist: ReadinessChecklistSection;
+  exportMarkdown: string;
+  createdAt: string;
+}
+
+export interface CustomJobPrepRequest {
+  title: string;
+  company: string;
+  description: string;
+}
+
+

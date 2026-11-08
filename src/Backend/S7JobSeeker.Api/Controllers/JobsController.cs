@@ -19,15 +19,23 @@ public class JobsController : ControllerBase
     private readonly IEnumerable<IJobFetcherService> _jobFetchers;
     private readonly IQdrantVectorService _vectorService;
     private readonly IJobMatcherService _matcherService;
+    private readonly IJobPreparationService _prepService;
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<JobsController> _logger;
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
     public JobsController(
         IApplicationDbContext dbContext,
         IEnumerable<IJobFetcherService> jobFetchers,
         IQdrantVectorService vectorService,
         IJobMatcherService matcherService,
+        IJobPreparationService prepService,
         IConfiguration configuration,
         IWebHostEnvironment environment,
         ILogger<JobsController> logger)
@@ -36,6 +44,7 @@ public class JobsController : ControllerBase
         _jobFetchers = jobFetchers;
         _vectorService = vectorService;
         _matcherService = matcherService;
+        _prepService = prepService;
         _configuration = configuration;
         _environment = environment;
         _logger = logger;
@@ -574,5 +583,215 @@ public class JobsController : ControllerBase
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Ok(new { isBookmarked = matchScore.IsBookmarked });
+    }
+
+    [Authorize]
+    [HttpGet("{id:guid}/preparation-guide")]
+    public async Task<IActionResult> GetPreparationGuide(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var existing = await _dbContext.JobPreparationGuides
+            .AsNoTracking()
+            .FirstOrDefaultAsync(g => g.UserId == userId && g.JobId == id.ToString(), cancellationToken);
+
+        if (existing == null)
+        {
+            return NotFound(new { message = "Preparation guide has not been generated for this job yet." });
+        }
+
+        var dto = JsonSerializer.Deserialize<JobPrepGuideDto>(existing.ContentJson, JsonOptions);
+        if (dto == null)
+        {
+            return NotFound(new { message = "Guide could not be loaded." });
+        }
+
+        dto.Id = existing.Id;
+        dto.JobId = existing.JobId;
+        dto.TargetRole = existing.TargetRole;
+        dto.CompanyName = existing.CompanyName;
+        dto.ExportMarkdown = existing.ExportMarkdown;
+        dto.CreatedAt = existing.CreatedAt;
+
+        return Ok(dto);
+    }
+
+    [Authorize]
+    [HttpPost("{id:guid}/preparation-guide")]
+    public async Task<IActionResult> GeneratePreparationGuide(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        // ARCHITECTURAL INTENT (LOCK 3): 0-Credit Replay Cache Check
+        var existing = await _dbContext.JobPreparationGuides
+            .AsNoTracking()
+            .FirstOrDefaultAsync(g => g.UserId == userId && g.JobId == id.ToString(), cancellationToken);
+
+        if (existing != null)
+        {
+            var cached = JsonSerializer.Deserialize<JobPrepGuideDto>(existing.ContentJson, JsonOptions);
+            if (cached != null)
+            {
+                cached.Id = existing.Id;
+                cached.JobId = existing.JobId;
+                cached.TargetRole = existing.TargetRole;
+                cached.CompanyName = existing.CompanyName;
+                cached.ExportMarkdown = existing.ExportMarkdown;
+                cached.CreatedAt = existing.CreatedAt;
+                return Ok(cached);
+            }
+        }
+
+        var job = await _dbContext.JobPostings.AsNoTracking().FirstOrDefaultAsync(j => j.Id == id, cancellationToken);
+        if (job == null) return NotFound(new { message = "Job not found." });
+
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user == null) return Unauthorized();
+
+        // ARCHITECTURAL INTENT (LOCK 1 & LOCK 2): Master Admin bypass, candidate credit enforcement
+        if (!user.IsAdmin && user.AiCredits <= 0)
+        {
+            return StatusCode(StatusCodes.Status402PaymentRequired, new
+            {
+                message = "You have exhausted your AI Credits. Please purchase a credit pack to generate interview preparation guides.",
+                requiresCredits = true
+            });
+        }
+
+        var profile = await _dbContext.UserProfiles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+
+        ResumeParsedProfileDto? parsedProfile = null;
+        if (profile != null && !string.IsNullOrEmpty(profile.ParsedProfileJson))
+        {
+            parsedProfile = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson, JsonOptions);
+        }
+
+        var matchScore = await _dbContext.JobMatchScores
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m => m.UserId == userId && m.JobPostingId == id, cancellationToken);
+
+        List<string>? missingSkills = null;
+        if (matchScore != null && !string.IsNullOrEmpty(matchScore.MissingSkillsJson))
+        {
+            missingSkills = JsonSerializer.Deserialize<List<string>>(matchScore.MissingSkillsJson, JsonOptions);
+        }
+
+        var guideDto = await _prepService.GeneratePreparationGuideAsync(
+            job.Title,
+            job.Company,
+            job.Description,
+            parsedProfile,
+            missingSkills,
+            cancellationToken);
+
+        // Deduct 1 credit for candidate (admin is free)
+        if (!user.IsAdmin)
+        {
+            user.AiCredits = Math.Max(0, user.AiCredits - 1);
+        }
+
+        var newGuide = new JobPreparationGuide
+        {
+            UserId = userId,
+            JobId = id.ToString(),
+            TargetRole = job.Title,
+            CompanyName = job.Company,
+            ContentJson = JsonSerializer.Serialize(guideDto, JsonOptions),
+            ExportMarkdown = guideDto.ExportMarkdown,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _dbContext.JobPreparationGuides.Add(newGuide);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        guideDto.Id = newGuide.Id;
+        guideDto.JobId = newGuide.JobId;
+        guideDto.TargetRole = newGuide.TargetRole;
+        guideDto.CompanyName = newGuide.CompanyName;
+        guideDto.CreatedAt = newGuide.CreatedAt;
+
+        return Ok(guideDto);
+    }
+
+    [Authorize]
+    [HttpPost("custom/preparation-guide")]
+    public async Task<IActionResult> GenerateCustomPreparationGuide(
+        [FromBody] CustomJobPrepRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Description))
+        {
+            return BadRequest(new { message = "Job title and description are required." });
+        }
+
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user == null) return Unauthorized();
+
+        // ARCHITECTURAL INTENT (LOCK 1 & LOCK 2): Master Admin bypass, candidate credit enforcement
+        if (!user.IsAdmin && user.AiCredits <= 0)
+        {
+            return StatusCode(StatusCodes.Status402PaymentRequired, new
+            {
+                message = "You have exhausted your AI Credits. Please purchase a credit pack to generate interview preparation guides.",
+                requiresCredits = true
+            });
+        }
+
+        var profile = await _dbContext.UserProfiles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+
+        ResumeParsedProfileDto? parsedProfile = null;
+        if (profile != null && !string.IsNullOrEmpty(profile.ParsedProfileJson))
+        {
+            parsedProfile = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson, JsonOptions);
+        }
+
+        var company = string.IsNullOrWhiteSpace(request.Company) ? "Target Employer" : request.Company;
+
+        var guideDto = await _prepService.GeneratePreparationGuideAsync(
+            request.Title,
+            company,
+            request.Description,
+            parsedProfile,
+            null,
+            cancellationToken);
+
+        if (!user.IsAdmin)
+        {
+            user.AiCredits = Math.Max(0, user.AiCredits - 1);
+        }
+
+        var customJobId = $"custom-{Guid.NewGuid():N}";
+        var newGuide = new JobPreparationGuide
+        {
+            UserId = userId,
+            JobId = customJobId,
+            TargetRole = request.Title,
+            CompanyName = company,
+            ContentJson = JsonSerializer.Serialize(guideDto, JsonOptions),
+            ExportMarkdown = guideDto.ExportMarkdown,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _dbContext.JobPreparationGuides.Add(newGuide);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        guideDto.Id = newGuide.Id;
+        guideDto.JobId = customJobId;
+        guideDto.TargetRole = request.Title;
+        guideDto.CompanyName = company;
+        guideDto.CreatedAt = newGuide.CreatedAt;
+
+        return Ok(guideDto);
     }
 }

@@ -35,6 +35,28 @@ public class DummyVectorService : IQdrantVectorService
     public Task<IReadOnlyList<VectorSearchResult>> SearchSimilarJobsAsync(ReadOnlyMemory<float> queryEmbedding, int limit = 20, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<VectorSearchResult>>([]);
 }
 
+public class DummyJobPreparationService : IJobPreparationService
+{
+    public Task<JobPrepGuideDto> GeneratePreparationGuideAsync(
+        string targetRole,
+        string companyName,
+        string jobDescription,
+        ResumeParsedProfileDto? candidateProfile,
+        List<string>? missingSkills,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(new JobPrepGuideDto
+        {
+            TargetRole = targetRole,
+            CompanyName = companyName,
+            DomainFundamentals = new DomainFundamentalsSection
+            {
+                Overview = "Test Overview"
+            }
+        });
+    }
+}
+
 public class PasteAndAnalyzeWorkflowTests
 {
     private readonly ApplicationDbContext _db;
@@ -104,6 +126,7 @@ public class PasteAndAnalyzeWorkflowTests
             [],
             new DummyVectorService(),
             matcherService,
+            new DummyJobPreparationService(),
             config,
             new DummyWebHostEnvironment(),
             NullLogger<JobsController>.Instance

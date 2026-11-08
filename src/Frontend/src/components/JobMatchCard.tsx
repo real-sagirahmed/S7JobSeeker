@@ -1,19 +1,23 @@
 import React from 'react';
-import { ExternalLink, Bookmark, Sparkles, CheckCircle2, AlertTriangle, FileEdit } from 'lucide-react';
+import { ExternalLink, Bookmark, Sparkles, CheckCircle2, AlertTriangle, FileEdit, BookOpen } from 'lucide-react';
 import type { JobMatch } from '../types';
 
 interface JobMatchCardProps {
   match: JobMatch;
   onGenerateApplication: (jobId: string) => void;
   onToggleBookmark: (jobId: string) => void;
+  onOpenPrepGuide?: (match: JobMatch) => void;
   isGenerating?: boolean;
+  isGeneratingPrep?: boolean;
 }
 
 export const JobMatchCard: React.FC<JobMatchCardProps> = ({
   match,
   onGenerateApplication,
   onToggleBookmark,
-  isGenerating
+  onOpenPrepGuide,
+  isGenerating,
+  isGeneratingPrep
 }) => {
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-[#007070] bg-[#E6F4F4] border-[#007070]/40';
@@ -184,14 +188,27 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
 
       {/* Footer Actions */}
       <div className="pt-3 border-t border-black/8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-        <button
-          onClick={() => onGenerateApplication(match.jobId)}
-          disabled={isGenerating}
-          className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(0,112,112,0.20)]"
-        >
-          <FileEdit className="w-3.5 h-3.5" />
-          <span>{isGenerating ? 'Drafting Application...' : 'Generate Cover Letter & Tips'}</span>
-        </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          {onOpenPrepGuide && (
+            <button
+              onClick={() => onOpenPrepGuide(match)}
+              disabled={isGeneratingPrep}
+              className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#007070] to-[#004e4e] hover:from-[#005a5a] hover:to-[#003d3d] active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(0,112,112,0.22)]"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>{isGeneratingPrep ? 'Loading Guide...' : 'Prep & Interview Guide'}</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => onGenerateApplication(match.jobId)}
+            disabled={isGenerating}
+            className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] border border-black/10 active:scale-[0.98] text-xs font-bold flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
+          >
+            <FileEdit className="w-3.5 h-3.5" />
+            <span>{isGenerating ? 'Drafting Application...' : 'Tailor Application'}</span>
+          </button>
+        </div>
 
         {directUrl && (
           <a
