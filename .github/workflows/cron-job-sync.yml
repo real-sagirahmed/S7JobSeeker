@@ -25,9 +25,18 @@ jobs:
         CLEAN_URL=$(echo -n "$APP_URL" | tr -d '\r\n ' | sed -e 's|/*$||')
         
         echo "Triggering secure API Job Sync endpoint at ${CLEAN_URL}/api/jobs/sync..."
-        curl -s -S -X POST "${CLEAN_URL}/api/jobs/sync" \
+        HTTP_CODE=$(curl -s -S -o /tmp/sync_response.json -w "%{http_code}" -X POST "${CLEAN_URL}/api/jobs/sync?cronKey=${CLEAN_KEY}" \
+          -H "Authorization: Bearer ${CLEAN_KEY}" \
           -H "X-Cron-Key: ${CLEAN_KEY}" \
           -H "Content-Type: application/json" \
           -H "Content-Length: 0" \
-          -d '' \
-          --fail-with-body
+          -d '')
+          
+        echo "Response HTTP Status: ${HTTP_CODE}"
+        cat /tmp/sync_response.json
+        echo ""
+        
+        if [ "$HTTP_CODE" -ne 200 ]; then
+          echo "Job sync failed with HTTP status ${HTTP_CODE}"
+          exit 1
+        fi

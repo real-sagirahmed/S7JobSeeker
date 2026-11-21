@@ -65,31 +65,60 @@ public class JobsController : ControllerBase
         return !NonTechExclusions.Any(ex => title.Contains(ex, StringComparison.OrdinalIgnoreCase));
     }
 
+    // ARCHITECTURAL INTENT: Multi-transport authentication for automated background cron jobs.
+    // Supports RFC Bearer token, legacy X-Cron-Key, and fail-safe query parameter ?cronKey=
+    // to guarantee execution across Cloudflare, IIS ARR, and shared host proxies.
+    public static bool IsValidCronKey(string? providedKey, string? expectedKey)
+    {
+        var cleanProvided = providedKey?.Trim().Trim('"', '\'', ' ') ?? string.Empty;
+        var cleanExpected = expectedKey?.Trim().Trim('"', '\'', ' ') ?? string.Empty;
+
+        if (string.IsNullOrEmpty(cleanProvided)) return false;
+
+        return string.Equals(cleanProvided, cleanExpected, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(cleanProvided, "s7-cron-secret-key-change-in-production-2026", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(cleanProvided, "default-cron-secret", StringComparison.OrdinalIgnoreCase);
+    }
+
     [HttpPost("sync")]
-    public async Task<IActionResult> SyncJobs(CancellationToken cancellationToken)
+    public async Task<IActionResult> SyncJobs([FromQuery] string? cronKey, CancellationToken cancellationToken)
     {
         var isDev = _environment.IsDevelopment();
-        var expectedKey = _configuration["CronSettings:SecretKey"] ?? "default-cron-secret";
+        var expectedKey = _configuration["CronSettings:SecretKey"]
+            ?? _configuration["CronSettings__SecretKey"]
+            ?? _configuration["APP_CRON_KEY"]
+            ?? _configuration["CRON_KEY"]
+            ?? "s7-cron-secret-key-change-in-production-2026";
 
         // In production, allow either valid CronKey OR authenticated user
         if (!isDev)
         {
-            var hasValidCron = false;
-            if (Request.Headers.TryGetValue("X-Cron-Key", out var providedKeyValues))
-            {
-                var provided = providedKeyValues.ToString().Trim().Trim('"', '\'', ' ');
-                var expected = expectedKey.Trim().Trim('"', '\'', ' ');
+            var providedKey = string.Empty;
 
-                hasValidCron = string.Equals(provided, expected, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(provided, "s7-cron-secret-key-change-in-production-2026", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(provided, "default-cron-secret", StringComparison.OrdinalIgnoreCase);
+            // 1. Check RFC standard Authorization: Bearer <key>
+            if (Request.Headers.TryGetValue("Authorization", out var authHeader) &&
+                authHeader.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                providedKey = authHeader.ToString()["Bearer ".Length..].Trim();
+            }
+            // 2. Check X-Cron-Key header
+            else if (Request.Headers.TryGetValue("X-Cron-Key", out var cronHeader))
+            {
+                providedKey = cronHeader.ToString().Trim();
+            }
+            // 3. Check query string parameter
+            else if (!string.IsNullOrWhiteSpace(cronKey))
+            {
+                providedKey = cronKey.Trim();
             }
 
+            var hasValidCron = IsValidCronKey(providedKey, expectedKey);
             var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 
             if (!hasValidCron && !isAuthenticated)
             {
-                _logger.LogWarning("Unauthorized job sync trigger attempt.");
+                _logger.LogWarning("Unauthorized job sync trigger attempt from IP {Ip}. KeyProvided: {HasKey}",
+                    HttpContext.Connection.RemoteIpAddress, !string.IsNullOrWhiteSpace(providedKey));
                 return Unauthorized(new { message = "Invalid or missing X-Cron-Key header or authentication token." });
             }
         }

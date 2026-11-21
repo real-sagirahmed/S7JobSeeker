@@ -46,4 +46,19 @@ public class SecurityAndPrivacyTests
             Assert.Contains("*.pdf", text);
         }
     }
+
+    [Theory]
+    [InlineData("s7-cron-secret-key-change-in-production-2026", "s7-cron-secret-key-change-in-production-2026", true)]
+    [InlineData("Bearer s7-cron-secret-key-change-in-production-2026", "s7-cron-secret-key-change-in-production-2026", false)] // raw bearer prefix handled in controller
+    [InlineData(" s7-cron-secret-key-change-in-production-2026 \r\n", "s7-cron-secret-key-change-in-production-2026", true)]
+    [InlineData("\"s7-cron-secret-key-change-in-production-2026\"", "s7-cron-secret-key-change-in-production-2026", true)]
+    [InlineData("'s7-cron-secret-key-change-in-production-2026'", "s7-cron-secret-key-change-in-production-2026", true)]
+    [InlineData("invalid-key", "s7-cron-secret-key-change-in-production-2026", false)]
+    [InlineData("", "s7-cron-secret-key-change-in-production-2026", false)]
+    [InlineData(null, "s7-cron-secret-key-change-in-production-2026", false)]
+    public void IsValidCronKey_ShouldValidateAndSanitizeKeysCorrectly(string? provided, string expected, bool shouldBeValid)
+    {
+        var result = S7JobSeeker.Api.Controllers.JobsController.IsValidCronKey(provided, expected);
+        Assert.Equal(shouldBeValid, result);
+    }
 }
