@@ -125,9 +125,9 @@ public class AuthController : ControllerBase
 
     private AuthResponseDto GenerateAuthResponse(ApplicationUser user)
     {
-        var secret = _configuration["JwtSettings:Secret"] ?? "DefaultSecretKeyMustBe32CharsLongAtLeast!";
-        var issuer = _configuration["JwtSettings:Issuer"] ?? "s7job-seeker";
-        var audience = _configuration["JwtSettings:Audience"] ?? "s7job-seeker-users";
+        var secret = _configuration["JwtSettings:Secret"] ?? "SuperSecretKeyForS7JobSeekerAuthenticationMustBeAtLeast32CharactersLong2026!";
+        var issuer = _configuration["JwtSettings:Issuer"] ?? "s7job-seeker-api";
+        var audience = _configuration["JwtSettings:Audience"] ?? "s7job-seeker-client";
         var expiryDays = int.TryParse(_configuration["JwtSettings:ExpiryDays"], out var days) ? days : 7;
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));

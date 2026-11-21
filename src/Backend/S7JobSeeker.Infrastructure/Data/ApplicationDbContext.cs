@@ -66,6 +66,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             b.HasIndex(j => new { j.Source, j.ExternalId }).IsUnique();
             b.HasIndex(j => j.CreatedAt);
             b.HasIndex(j => j.IsRemote);
+            b.HasIndex(j => j.Company);
         });
 
         // JobMatchScore

@@ -16,7 +16,7 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
   onSaveScore
 }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(savedScore !== undefined);
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
   if (!questions || questions.length === 0) {
     return null;
@@ -53,7 +53,7 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
 
   const answeredCount = Object.keys(selectedAnswers).length;
   const allAnswered = answeredCount === questions.length;
-  const currentScore = isSubmitted ? (savedScore ?? calculateScore()) : calculateScore();
+  const currentScore = isSubmitted ? calculateScore() : (savedScore ?? 0);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-7 space-y-6">
@@ -73,16 +73,18 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
           </p>
         </div>
 
-        {isSubmitted && (
+        {(isSubmitted || savedScore !== undefined) && (
           <div className="flex items-center space-x-3 bg-emerald-50 border border-emerald-200/80 px-3.5 py-2 rounded-xl">
             <div className="text-right">
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 block">Assessment Score</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 block">
+                {isSubmitted ? 'Assessment Score' : 'Previous Score'}
+              </span>
               <span className="text-lg font-black text-emerald-900">{currentScore}%</span>
             </div>
             <button
               onClick={handleReset}
               title="পুনরায় কুইজ দিন"
-              className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100/60 rounded-lg transition-colors"
+              className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100/60 rounded-lg transition-colors cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -105,7 +107,7 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
                   {q.question}
                 </span>
 
-                {isSubmitted && (
+                {isSubmitted && hasAnswered && (
                   <span className="shrink-0">
                     {isCorrect ? (
                       <span className="inline-flex items-center space-x-1 text-[11px] font-extrabold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
@@ -128,9 +130,9 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
                   const isThisSelected = selectedOption === oIdx;
                   const isThisCorrect = oIdx === q.correctOptionIndex;
 
-                  let optionStyle = 'bg-white border-slate-200 text-slate-700 hover:border-teal-300 hover:bg-teal-50/30';
+                  let optionStyle = 'bg-white border-slate-200 text-slate-700 hover:border-teal-300 hover:bg-teal-50/30 cursor-pointer';
 
-                  if (isSubmitted) {
+                  if (isSubmitted && hasAnswered) {
                     if (isThisCorrect) {
                       optionStyle = 'bg-emerald-50/90 border-emerald-500 text-emerald-950 font-bold';
                     } else if (isThisSelected && !isThisCorrect) {

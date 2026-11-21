@@ -56,121 +56,19 @@ public class JobMatcherService : IJobMatcherService
         }
     }
 
-    public async Task<JobMatchResultDto> EvaluateMatchAsync(
+    public Task<JobMatchResultDto> EvaluateMatchAsync(
         ResumeParsedProfileDto profile,
         JobPosting job,
         float? vectorSimilarity = null,
         CancellationToken cancellationToken = default)
     {
-        var candidateSkills = string.Join(", ", profile.Skills.Select(s => s.Name));
-
-        // If no real API key, use fast deterministic keyword/skill matching fallback
-        if (string.IsNullOrWhiteSpace(_apiKey) || _apiKey.StartsWith("DEMO"))
-        {
-            return EvaluateMatchDeterministic(profile, job, vectorSimilarity);
-        }
-
-        var prompt = $$"""
-        You are a Principal Engineering Hiring Evaluator and Career Advisor.
-        Evaluate the suitability of the candidate for the given job opening.
-
-        CANDIDATE PROFILE:
-        - Target Role: {{profile.TargetRole}}
-        - Experience: {{profile.TotalYearsOfExperience}} years
-        - Skills: {{candidateSkills}}
-        - Summary: {{profile.Summary}}
-
-        JOB POSTING:
-        - Title: {{job.Title}}
-        - Company: {{job.Company}}
-        - Description:
-        \"\"\"
-        {{(job.Description.Length > 2500 ? job.Description[..2500] : job.Description)}}
-        \"\"\"
-
-        Respond strictly in valid JSON matching this structure:
-        {
-          "skillMatchScore": 85.0,
-          "matchingSkills": ["C#", ".NET Core", "SQL Server"],
-          "missingSkills": ["Kubernetes", "AWS"],
-          "recommendations": "2-3 actionable sentences highlighting strengths and how to bridge the missing skills for this specific role."
-        }
-
-        Do NOT wrap in markdown code blocks. Return ONLY valid raw JSON.
-        """;
-
-        var chatHistory = new ChatHistory();
-        chatHistory.AddSystemMessage("You evaluate technical job matches. Output strictly valid JSON.");
-        chatHistory.AddUserMessage(prompt);
-
-        double skillScore = 70.0;
-        var matchingSkills = new List<string>();
-        var missingSkills = new List<string>();
-        string recommendations = "The candidate's core background aligns with the responsibilities.";
-
-        try
-        {
-            var response = await _chatCompletionService.GetChatMessageContentAsync(chatHistory, cancellationToken: cancellationToken);
-            var rawJson = response.Content?.Trim() ?? string.Empty;
-
-            if (rawJson.StartsWith("```json")) rawJson = rawJson[7..];
-            if (rawJson.StartsWith("```")) rawJson = rawJson[3..];
-            if (rawJson.EndsWith("```")) rawJson = rawJson[..^3];
-            rawJson = rawJson.Trim();
-
-            using var doc = JsonDocument.Parse(rawJson);
-            var root = doc.RootElement;
-
-            if (root.TryGetProperty("skillMatchScore", out var sProp)) skillScore = sProp.GetDouble();
-            if (root.TryGetProperty("recommendations", out var rProp)) recommendations = rProp.GetString() ?? recommendations;
-
-            if (root.TryGetProperty("matchingSkills", out var mProp))
-            {
-                foreach (var el in mProp.EnumerateArray())
-                {
-                    var val = el.GetString();
-                    if (!string.IsNullOrWhiteSpace(val)) matchingSkills.Add(val);
-                }
-            }
-
-            if (root.TryGetProperty("missingSkills", out var misProp))
-            {
-                foreach (var el in misProp.EnumerateArray())
-                {
-                    var val = el.GetString();
-                    if (!string.IsNullOrWhiteSpace(val)) missingSkills.Add(val);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to evaluate match details via LLM. Using deterministic fallback.");
-            return EvaluateMatchDeterministic(profile, job, vectorSimilarity);
-        }
-
-        double vectorScore = vectorSimilarity.HasValue ? Math.Clamp(vectorSimilarity.Value * 100.0, 0.0, 100.0) : skillScore;
-        double overallScore = Math.Round((vectorScore * 0.5) + (skillScore * 0.5), 1);
-
-        return new JobMatchResultDto(
-            JobId: job.Id,
-            Title: job.Title,
-            Company: job.Company,
-            Location: job.Location,
-            IsRemote: job.IsRemote,
-            JobType: job.JobType,
-            SalaryRange: job.SalaryRange,
-            Url: job.Url,
-            PublishedAt: job.PublishedAt,
-            OverallScore: overallScore,
-            SemanticSimilarityScore: Math.Round(vectorScore, 1),
-            SkillMatchScore: Math.Round(skillScore, 1),
-            MatchingSkills: matchingSkills,
-            MissingSkills: missingSkills,
-            Recommendations: recommendations,
-            IsBookmarked: false,
-            Source: job.Source,
-            SourceName: GetSourceName(job.Source)
-        );
+        // ARCHITECTURAL INTENT (LOCK: Determinism First & Denial-of-Wallet Defense):
+        // Match evaluation across catalog jobs is strictly deterministic (mathematical set-difference).
+        // Calling LLMs sequentially in bulk search loops causes unacceptable latency (30-50s) and blows through
+        // the 15 RPM rate limit of the Gemini free tier. Heavy LLM generation is strictly reserved for
+        // on-demand single actions: Tailored Cover Letter (GenerateTailoredApplicationAsync) and 4-Stage Prep Guide.
+        var result = EvaluateMatchDeterministic(profile, job, vectorSimilarity);
+        return Task.FromResult(result);
     }
 
     // ARCHITECTURAL INTENT: Normalized Tech Skill Catalog for Deterministic Extraction

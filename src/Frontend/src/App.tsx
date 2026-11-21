@@ -426,6 +426,7 @@ export const App: React.FC = () => {
                 onGenerateApplication={handleGenerateApplication}
                 onToggleBookmark={handleToggleBookmark}
                 onOpenPrepGuide={handleOpenPrepGuide}
+                onRefreshUser={() => api.auth.getMe().then(setUser).catch(() => {})}
               />
             )}
 

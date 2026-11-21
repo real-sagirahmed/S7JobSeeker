@@ -190,6 +190,7 @@ public class JobMatcherScoringTests
 
     [Theory]
     [InlineData(JobSource.Bdjobs, "BDJobs")]
+    [InlineData(JobSource.LinkedIn, "LinkedIn")]
     [InlineData(JobSource.Jobicy, "Jobicy")]
     [InlineData(JobSource.Himalayas, "Himalayas")]
     [InlineData(JobSource.WeWorkRemotely, "We Work Remotely")]

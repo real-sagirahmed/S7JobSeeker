@@ -8,6 +8,7 @@ interface PasteAndAnalyzeProps {
   onGenerateApplication: (jobId: string) => void;
   onToggleBookmark: (jobId: string) => void;
   onOpenPrepGuide?: (match: JobMatch) => void;
+  onRefreshUser?: () => void;
   isGeneratingPrep?: boolean;
 }
 
@@ -15,6 +16,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
   onGenerateApplication,
   onToggleBookmark,
   onOpenPrepGuide,
+  onRefreshUser,
   isGeneratingPrep
 }) => {
   const [title, setTitle] = useState('');
@@ -40,6 +42,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
       const result = await api.jobs.pasteAndMatch(title, company, description, url);
       setEvaluatedMatch(result);
       setCheckedSkills({});
+      onRefreshUser?.();
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

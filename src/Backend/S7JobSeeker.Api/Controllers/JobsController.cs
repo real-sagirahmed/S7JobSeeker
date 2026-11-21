@@ -377,6 +377,7 @@ public class JobsController : ControllerBase
                         job.Source switch
                         {
                             JobSource.Bdjobs => "BDJobs",
+                            JobSource.LinkedIn => "LinkedIn",
                             JobSource.Jobicy => "Jobicy",
                             JobSource.Himalayas => "Himalayas",
                             JobSource.WeWorkRemotely => "We Work Remotely",

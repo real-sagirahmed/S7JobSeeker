@@ -33,4 +33,23 @@ public class ArchitecturalIntentLockTests
         Assert.Contains(SkillCategory.CloudAndDevOps, categories);
         Assert.Contains(SkillCategory.AIAndData, categories);
     }
+
+    [Fact]
+    public void ProgramAndAuthController_JwtFallbacks_MustBeIdentical()
+    {
+        var authPath = Path.Combine(AppContext.BaseDirectory, "../../../../../src/Backend/S7JobSeeker.Api/Controllers/AuthController.cs");
+        var programPath = Path.Combine(AppContext.BaseDirectory, "../../../../../src/Backend/S7JobSeeker.Api/Program.cs");
+
+        if (File.Exists(authPath) && File.Exists(programPath))
+        {
+            var authCode = File.ReadAllText(authPath);
+            var programCode = File.ReadAllText(programPath);
+
+            Assert.Contains("\"s7job-seeker-api\"", authCode);
+            Assert.Contains("\"s7job-seeker-api\"", programCode);
+
+            Assert.Contains("\"s7job-seeker-client\"", authCode);
+            Assert.Contains("\"s7job-seeker-client\"", programCode);
+        }
+    }
 }
