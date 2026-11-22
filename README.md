@@ -10,7 +10,7 @@
 [![Semantic Kernel](https://img.shields.io/badge/Semantic%20Kernel-Microsoft%20AI-0078D4?style=for-the-badge&logo=microsoft&logoColor=white)](https://github.com/microsoft/semantic-kernel)
 [![Qdrant](https://img.shields.io/badge/Qdrant-Vector%20Search-DC382D?style=for-the-badge&logo=qdrant&logoColor=white)](https://qdrant.tech/)
 [![Google Gemini](https://img.shields.io/badge/Gemini%202.0%20Flash-Google%20AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
-[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-73%20Passing-success?style=for-the-badge&logo=checkmarx&logoColor=white)]()
+[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-77%20Passing-success?style=for-the-badge&logo=checkmarx&logoColor=white)]()
 [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ---
@@ -227,7 +227,7 @@ npm run dev
 ```powershell
 dotnet test S7JobSeeker.sln --configuration Release
 ```
-- **ফলাফল**: `Passed! - Failed: 0, Passed: 73, Skipped: 0, Total: 73`
+- **ফলাফল**: `Passed! - Failed: 0, Passed: 77, Skipped: 0, Total: 77`
 
 ---
 
