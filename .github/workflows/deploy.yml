@@ -69,5 +69,25 @@ jobs:
         protocol: ftps
 
     - name: Bring IIS App Online (Remove app_offline)
+      env:
+        FTP_SERVER: ${{ secrets.MONSTERASP_FTP_SERVER }}
+        FTP_USER: ${{ secrets.MONSTERASP_FTP_USERNAME }}
+        FTP_PASS: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
       run: |
-        curl -k --ftp-ssl "ftp://${{ secrets.MONSTERASP_FTP_SERVER }}/wwwroot/" -u "${{ secrets.MONSTERASP_FTP_USERNAME }}:${{ secrets.MONSTERASP_FTP_PASSWORD }}" -Q "-DELE app_offline.htm" -Q "-DELE wwwroot/app_offline.htm" || true
+        python3 -c '
+        from ftplib import FTP_TLS
+        import os
+        try:
+            ftps = FTP_TLS(os.environ["FTP_SERVER"])
+            ftps.login(os.environ["FTP_USER"], os.environ["FTP_PASS"])
+            ftps.prot_p()
+            for path in ["wwwroot/app_offline.htm", "app_offline.htm"]:
+                try:
+                    ftps.delete(path)
+                    print(f"Successfully removed {path}")
+                except Exception as e:
+                    print(f"Notice: {path} - {e}")
+            ftps.quit()
+        except Exception as err:
+            print(f"FTP online error: {err}")
+        '
