@@ -117,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="text-sm sm:text-base md:text-lg font-black tracking-tight text-[#0B0B0B] group-hover:text-[#007070] transition-colors truncate">
                   s7job-seeker
                 </span>
-                <span className="px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider rounded-md bg-[#E6F4F4] text-[#007070] border border-[#007070]/25 hidden xs:inline-block shrink-0">
+                <span className="px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider rounded-md bg-[#E6F4F4] text-[#007070] border border-[#007070]/25 hidden sm:inline-block shrink-0">
                   RAG AI
                 </span>
               </div>
@@ -235,9 +235,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Right Action Tools: Language, Credits, User Menu, Hamburger */}
           <div className="flex items-center space-x-2 sm:space-x-2.5 shrink-0">
             
-            {/* Language Switcher Pill (Bilingual EN / BN) - Hidden on extra-narrow <420px mobile to prevent crowding */}
+            {/* Language Switcher Pill (Bilingual EN / BN) - Visible across all viewports */}
             <div
-              className="hidden xs:flex items-center rounded-xl border border-black/10 bg-slate-100/90 p-0.5 text-xs font-bold text-slate-600 shrink-0 shadow-2xs"
+              className="flex items-center rounded-xl border border-black/10 bg-slate-100/90 p-0.5 text-xs font-bold text-slate-600 shrink-0 shadow-2xs"
               role="group"
               aria-label="Language selection"
             >
