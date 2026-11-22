@@ -17,7 +17,7 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.22")
+                .HasAnnotation("ProductVersion", "9.0.23")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -495,6 +495,8 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Company");
+
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("IsRemote");
@@ -646,6 +648,13 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("CertificateId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("CertificateIssuedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ChecklistJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -672,6 +681,8 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CertificateId");
 
                     b.HasIndex("UserId")
                         .IsUnique();

@@ -73,7 +73,31 @@ public class CbsProgressDto
     public Dictionary<string, int> QuizScores { get; set; } = [];
     public Dictionary<string, bool> Checklist { get; set; } = [];
     public int LastAccessedDay { get; set; } = 1;
+    public string? CertificateId { get; set; }
+    public DateTime? CertificateIssuedAt { get; set; }
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+public class CbsCertificateVerificationDto
+{
+    public bool IsValid { get; set; } = true;
+    public string CertificateId { get; set; } = string.Empty;
+    public string CandidateName { get; set; } = string.Empty;
+    public string TrackTitle { get; set; } = "Junior Software Engineer (Service) — Current & NextGen CBS Support";
+    public DateTime IssuedAt { get; set; }
+    public int CompletedDaysCount { get; set; } = 14;
+    public int AverageScore { get; set; }
+    public List<string> Competencies { get; set; } =
+    [
+        "SQL Server Forensics & OLTP",
+        "Double-Entry Accounting GL",
+        "Linux Services & Logs",
+        "Docker Container Ops",
+        "CBS EOD Batch Triage",
+        "L1/L2 Incident RCA & Rollback"
+    ];
+    public string Issuer { get; set; } = "teamS7 Enterprise Intelligence & Learning";
+    public string VerificationUrl { get; set; } = string.Empty;
 }
 
 public class CbsProgressUpdateDto

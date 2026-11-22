@@ -8,6 +8,8 @@ public class UserCbsProgress
     public string QuizScoresJson { get; set; } = "{}";
     public string ChecklistJson { get; set; } = "{}";
     public int LastAccessedDay { get; set; } = 1;
+    public string? CertificateId { get; set; }
+    public DateTime? CertificateIssuedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

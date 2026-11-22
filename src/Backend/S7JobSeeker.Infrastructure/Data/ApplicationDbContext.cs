@@ -199,6 +199,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             b.Property(p => p.CompletedDaysJson).HasColumnType("nvarchar(max)").IsRequired();
             b.Property(p => p.QuizScoresJson).HasColumnType("nvarchar(max)").IsRequired();
             b.Property(p => p.ChecklistJson).HasColumnType("nvarchar(max)").IsRequired();
+            b.Property(p => p.CertificateId).HasMaxLength(100);
+            b.HasIndex(p => p.CertificateId);
 
             b.HasOne(p => p.User)
              .WithOne()
