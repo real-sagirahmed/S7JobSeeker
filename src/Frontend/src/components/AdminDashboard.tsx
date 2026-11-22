@@ -18,6 +18,7 @@ import {
   Zap
 } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 import type {
   AdminMetrics,
   CreditTransaction,
@@ -31,6 +32,7 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'companies' | 'settings' | 'sync'>('pending');
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [pendingPayments, setPendingPayments] = useState<CreditTransaction[]>([]);
@@ -344,14 +346,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
       <div className="flex border-b border-slate-200 text-xs font-bold gap-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab('pending')}
-          className={`pb-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`pb-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'pending'
               ? 'border-[#007070] text-[#007070]'
               : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           <CreditCard className="w-4 h-4" />
-          <span>Pending Payments ({pendingPayments.length})</span>
+          <span>{t.adminDashboard.tabPending} ({pendingPayments.length})</span>
           {pendingPayments.length > 0 && (
             <span className="px-1.5 py-0.5 text-[10px] bg-amber-500 text-white rounded-full font-black">
               {pendingPayments.length}
@@ -361,26 +363,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
 
         <button
           onClick={() => setActiveTab('users')}
-          className={`pb-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`pb-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'users'
               ? 'border-[#007070] text-[#007070]'
               : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>Candidates Directory ({users.length})</span>
+          <span>{t.adminDashboard.tabUsers} ({users.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('companies')}
-          className={`pb-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`pb-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'companies'
               ? 'border-[#007070] text-[#007070]'
               : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           <Building2 className="w-4 h-4" />
-          <span>Pending Companies ({pendingCompanies.length})</span>
+          <span>{t.adminDashboard.tabCompanies} ({pendingCompanies.length})</span>
           {pendingCompanies.length > 0 && (
             <span className="px-1.5 py-0.5 text-[10px] bg-teal-600 text-white rounded-full font-black">
               {pendingCompanies.length}
@@ -390,14 +392,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
 
         <button
           onClick={() => setActiveTab('settings')}
-          className={`pb-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`pb-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'settings'
               ? 'border-[#007070] text-[#007070]'
               : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           <Settings className="w-4 h-4" />
-          <span>bKash / Nagad Receiver Settings</span>
+          <span>{t.adminDashboard.tabSettings}</span>
         </button>
 
         <button

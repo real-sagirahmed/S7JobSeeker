@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Copy, Check, Sparkles, FileText, Download } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 import type { TailoredApplication } from '../types';
 
 interface TailoredModalProps {
@@ -8,6 +9,7 @@ interface TailoredModalProps {
 }
 
 export const TailoredModal: React.FC<TailoredModalProps> = ({ application, onClose }) => {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   if (!application) return null;
@@ -42,12 +44,12 @@ export const TailoredModal: React.FC<TailoredModalProps> = ({ application, onClo
             <div className="w-8 h-8 rounded-lg bg-[#E6F4F4] border border-[#007070]/20 flex items-center justify-center text-[#007070] shrink-0">
               <Sparkles className="w-4 h-4" />
             </div>
-            <h3 className="font-black text-[#0B0B0B] text-base leading-tight">Customized Job Application Package</h3>
+            <h3 className="font-black text-[#0B0B0B] text-base leading-tight">{t.tailoredModal.title}</h3>
           </div>
           <button
             onClick={onClose}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center p-1.5 rounded-lg text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-colors shrink-0"
-            aria-label="Close modal"
+            aria-label={t.common.close}
           >
             <X className="w-5 h-5" />
           </button>
@@ -59,7 +61,7 @@ export const TailoredModal: React.FC<TailoredModalProps> = ({ application, onClo
           {application.resumeTips && (
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-1.5">
               <div className="text-xs font-bold text-amber-900 flex items-center uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-600 shrink-0" /> High-Impact Resume Optimization Tips
+                <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-600 shrink-0" /> {t.tailoredModal.resumeTips}
               </div>
               <p className="text-xs text-amber-800 leading-relaxed whitespace-pre-line">
                 {application.resumeTips}
@@ -71,23 +73,23 @@ export const TailoredModal: React.FC<TailoredModalProps> = ({ application, onClo
           <div className="space-y-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="text-xs font-bold text-[#0B0B0B] flex items-center">
-                <FileText className="w-4 h-4 mr-1.5 text-[#007070] shrink-0" /> Tailored Cover Letter
+                <FileText className="w-4 h-4 mr-1.5 text-[#007070] shrink-0" /> {t.tailoredModal.coverLetter}
               </span>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={handleDownload}
-                  className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95"
+                  className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95 cursor-pointer"
                   title="Download as .txt"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Download .txt</span>
+                  <span>{t.tailoredModal.download}</span>
                 </button>
                 <button
                   onClick={handleCopy}
-                  className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95"
+                  className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95 cursor-pointer"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copied ? 'Copied' : 'Copy Text'}</span>
+                  <span>{copied ? t.tailoredModal.copied : t.tailoredModal.copy}</span>
                 </button>
               </div>
             </div>

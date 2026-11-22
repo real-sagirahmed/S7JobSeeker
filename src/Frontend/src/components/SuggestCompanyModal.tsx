@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Building2, Globe, Briefcase, Plus, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 import type { SuggestCompanyRequest } from '../types';
 
 interface SuggestCompanyModalProps {
@@ -10,6 +11,7 @@ interface SuggestCompanyModalProps {
 }
 
 export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen, onClose, onSuccess }) => {
+  const { t } = useLanguage();
   const [name, setName] = useState('');
   const [website, setWebsite] = useState('');
   const [careersUrl, setCareersUrl] = useState('');
@@ -28,7 +30,7 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !website.trim()) {
-      setErrorMessage('Company Name and Website are required.');
+      setErrorMessage(t.suggestModal.required);
       return;
     }
 
@@ -57,7 +59,7 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : 'Submission failed. Please try again.');
+      setErrorMessage(err instanceof Error ? err.message : t.suggestModal.failed);
     } finally {
       setIsSubmitting(false);
     }
@@ -72,7 +74,7 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-full hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
-          aria-label="Close modal"
+          aria-label={t.common.close}
         >
           <X className="w-5 h-5" />
         </button>
@@ -82,8 +84,8 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
             <Building2 className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-900 leading-tight">Suggest a Company</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Contribute to the BD Tech Directory. Submissions are reviewed by admin before publishing.</p>
+            <h2 className="text-lg font-bold text-slate-900 leading-tight">{t.suggestModal.title}</h2>
+            <p className="text-xs text-slate-500 mt-0.5">{t.suggestModal.subtitle}</p>
           </div>
         </div>
 
@@ -97,7 +99,7 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Company Name <span className="text-red-500">*</span>
+              {t.suggestModal.name} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -112,7 +114,7 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Website URL <span className="text-red-500">*</span>
+                {t.suggestModal.website} <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Globe className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
@@ -129,7 +131,7 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Careers URL
+                {t.suggestModal.careers}
               </label>
               <div className="relative">
                 <Briefcase className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
@@ -147,7 +149,7 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Industry Cluster <span className="text-red-500">*</span>
+                {t.suggestModal.category} <span className="text-red-500">*</span>
               </label>
               <select
                 value={category}
@@ -155,37 +157,37 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
                 className="w-full px-3 py-2.5 min-h-[44px] text-base sm:text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#007070] focus:border-transparent outline-none bg-white"
               >
                 <option value={1}>Enterprise & Global IT Outsourcing</option>
-                <option value={2}>Global SaaS & Products</option>
-                <option value={3}>Fintech & High-Scale Systems</option>
+                <option value={2}>{t.suggestModal.catSoftware}</option>
+                <option value={3}>{t.suggestModal.catFintech}</option>
                 <option value={4}>Cloud, DevOps & Infra</option>
                 <option value={5}>AI & Data Intelligence</option>
-                <option value={6}>Digital Agency & Consulting</option>
+                <option value={6}>{t.suggestModal.catAgency}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Work Model
+                {t.suggestModal.workModel}
               </label>
               <select
                 value={workModel}
                 onChange={(e) => setWorkModel(e.target.value)}
                 className="w-full px-3 py-2.5 min-h-[44px] text-base sm:text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#007070] focus:border-transparent outline-none bg-white"
               >
-                <option value="Hybrid">Hybrid</option>
-                <option value="Remote">Remote</option>
-                <option value="On-site">On-site</option>
+                <option value="Hybrid">{t.suggestModal.workModelHybrid}</option>
+                <option value="Remote">{t.suggestModal.workModelRemote}</option>
+                <option value="On-site">{t.suggestModal.workModelOnsite}</option>
               </select>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Primary Tech Stack (comma separated)
+              {t.suggestModal.techStack}
             </label>
             <input
               type="text"
-              placeholder="e.g. .NET, C#, React, Azure, Docker, Python"
+              placeholder={t.suggestModal.techStackPlaceholder}
               value={techStackInput}
               onChange={(e) => setTechStackInput(e.target.value)}
               className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#007070] focus:border-transparent outline-none"
@@ -194,11 +196,11 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Global Products / Key Offerings
+              {t.suggestModal.globalProducts}
             </label>
             <input
               type="text"
-              placeholder="e.g. Optimizely Experimentation, Welcome CMS"
+              placeholder={t.suggestModal.globalProductsPlaceholder}
               value={globalProducts}
               onChange={(e) => setGlobalProducts(e.target.value)}
               className="w-full px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#007070] focus:border-transparent outline-none"
@@ -207,7 +209,7 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Headquarters / BD Office Location
+              {t.suggestModal.headquarters}
             </label>
             <input
               type="text"
@@ -220,11 +222,11 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Brief Description
+              {t.suggestModal.description}
             </label>
             <textarea
               rows={2}
-              placeholder="Brief overview of engineering focus or products built..."
+              placeholder={t.suggestModal.descriptionPlaceholder}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3.5 py-2.5 text-base sm:text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#007070] focus:border-transparent outline-none resize-none"
@@ -236,17 +238,17 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="order-2 sm:order-1 min-h-[44px] px-4 py-2.5 text-xs font-medium text-slate-600 hover:text-slate-800 rounded-xl transition-colors"
+              className="order-2 sm:order-1 min-h-[44px] px-4 py-2.5 text-xs font-medium text-slate-600 hover:text-slate-800 rounded-xl transition-colors cursor-pointer"
             >
-              Cancel
+              {t.common.cancel}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="order-1 sm:order-2 min-h-[44px] px-6 py-2.5 bg-[#007070] hover:bg-[#005a5a] text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+              className="order-1 sm:order-2 min-h-[44px] px-6 py-2.5 bg-[#007070] hover:bg-[#005a5a] text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-[0.98] cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>{isSubmitting ? 'Submitting...' : 'Submit Suggestion'}</span>
+              <span>{isSubmitting ? t.suggestModal.submitting : t.suggestModal.submit}</span>
             </button>
           </div>
         </form>

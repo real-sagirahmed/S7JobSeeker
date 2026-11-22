@@ -12,6 +12,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import type { CbsCertificateVerification } from '../../types';
 
 interface CertificateVerificationViewProps {
@@ -23,6 +24,7 @@ export const CertificateVerificationView: React.FC<CertificateVerificationViewPr
   initialCertificateId = '',
   onBackToApp
 }) => {
+  const { t } = useLanguage();
   const [searchId, setSearchId] = useState(initialCertificateId);
   const [data, setData] = useState<CbsCertificateVerification | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,10 +87,10 @@ export const CertificateVerificationView: React.FC<CertificateVerificationViewPr
 
           <button
             onClick={onBackToApp}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-2 transition-all active:scale-95 border border-slate-700"
+            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-2 transition-all active:scale-95 border border-slate-700 cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>S7 Job Seeker-এ ফিরুন</span>
+            <span>{t.cbsVerification.backToApp}</span>
           </button>
         </div>
       </header>
@@ -99,13 +101,13 @@ export const CertificateVerificationView: React.FC<CertificateVerificationViewPr
         <div className="text-center space-y-3">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-bold">
             <Award className="w-4 h-4 text-amber-400" />
-            <span>Enterprise Core Banking Systems Track</span>
+            <span>{t.cbsVerification.trackBadge}</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-            Verify Candidate Credential
+            {t.cbsVerification.title}
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">
-            Validate candidate completion of the intensive 14-Day CBS Engineering &amp; Incident Troubleshooting Sprint.
+            {t.cbsVerification.subtitle}
           </p>
 
           {/* Search Box */}
@@ -116,16 +118,16 @@ export const CertificateVerificationView: React.FC<CertificateVerificationViewPr
                 type="text"
                 value={searchId}
                 onChange={(e) => setSearchId(e.target.value)}
-                placeholder="Certificate ID লিখুন (যেমন: S7-CBS-202611-XXXXXXXX)"
+                placeholder={t.cbsVerification.searchPlaceholder}
                 className="w-full pl-10 pr-4 py-3 bg-slate-800/90 border border-slate-700 rounded-xl text-white text-xs sm:text-sm font-mono placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
               />
             </div>
             <button
               type="submit"
               disabled={isLoading || !searchId.trim()}
-              className="px-6 py-3 bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs sm:text-sm font-black rounded-xl transition-all disabled:opacity-50 active:scale-95"
+              className="px-6 py-3 bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs sm:text-sm font-black rounded-xl transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
             >
-              {isLoading ? 'যাচাই হচ্ছে...' : 'যাচাই করুন'}
+              {isLoading ? t.cbsVerification.verifying : t.cbsVerification.verifyBtn}
             </button>
           </form>
         </div>
@@ -134,7 +136,7 @@ export const CertificateVerificationView: React.FC<CertificateVerificationViewPr
         {isLoading && (
           <div className="p-12 text-center space-y-3">
             <div className="w-10 h-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs text-slate-400 font-medium">ডাটাবেজে সার্টিফিকেট রেকর্ড সার্চ করা হচ্ছে...</p>
+            <p className="text-xs text-slate-400 font-medium">{t.cbsVerification.searchingNotice}</p>
           </div>
         )}
 
@@ -144,9 +146,9 @@ export const CertificateVerificationView: React.FC<CertificateVerificationViewPr
             <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center mx-auto text-rose-400">
               <XCircle className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-white">সার্টিফিকেট পাওয়া যায়নি বা ভেরিফিকেশন ব্যর্থ হয়েছে</h3>
+            <h3 className="text-base font-bold text-white">{t.cbsVerification.notFoundTitle}</h3>
             <p className="text-xs text-rose-200/80 leading-relaxed">
-              আইডি <strong>{searchId}</strong>-এর সাথে মিলে এমন কোনো অফিসিয়াল সার্টিফিকেট রেকর্ড সিস্টেমে মেলেনি। অনুগ্রহ করে সঠিক আইডি টাইপ করুন অথবা প্রার্থীর সাথে যোগাযোগ করুন।
+              {t.cbsVerification.notFoundDesc} <strong>{searchId}</strong>
             </p>
           </div>
         )}

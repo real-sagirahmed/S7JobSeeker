@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { BdCompany, TailoredPitch } from '../types';
 import { X, Copy, Check, Download, Sparkles, Building2 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CompanyPitchModalProps {
   company: BdCompany;
@@ -19,6 +20,7 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
   isLoading,
   onClose
 }) => {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -55,17 +57,17 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
             </div>
             <div>
               <h2 className="font-bold text-base text-[#0B0B0B] flex items-center gap-1.5 leading-tight">
-                Targeted Pitch for <span className="text-[#007070]">{company.name}</span>
+                {t.pitchModal.title} <span className="text-[#007070]">{company.name}</span>
               </h2>
               <p className="text-xs text-[#7C7C7C] mt-0.5">
-                Bespoke outreach highlighting your overlapping stack & value proposition
+                {t.pitchModal.subtitle}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center p-1.5 rounded-lg text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-colors shrink-0"
-            aria-label="Close modal"
+            aria-label={t.common.close}
           >
             <X className="w-5 h-5" />
           </button>
@@ -74,44 +76,44 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
         {/* Pitch Format Selector */}
         <div className="px-5 sm:px-6 py-3 bg-white border-b border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-semibold text-[#555555]">Format:</span>
+            <span className="text-xs font-semibold text-[#555555]">{t.pitchModal.format}</span>
             <button
               onClick={() => onPitchTypeChange('ColdEmail')}
-              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer ${
                 pitchType === 'ColdEmail'
                   ? 'bg-[#007070] text-white shadow-xs'
                   : 'bg-[#F8FAFC] text-[#555555] hover:bg-[#E6F4F4] border border-black/5'
               }`}
             >
-              Cold Email Outreach
+              {t.pitchModal.coldEmail}
             </button>
             <button
               onClick={() => onPitchTypeChange('CoverLetter')}
-              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer ${
                 pitchType === 'CoverLetter'
                   ? 'bg-[#007070] text-white shadow-xs'
                   : 'bg-[#F8FAFC] text-[#555555] hover:bg-[#E6F4F4] border border-black/5'
               }`}
             >
-              Formal Cover Letter
+              {t.pitchModal.coverLetter}
             </button>
           </div>
 
           <div className="flex items-center space-x-2 self-end sm:self-auto">
             <button
               onClick={handleDownload}
-              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95"
-              title="Download as .txt"
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95 cursor-pointer"
+              title={t.pitchModal.download}
             >
               <Download className="w-3.5 h-3.5" />
               <span>.txt</span>
             </button>
             <button
               onClick={handleCopy}
-              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95"
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] flex items-center space-x-1.5 transition-colors border border-black/10 active:scale-95 cursor-pointer"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Copied' : 'Copy'}</span>
+              <span>{copied ? t.pitchModal.copied : t.pitchModal.copy}</span>
             </button>
           </div>
         </div>
@@ -122,7 +124,7 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
             <div className="py-12 flex flex-col items-center justify-center space-y-3">
               <div className="w-8 h-8 border-3 border-[#007070] border-t-transparent rounded-full animate-spin"></div>
               <p className="text-xs text-[#7C7C7C]">
-                Synthesizing company domain, products & matching tech stack...
+                {t.pitchModal.generating}
               </p>
             </div>
           ) : (
@@ -130,7 +132,7 @@ export const CompanyPitchModal: React.FC<CompanyPitchModalProps> = ({
               {/* Subject Line */}
               <div className="p-3 rounded-xl bg-[#F8FAFC] border border-black/10 text-xs">
                 <span className="font-bold text-[#7C7C7C] uppercase tracking-wider block mb-1">
-                  Subject Line:
+                  {t.pitchModal.subject}:
                 </span>
                 <span className="font-semibold text-[#0B0B0B] font-mono select-all">
                   {pitch.subject}

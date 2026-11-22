@@ -209,7 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={() => setLanguage('bn')}
-                title="বাংলায় পরিবর্তন করুন"
+                title={language === 'en' ? 'বাংলায় পরিবর্তন করুন' : 'Switch to English'}
                 className={`px-2.5 py-1 rounded-lg transition-all min-h-[30px] cursor-pointer ${
                   language === 'bn'
                     ? 'bg-white text-[#007070] font-black shadow-2xs'

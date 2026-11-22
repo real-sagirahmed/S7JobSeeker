@@ -8,6 +8,7 @@ import {
   Terminal
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import type { User, CbsCurriculumItem, CbsDayLesson, CbsProgress } from '../../types';
 import { CbsSpecializationHero } from './CbsSpecializationHero';
 import { CbsOverviewTab } from './CbsOverviewTab';
@@ -31,6 +32,7 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
   onOpenAuth,
   showToast
 }) => {
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<CbsTabType>('overview');
   const [curriculum, setCurriculum] = useState<CbsCurriculumItem[]>([]);
   const [selectedDay, setSelectedDay] = useState<number>(1);
@@ -82,7 +84,7 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
         const dayToLoad = prog.lastAccessedDay >= 1 && prog.lastAccessedDay <= 14 ? prog.lastAccessedDay : 1;
         setSelectedDay(dayToLoad);
       } catch {
-        showToast('কারিকুলাম লোড করতে সমস্যা হয়েছে।', 'error');
+        showToast(language === 'bn' ? 'কারিকুলাম লোড করতে সমস্যা হয়েছে।' : 'Failed to load curriculum.', 'error');
       } finally {
         setIsLoadingCurriculum(false);
       }
@@ -102,7 +104,7 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
       setActiveLesson(lesson);
       window.scrollTo({ top: 380, behavior: 'smooth' });
     } catch {
-      showToast(`Day ${dayNumber} লেসন লোড করা যায়নি।`, 'error');
+      showToast(language === 'bn' ? `Day ${dayNumber} লেসন লোড করা যায়নি।` : `Failed to load Day ${dayNumber} lesson.`, 'error');
     } finally {
       setIsLoadingLesson(false);
     }
@@ -134,13 +136,13 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
           dayNumber,
           markCompleted: completed
         });
-        showToast(completed ? `Day ${dayNumber} সম্পন্ন মার্ক হয়েছে!` : `Day ${dayNumber} অসম্পূর্ণ মার্ক করা হয়েছে।`, 'success');
+        showToast(completed ? (language === 'bn' ? `Day ${dayNumber} সম্পন্ন মার্ক হয়েছে!` : `Day ${dayNumber} marked as completed!`) : (language === 'bn' ? `Day ${dayNumber} অসম্পূর্ণ মার্ক করা হয়েছে।` : `Day ${dayNumber} marked as incomplete.`), 'success');
       } catch {
-        showToast('প্রোগ্রেস সার্ভারে সিঙ্ক করতে সমস্যা হয়েছে।', 'error');
+        showToast(language === 'bn' ? 'প্রোগ্রেস সার্ভারে সিঙ্ক করতে সমস্যা হয়েছে।' : 'Failed to sync progress with server.', 'error');
       }
     } else {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newProg));
-      showToast(completed ? `Day ${dayNumber} সম্পন্ন মার্ক হয়েছে!` : `Day ${dayNumber} অসম্পূর্ণ মার্ক হয়েছে।`, 'info');
+      showToast(completed ? (language === 'bn' ? `Day ${dayNumber} সম্পন্ন মার্ক হয়েছে!` : `Day ${dayNumber} marked as completed!`) : (language === 'bn' ? `Day ${dayNumber} অসম্পূর্ণ মার্ক হয়েছে।` : `Day ${dayNumber} marked as incomplete.`), 'info');
     }
   };
 
@@ -168,20 +170,20 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
           quizScore: score,
           markCompleted: score >= 70 ? true : undefined
         });
-        showToast(`Day ${dayNumber} কুইজ স্কোর (${score}%) সংরক্ষিত হয়েছে!`, 'success');
+        showToast(language === 'bn' ? `Day ${dayNumber} কুইজ স্কোর (${score}%) সংরক্ষিত হয়েছে!` : `Day ${dayNumber} quiz score (${score}%) saved!`, 'success');
       } catch {
-        showToast('কুইজ স্কোর সিঙ্ক করতে সমস্যা হয়েছে।', 'error');
+        showToast(language === 'bn' ? 'কুইজ স্কোর সিঙ্ক করতে সমস্যা হয়েছে।' : 'Failed to sync quiz score with server.', 'error');
       }
     } else {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newProg));
-      showToast(`কুইজ স্কোর (${score}%) ব্রাউজারে সংরক্ষিত হয়েছে।`, 'info');
+      showToast(language === 'bn' ? `কুইজ স্কোর (${score}%) ব্রাউজারে সংরক্ষিত হয়েছে।` : `Quiz score (${score}%) saved in local storage.`, 'info');
     }
   };
 
   // 6. Download Full 14-Day Blueprint (Instant Single-Endpoint Export with Fallback)
   const handleDownloadFullDossier = async () => {
     try {
-      showToast('সম্পূর্ণ ১৪ দিনের স্পেশালাইজেশন ব্লুপ্রিন্ট প্রস্তুত হচ্ছে...', 'info');
+      showToast(language === 'bn' ? 'সম্পূর্ণ ১৪ দিনের স্পেশালাইজেশন ব্লুপ্রিন্ট প্রস্তুত হচ্ছে...' : 'Preparing full 14-day specialization blueprint...', 'info');
 
       let fullContent = '';
       let fileName = 'CBS-Support-14-Day-Specialization-Blueprint.md';
@@ -210,9 +212,9 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast('সম্পূর্ণ ১৪ দিনের ব্লুপ্রিন্ট সফলভাবে ডাউনলোড হয়েছে!', 'success');
+      showToast(language === 'bn' ? 'সম্পূর্ণ ১৪ দিনের ব্লুপ্রিন্ট সফলভাবে ডাউনলোড হয়েছে!' : 'Full 14-day blueprint downloaded successfully!', 'success');
     } catch {
-      showToast('ব্লুপ্রিন্ট ডাউনলোড করতে সমস্যা হয়েছে।', 'error');
+      showToast(language === 'bn' ? 'ব্লুপ্রিন্ট ডাউনলোড করতে সমস্যা হয়েছে।' : 'Failed to download blueprint.', 'error');
     }
   };
 
@@ -235,9 +237,13 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
       {/* Guest Mode Alert Banner */}
       {!user && (
         <div className="bg-teal-50 border-b border-teal-100 px-4 py-2 text-center text-xs text-teal-900 font-medium">
-          <span>গেস্ট মোডে আছেন। ১৪টি পাঠ, ল্যাব ও সেলফ-চেক কুইজ উন্মুক্ত। সব ডিভাইসে প্রোগ্রেস ও সার্টিফিকেট পারসিস্ট করতে </span>
+          <span>
+            {language === 'bn'
+              ? 'গেস্ট মোডে আছেন। ১৪টি পাঠ, ল্যাব ও সেলফ-চেক কুইজ উন্মুক্ত। সব ডিভাইসে প্রোগ্রেস ও সার্টিফিকেট পারসিস্ট করতে '
+              : 'You are in Guest Mode. All 14 lessons, diagnostic labs and quizzes are accessible. To persist progress and credentials across devices, '}
+          </span>
           <button onClick={onOpenAuth} className="font-black text-teal-700 underline hover:text-teal-950 cursor-pointer ml-1">
-            লগইন বা ফ্রি সাইনআপ করুন
+            {language === 'bn' ? 'লগইন বা ফ্রি সাইনআপ করুন' : 'Sign In or Register Free'}
           </button>
         </div>
       )}
@@ -257,11 +263,11 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
         {/* Coursera 5-Tab Navigation Bar */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-1.5 flex items-center overflow-x-auto gap-1">
           {[
-            { id: 'overview', label: 'Overview', icon: <BookOpen className="w-4 h-4" /> },
-            { id: 'curriculum', label: 'Curriculum & Lessons', icon: <Layers className="w-4 h-4" /> },
-            { id: 'labs', label: 'Diagnostic Labs', icon: <Terminal className="w-4 h-4" /> },
-            { id: 'grades', label: 'Grades & Assessment', icon: <Award className="w-4 h-4" /> },
-            { id: 'mentor', label: 'AI Mentor', icon: <Sparkles className="w-4 h-4" /> }
+            { id: 'overview', label: t.cbs.overviewTab, icon: <BookOpen className="w-4 h-4" /> },
+            { id: 'curriculum', label: t.cbs.curriculumTab, icon: <Layers className="w-4 h-4" /> },
+            { id: 'labs', label: t.cbs.labsTab, icon: <Terminal className="w-4 h-4" /> },
+            { id: 'grades', label: language === 'bn' ? 'গ্রেডবুক ও এসেসমেন্ট' : 'Grades & Assessment', icon: <Award className="w-4 h-4" /> },
+            { id: 'mentor', label: language === 'bn' ? 'এআই মেন্টর' : 'AI Mentor', icon: <Sparkles className="w-4 h-4" /> }
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (

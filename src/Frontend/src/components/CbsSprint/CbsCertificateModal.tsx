@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Award, Printer, ShieldCheck, X, Link, Check, ExternalLink } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 import type { User } from '../../types';
 
 interface CbsCertificateModalProps {
@@ -23,6 +24,7 @@ export const CbsCertificateModal: React.FC<CbsCertificateModalProps> = ({
   certificateId,
   certificateIssuedAt
 }) => {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
@@ -52,7 +54,7 @@ export const CbsCertificateModal: React.FC<CbsCertificateModalProps> = ({
         <div className="print:hidden flex items-center justify-between px-6 py-4 bg-slate-900 text-white border-b border-slate-800">
           <div className="flex items-center space-x-2">
             <Award className="w-5 h-5 text-amber-400" />
-            <span className="text-sm font-black tracking-tight">Coursera-Grade Verified Certificate</span>
+            <span className="text-sm font-black tracking-tight">{t.cbsCertModal.verifiedBadge}</span>
           </div>
 
           <div className="flex items-center space-x-3">
@@ -63,7 +65,7 @@ export const CbsCertificateModal: React.FC<CbsCertificateModalProps> = ({
                 title="Copy public verification URL to clipboard"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Link className="w-3.5 h-3.5" />}
-                <span>{copied ? 'লিংক কপি হয়েছে!' : 'ভেরিফিকেশন লিংক'}</span>
+                <span>{copied ? t.cbsCertModal.linkCopied : t.cbsCertModal.copyVerificationLink}</span>
               </button>
             )}
 
@@ -72,11 +74,12 @@ export const CbsCertificateModal: React.FC<CbsCertificateModalProps> = ({
               className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-black flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer shadow-md"
             >
               <Printer className="w-4 h-4" />
-              <span>প্রিন্ট / PDF সেভ করুন</span>
+              <span>{t.cbsCertModal.print}</span>
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              aria-label={t.common.close}
             >
               <X className="w-5 h-5" />
             </button>

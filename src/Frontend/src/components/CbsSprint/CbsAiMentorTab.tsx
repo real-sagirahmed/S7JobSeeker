@@ -7,6 +7,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import type { CbsCurriculumItem, CbsAiDoubtResponse } from '../../types';
 
 interface CbsAiMentorTabProps {
@@ -21,6 +22,7 @@ interface QnaHistoryItem {
 }
 
 export const CbsAiMentorTab: React.FC<CbsAiMentorTabProps> = ({ curriculum, selectedDay = 1 }) => {
+  const { t, language } = useLanguage();
   const [targetDay, setTargetDay] = useState<number>(selectedDay);
   const [question, setQuestion] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -28,12 +30,12 @@ export const CbsAiMentorTab: React.FC<CbsAiMentorTabProps> = ({ curriculum, sele
   const [history, setHistory] = useState<QnaHistoryItem[]>([]);
 
   const quickQuestions = [
-    { text: 'প্রোডাকশন ডেটাবেসে NOLOCK ব্যবহারের ঝুঁকি কী?', day: 1 },
-    { text: 'ডাবল-এন্ট্রি অ্যাকাউন্টিংয়ে ডেবিট ও ক্রেডিট কেন সর্বদা সমান হতে হয়?', day: 4 },
-    { text: 'Correlation ID দিয়ে ডিস্ট্রিবিউটেড মাইক্রোসার্ভিসে লগ কীভাবে ট্রেস করব?', day: 7 },
-    { text: 'ডকার কনটেইনার Exit Code 137 বনাম Exit Code 1 এর তফাত কী?', day: 8 },
-    { text: 'CBS EOD ব্যাচ আটকে গেলে রানবুক ছাড়া ডেটাবেস আপডেট কেন বিপজ্জনক?', day: 10 },
-    { text: 'নতুন রিলিজের পর রোলব্যাক ভেরিফিকেশনে কী কী বিষয় যাচাই করতে হয়?', day: 12 }
+    { text: language === 'bn' ? 'প্রোডাকশন ডেটাবেসে NOLOCK ব্যবহারের ঝুঁকি কী?' : 'What are the risks of using NOLOCK hint in production OLTP?', day: 1 },
+    { text: language === 'bn' ? 'ডাবল-এন্ট্রি অ্যাকাউন্টিংয়ে ডেবিট ও ক্রেডিট কেন সর্বদা সমান হতে হয়?' : 'Why must debit and credit amounts always balance in double-entry ledger?', day: 4 },
+    { text: language === 'bn' ? 'Correlation ID দিয়ে ডিস্ট্রিবিউটেড মাইক্রোসার্ভিসে লগ কীভাবে ট্রেস করব?' : 'How do we trace logs across microservices using Correlation ID?', day: 7 },
+    { text: language === 'bn' ? 'ডকার কনটেইনার Exit Code 137 বনাম Exit Code 1 এর তফাত কী?' : 'What is the difference between Docker Exit Code 137 vs Exit Code 1?', day: 8 },
+    { text: language === 'bn' ? 'CBS EOD ব্যাচ আটকে গেলে রানবুক ছাড়া ডেটাবেস আপডেট কেন বিপজ্জনক?' : 'Why is direct DB update dangerous without a runbook when CBS EOD hangs?', day: 10 },
+    { text: language === 'bn' ? 'নতুন রিলিজের পর রোলব্যাক ভেরিফিকেশনে কী কী বিষয় যাচাই করতে হয়?' : 'What critical invariants must be verified after executing a release rollback?', day: 12 }
   ];
 
   const handleAsk = async (queryText?: string, dayOverride?: number) => {
@@ -65,7 +67,7 @@ export const CbsAiMentorTab: React.FC<CbsAiMentorTabProps> = ({ curriculum, sele
 
       if (queryText) setQuestion(queryText);
     } catch (err: any) {
-      setError(err?.message || 'AI উত্তর সংগ্রহ করতে ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+      setError(err?.message || t.cbsAi.errorResponse);
     } finally {
       setIsLoading(false);
     }
@@ -82,14 +84,14 @@ export const CbsAiMentorTab: React.FC<CbsAiMentorTabProps> = ({ curriculum, sele
           <div>
             <div className="flex items-center space-x-2">
               <h2 className="text-lg sm:text-xl font-black tracking-tight text-white">
-                CBS AI Technical Mentor
+                {t.cbsAi.mentorTitle}
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-400/20 text-teal-300 border border-teal-400/30">
                 Gemini 2.0
               </span>
             </div>
             <p className="text-xs text-slate-300 mt-0.5">
-              কোর ব্যাংকিং সিস্টেম, লিনাক্স ট্রাবলশুটিং, ডকার বা SQL সংক্রান্ত যেকোনো ডাউট বা জটিল সিনারিও জিজ্ঞেস করুন।
+              {t.cbsAi.mentorSubtitle}
             </p>
           </div>
         </div>
@@ -97,7 +99,7 @@ export const CbsAiMentorTab: React.FC<CbsAiMentorTabProps> = ({ curriculum, sele
         {/* Day Selector & Input Box */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center space-x-2 text-xs">
-            <span className="text-slate-400 font-bold">টপিক নির্বাচন:</span>
+            <span className="text-slate-400 font-bold">{t.cbsAi.selectTopic}</span>
             <select
               value={targetDay}
               onChange={(e) => setTargetDay(Number(e.target.value))}
@@ -117,7 +119,7 @@ export const CbsAiMentorTab: React.FC<CbsAiMentorTabProps> = ({ curriculum, sele
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleAsk()}
-              placeholder="যেমন: ডাবল-এন্ট্রি লেজারে ট্রানজ্যাকশন রিট্রাই করলে ডুপ্লিকেট পোস্টিং এড়ানোর উপায় কী?"
+              placeholder={t.cbsAi.askPlaceholder}
               className="flex-1 bg-slate-900 border border-teal-500/40 rounded-xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/50"
             />
             <button

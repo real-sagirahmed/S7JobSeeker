@@ -44,6 +44,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     document.documentElement.lang = language;
+    document.title = language === 'bn'
+      ? 's7job-seeker — teamS7 ইন্টেলিজেন্স | এআই জব ম্যাচিং SaaS'
+      : 's7job-seeker — teamS7 Intelligence | AI Job Matching SaaS';
   }, [language]);
 
   const value = {

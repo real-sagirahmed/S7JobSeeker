@@ -19,12 +19,17 @@ const AdminDashboard = React.lazy(() => import('./components/AdminDashboard').th
 const CbsSprintPortal = React.lazy(() => import('./components/CbsSprint/CbsSprintPortal').then(m => ({ default: m.CbsSprintPortal })));
 const CertificateVerificationView = React.lazy(() => import('./components/CbsSprint/CertificateVerificationView').then(m => ({ default: m.CertificateVerificationView })));
 
-const ComponentFallback: React.FC = () => (
-  <div className="p-12 text-center space-y-3">
-    <div className="w-8 h-8 border-2 border-[#007070] border-t-transparent rounded-full animate-spin mx-auto" />
-    <p className="text-xs text-[#7C7C7C] font-semibold">মডিউল লোড হচ্ছে...</p>
-  </div>
-);
+const ComponentFallback: React.FC = () => {
+  const { language } = useLanguage();
+  return (
+    <div className="p-12 text-center space-y-3">
+      <div className="w-8 h-8 border-2 border-[#007070] border-t-transparent rounded-full animate-spin mx-auto" />
+      <p className="text-xs text-[#7C7C7C] font-semibold">
+        {language === 'bn' ? 'মডিউল লোড হচ্ছে...' : 'Loading module...'}
+      </p>
+    </div>
+  );
+};
 
 export const App: React.FC = () => {
   const { t, language } = useLanguage();
@@ -148,7 +153,7 @@ export const App: React.FC = () => {
       setHasMoreMatches(res.hasMore);
     } catch (e) {
       console.error(e);
-      showToast('জব ম্যাচ লোড করতে সমস্যা হয়েছে।', 'error');
+      showToast(t.toasts.loadMatchesError, 'error');
     } finally {
       setIsLoadingMatches(false);
       setIsLoadingMore(false);
@@ -209,7 +214,7 @@ export const App: React.FC = () => {
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to generate tailored application.';
       if (errorMsg.includes('Credit') || errorMsg.includes('402')) {
-        showToast('আপনার এআই ক্রেডিট শেষ হয়ে গেছে। দয়া করে ক্রেডিট টপ-আপ করুন।', 'error');
+        showToast(t.toasts.outOfCredits, 'error');
         setIsBuyCreditsOpen(true);
       } else {
         showToast(errorMsg, 'error');
@@ -232,7 +237,7 @@ export const App: React.FC = () => {
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to generate preparation guide.';
       if (errorMsg.includes('Credit') || errorMsg.includes('402')) {
-        showToast('আপনার এআই ক্রেডিট শেষ হয়ে গেছে। দয়া করে ক্রেডিট টপ-আপ করুন।', 'error');
+        showToast(t.toasts.outOfCredits, 'error');
         handleOpenBuyCredits();
         setIsPrepModalOpen(false);
       } else {
@@ -255,7 +260,7 @@ export const App: React.FC = () => {
         const match = matches.find((m) => m.jobId === jobId);
         return match ? [...prev, { ...match, isBookmarked: true }] : prev;
       });
-      showToast(isBookmarked ? 'Job added to bookmarks.' : 'Job removed from bookmarks.', 'info');
+      showToast(isBookmarked ? t.toasts.savedBookmark : t.toasts.removedBookmark, 'info');
     } catch (err) {
       console.error(err);
       showToast('Failed to update bookmark.', 'error');
@@ -318,19 +323,18 @@ export const App: React.FC = () => {
 
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#E6F4F4] border border-[#007070]/30 text-xs font-bold text-[#007070]">
               <Sparkles className="w-4 h-4" />
-              <span>S7 Semantic & RAG Job Matching System</span>
+              <span>{t.hero.tag}</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-[#0B0B0B] leading-tight">
-              আপনার যোগ্যতা অনুযায়ী সঠিক জব খুঁজুন{' '}
+              {t.hero.titlePart1}{' '}
               <span className="text-[#007070]">
-                Semantic AI এর সাহায্যে
+                {t.hero.titleHighlight}
               </span>
             </h1>
 
             <p className="text-sm text-[#333333] leading-relaxed max-w-2xl mx-auto">
-              রেজুমি আপলোড করুন। আমাদের AI স্বয়ংক্রিয়ভাবে আপনার স্কিল ও অভিজ্ঞতা বিশ্লেষণ করে রিয়েল-টাইম জবের সাথে
-              সিম্যান্টিক ম্যাচিং, স্কিল গ্যাপ অ্যানালাইসিস এবং জবের জন্য কাস্টমাইজড কভার লেটার তৈরি করে দেবে।
+              {t.hero.subtitle}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -338,7 +342,7 @@ export const App: React.FC = () => {
                 onClick={() => setIsAuthModalOpen(true)}
                 className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all shadow-[0_8px_30px_rgba(0,112,112,0.25)]"
               >
-                <span>বিনামূল্যে শুরু করুন (Get Started Free)</span>
+                <span>{t.hero.getStarted}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -348,9 +352,9 @@ export const App: React.FC = () => {
                 <div className="w-10 h-10 rounded-xl bg-[#E6F4F4] text-[#007070] flex items-center justify-center font-bold">
                   <FileText className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-[#0B0B0B] text-sm">Automated Resume Parsing</h3>
+                <h3 className="font-bold text-[#0B0B0B] text-sm">{t.hero.feat1Title}</h3>
                 <p className="text-xs text-[#7C7C7C] leading-relaxed">
-                  PDF থেকে স্বয়ংক্রিয়ভাবে স্কিল, অভিজ্ঞতা ও ক্যারিয়ার গোল বের করে নির্ভুল প্রোফাইল গঠন।
+                  {t.hero.feat1Desc}
                 </p>
               </div>
 
@@ -358,9 +362,9 @@ export const App: React.FC = () => {
                 <div className="w-10 h-10 rounded-xl bg-[#E6F4F4] text-[#007070] flex items-center justify-center font-bold">
                   <Cpu className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-[#0B0B0B] text-sm">Semantic & RAG Matching</h3>
+                <h3 className="font-bold text-[#0B0B0B] text-sm">{t.hero.feat2Title}</h3>
                 <p className="text-xs text-[#7C7C7C] leading-relaxed">
-                  কি-ওয়ার্ড মেলা ছাড়া শুধু নয়, জবের আসল দায়িত্ব ও কনটেক্সটের সাথে ভেক্টর ভিত্তিক ম্যাচিং স্কোর (0-100%)।
+                  {t.hero.feat2Desc}
                 </p>
               </div>
 
@@ -368,9 +372,9 @@ export const App: React.FC = () => {
                 <div className="w-10 h-10 rounded-xl bg-[#E6F4F4] text-[#007070] flex items-center justify-center font-bold">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-[#0B0B0B] text-sm">Cover Letter & Tips</h3>
+                <h3 className="font-bold text-[#0B0B0B] text-sm">{t.hero.feat3Title}</h3>
                 <p className="text-xs text-[#7C7C7C] leading-relaxed">
-                  প্রতিটি জবের স্পেসিফিক রিকোয়ারমেন্ট অনুযায়ী এআই দিয়ে কাস্টম কভার লেটার ও রেজুমি ইমপ্রুভমেন্ট টিপস।
+                  {t.hero.feat3Desc}
                 </p>
               </div>
             </div>
@@ -659,7 +663,7 @@ export const App: React.FC = () => {
             initialView={buyCreditsInitialView}
             onClose={() => setIsBuyCreditsOpen(false)}
             onSuccess={() => {
-              showToast('পেমেন্ট রিকোয়েস্ট জমা নেওয়া হয়েছে। পরিচালক ভেরিফাই করলেই ক্রেডিট যুক্ত হবে।', 'success');
+              showToast(language === 'bn' ? 'পেমেন্ট রিকোয়েস্ট জমা নেওয়া হয়েছে। পরিচালক ভেরিফাই করলেই ক্রেডিট যুক্ত হবে।' : 'Payment request submitted. Credits will be added once approved by Director.', 'success');
               api.auth.getMe().then(setUser).catch(() => {});
             }}
             userCredits={user?.aiCredits}

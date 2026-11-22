@@ -10,12 +10,14 @@ import {
   Zap,
   ArrowRight
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface CbsOverviewTabProps {
   onGoToCurriculum: (dayNumber?: number) => void;
 }
 
 export const CbsOverviewTab: React.FC<CbsOverviewTabProps> = ({ onGoToCurriculum }) => {
+  const { t, language } = useLanguage();
   const competencies = [
     'প্রোডাকশন ডেটাবেসে লক না ফেলে হাই-কনকারেন্ট OLTP টেবিলে Read-Only SQL ইনভেস্টিগেশন চালানো।',
     'ডাবল-এন্ট্রি অ্যাকাউন্টিং ইনভ্যারিয়েন্ট (Debit = Credit) যাচাই করে লেজার ইমব্যালেন্স শনাক্ত করা।',
@@ -87,10 +89,10 @@ export const CbsOverviewTab: React.FC<CbsOverviewTabProps> = ({ onGoToCurriculum
           </div>
           <div>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-              What You Will Learn (মূল দক্ষতা ও সক্ষমতা)
+              {t.cbsOverview.whatYouWillLearn}
             </h2>
             <p className="text-xs text-slate-500">
-              এই ১৪ দিনের স্পেশালাইজেশন সম্পন্ন করলে একজন CBS সাপোর্ট ইঞ্জিনিয়ার হিসেবে নিচের দক্ষতাগুলো অর্জন করবেন:
+              {t.cbsOverview.learnDesc}
             </p>
           </div>
         </div>
@@ -110,7 +112,7 @@ export const CbsOverviewTab: React.FC<CbsOverviewTabProps> = ({ onGoToCurriculum
         <div className="flex items-center space-x-2">
           <Zap className="w-5 h-5 text-amber-500" />
           <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-            Skills You Will Gain (অর্জিত টেকনিক্যাল স্কিলস)
+            {language === 'bn' ? 'Skills You Will Gain (অর্জিত টেকনিক্যাল স্কিলস)' : 'Skills You Will Gain (Technical Competencies)'}
           </h3>
         </div>
 
@@ -131,17 +133,17 @@ export const CbsOverviewTab: React.FC<CbsOverviewTabProps> = ({ onGoToCurriculum
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-              Specialization Modules (৪টি মডিউলের বিস্তারিত রোডম্যাপ)
+              {language === 'bn' ? 'Specialization Modules (৪টি মডিউলের বিস্তারিত রোডম্যাপ)' : 'Specialization Modules (4 Modules Detailed Syllabus)'}
             </h2>
             <p className="text-xs text-slate-500">
-              Coursera কাঠামোর মত ধাপে ধাপে ফাউন্ডেশন থেকে অ্যাডভান্সড ইনসিডেন্ট ম্যানেজমেন্ট
+              {language === 'bn' ? 'Coursera কাঠামোর মত ধাপে ধাপে ফাউন্ডেশন থেকে অ্যাডভান্সড ইনসিডেন্ট ম্যানেজমেন্ট' : 'Structured Coursera-grade roadmap from fundamentals to live incident management'}
             </p>
           </div>
           <button
             onClick={() => onGoToCurriculum()}
             className="text-xs font-black text-teal-700 hover:text-teal-900 flex items-center space-x-1 cursor-pointer"
           >
-            <span>সম্পূর্ণ কারিকুলাম দেখুন</span>
+            <span>{language === 'bn' ? 'সম্পূর্ণ কারিকুলাম দেখুন' : 'View Full Curriculum'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -177,7 +179,7 @@ export const CbsOverviewTab: React.FC<CbsOverviewTabProps> = ({ onGoToCurriculum
               </p>
 
               <div className="pt-2 flex items-center text-xs font-bold text-teal-700 group-hover:translate-x-1 transition-transform space-x-1">
-                <span>মডিউলের পাঠ শুরু করুন</span>
+                <span>{language === 'bn' ? 'মডিউলের পাঠ শুরু করুন' : 'Start Module Lesson'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </div>
@@ -193,10 +195,13 @@ export const CbsOverviewTab: React.FC<CbsOverviewTabProps> = ({ onGoToCurriculum
           </div>
           <div className="space-y-1">
             <h3 className="text-base sm:text-lg font-black text-slate-900">
-              Certificate of CBS Readiness অর্জনের শর্তাবলি
+              {language === 'bn' ? 'Certificate of CBS Readiness অর্জনের শর্তাবলি' : 'Criteria for Earning Certificate of CBS Readiness'}
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
-              প্রতিটি দিনের পাঠ ও সেলফ-চেক অ্যাসেসমেন্টে ন্যূনতম <strong>৭০% পাসিং স্কোর</strong> অর্জন করতে হবে। ১৪ দিন সফলভাবে সম্পন্ন হলে স্বয়ংক্রিয়ভাবে একটি ভেরিফাইড Coursera-স্টাইল ডিজিটাল সার্টিফিকেট তৈরি হবে।
+              {language === 'bn'
+                ? 'প্রতিটি দিনের পাঠ ও সেলফ-চেক অ্যাসেসমেন্টে ন্যূনতম ৭০% পাসিং স্কোর অর্জন করতে হবে। ১৪ দিন সফলভাবে সম্পন্ন হলে স্বয়ংক্রিয়ভাবে একটি ভেরিফাইড Coursera-স্টাইল ডিজিটাল সার্টিফিকেট তৈরি হবে।'
+                : 'Achieve a minimum passing score of 70% across all daily self-check assessments. Completing all 14 days unlocks a verified Coursera-grade digital certificate.'
+              }
             </p>
           </div>
         </div>
@@ -205,7 +210,7 @@ export const CbsOverviewTab: React.FC<CbsOverviewTabProps> = ({ onGoToCurriculum
           onClick={() => onGoToCurriculum(1)}
           className="px-6 py-3 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-black text-xs shrink-0 transition-all active:scale-95 shadow-md cursor-pointer"
         >
-          Day 1 থেকে শুরু করুন
+          {language === 'bn' ? 'Day 1 থেকে শুরু করুন' : 'Start from Day 1'}
         </button>
       </div>
     </div>

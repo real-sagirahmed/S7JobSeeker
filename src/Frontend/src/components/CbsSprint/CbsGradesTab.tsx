@@ -6,6 +6,7 @@ import {
   ArrowRight,
   TrendingUp
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 import type { CbsCurriculumItem, CbsProgress } from '../../types';
 
 interface CbsGradesTabProps {
@@ -21,6 +22,7 @@ export const CbsGradesTab: React.FC<CbsGradesTabProps> = ({
   onOpenDay,
   onOpenCertificate
 }) => {
+  const { t, language } = useLanguage();
   const scores = Object.values(progress.quizScores);
   const attemptedCount = scores.length;
   const averageScore = attemptedCount > 0
@@ -37,17 +39,19 @@ export const CbsGradesTab: React.FC<CbsGradesTabProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
           <div>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-              Grades & Assessment (গ্রেডবুক ও পারফরম্যান্স)
+              {t.cbsGrades.title}
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              প্রতিটি মডিউলের সেলফ-চেক অ্যাসেসমেন্টে ন্যূনতম ৭০% স্কোর প্রয়োজন।
+              {t.cbsGrades.subtitle}
             </p>
           </div>
 
           <div className="flex items-center space-x-3 bg-teal-50 border border-teal-200/80 px-4 py-2.5 rounded-2xl">
             <TrendingUp className="w-5 h-5 text-teal-700" />
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-teal-800 block">গড় অ্যাসেসমেন্ট স্কোর</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-teal-800 block">
+                {t.cbsGrades.avgScore}
+              </span>
               <span className="text-lg font-black text-teal-950">{averageScore}%</span>
             </div>
           </div>
@@ -67,12 +71,16 @@ export const CbsGradesTab: React.FC<CbsGradesTabProps> = ({
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-black text-slate-900">
-                {isCertificateReady ? 'অভিনন্দন! আপনার সার্টিফিকেট আনলক হয়েছে' : 'Certificate of CBS Readiness অগ্রগতি'}
+                {isCertificateReady ? t.cbsGrades.certReadyTitle : t.cbsGrades.certProgressTitle}
               </h3>
               <p className="text-xs text-slate-600 mt-0.5">
                 {isCertificateReady
-                  ? 'আপনি সকল মডিউল সফলভাবে সম্পন্ন করেছেন এবং পাসিং গ্রেড অর্জন করেছেন।'
-                  : `সার্টিফিকেট আনলক করতে ১৪টি পাঠ সম্পন্ন করুন (বর্তমান: ${progress.completedDays.length}/14) এবং গড় স্কোর ৭০% রাখুন।`}
+                  ? t.cbsGrades.certReadyDesc
+                  : (language === 'bn'
+                      ? `সার্টিফিকেট আনলক করতে ১৪টি পাঠ সম্পন্ন করুন (বর্তমান: ${progress.completedDays.length}/14) এবং গড় স্কোর ৭০% রাখুন।`
+                      : `Complete all 14 lessons to unlock certificate (Current: ${progress.completedDays.length}/14) and maintain 70%+ average score.`
+                    )
+                }
               </p>
             </div>
           </div>
@@ -85,7 +93,7 @@ export const CbsGradesTab: React.FC<CbsGradesTabProps> = ({
                 : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
             }`}
           >
-            {isCertificateReady ? 'সার্টিফিকেট দেখুন ও প্রিন্ট করুন' : 'সার্টিফিকেট প্রিভিউ'}
+            {isCertificateReady ? t.cbsGrades.viewCert : (language === 'bn' ? 'সার্টিফিকেট প্রিভিউ' : 'Certificate Preview')}
           </button>
         </div>
 
@@ -94,11 +102,11 @@ export const CbsGradesTab: React.FC<CbsGradesTabProps> = ({
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
-                <th className="py-3 px-3">পাঠ ও অ্যাসেসমেন্ট</th>
-                <th className="py-3 px-3">স্ট্যাটাস</th>
-                <th className="py-3 px-3">পাসিং গ্রেড</th>
-                <th className="py-3 px-3">আপনার স্কোর</th>
-                <th className="py-3 px-3 text-right">অ্যাকশন</th>
+                <th className="py-3 px-3">{language === 'bn' ? 'পাঠ ও অ্যাসেসমেন্ট' : 'Lesson & Assessment'}</th>
+                <th className="py-3 px-3">{t.common.status}</th>
+                <th className="py-3 px-3">{language === 'bn' ? 'পাসিং গ্রেড' : 'Passing Grade'}</th>
+                <th className="py-3 px-3">{language === 'bn' ? 'আপনার স্কোর' : 'Your Score'}</th>
+                <th className="py-3 px-3 text-right">{t.common.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -125,7 +133,9 @@ export const CbsGradesTab: React.FC<CbsGradesTabProps> = ({
                           <span>{isPassed ? 'Passed' : 'Needs Review'}</span>
                         </span>
                       ) : (
-                        <span className="text-slate-400 font-medium">Not Attempted</span>
+                        <span className="text-slate-400 font-medium">
+                          {language === 'bn' ? 'অসম্পূর্ণ' : 'Not Attempted'}
+                        </span>
                       )}
                     </td>
 
@@ -150,7 +160,7 @@ export const CbsGradesTab: React.FC<CbsGradesTabProps> = ({
                         onClick={() => onOpenDay(item.dayNumber)}
                         className="px-3 py-1 rounded-lg text-xs font-bold text-teal-800 hover:bg-teal-50 border border-teal-200 transition-all cursor-pointer inline-flex items-center space-x-1"
                       >
-                        <span>{isAttempted ? 'রিটেক করুন' : 'কুইজ শুরু করুন'}</span>
+                        <span>{isAttempted ? (language === 'bn' ? 'রিটেক করুন' : 'Retake') : (language === 'bn' ? 'কুইজ শুরু করুন' : 'Start Quiz')}</span>
                         <ArrowRight className="w-3 h-3" />
                       </button>
                     </td>

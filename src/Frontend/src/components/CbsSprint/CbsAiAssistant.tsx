@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Send, ShieldCheck, RefreshCw } from 'lucide-react';
 import { api } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import type { CbsAiDoubtResponse } from '../../types';
 
 interface CbsAiAssistantProps {
@@ -9,15 +10,16 @@ interface CbsAiAssistantProps {
 }
 
 export const CbsAiAssistant: React.FC<CbsAiAssistantProps> = ({ dayNumber, dayTitle }) => {
+  const { t, language } = useLanguage();
   const [question, setQuestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<CbsAiDoubtResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const quickQuestions = [
-    'প্রোডাকশন সিস্টেমে সরাসরি UPDATE কেন নিষিদ্ধ?',
-    'লগ অ্যানালাইসিসে Correlation ID কীভাবে কাজ করে?',
-    'EOD ব্যাচ ফেইল করলে রোলব্যাক করার পূর্বশর্ত কী?'
+    language === 'bn' ? 'প্রোডাকশন সিস্টেমে সরাসরি UPDATE কেন নিষিদ্ধ?' : 'Why is direct UPDATE prohibited in production databases?',
+    language === 'bn' ? 'লগ অ্যানালাইসিসে Correlation ID কীভাবে কাজ করে?' : 'How does Correlation ID work in distributed log tracing?',
+    language === 'bn' ? 'EOD ব্যাচ ফেইল করলে রোলব্যাক করার পূর্বশর্ত কী?' : 'What are prerequisites before rollback on failed EOD batch?'
   ];
 
   const handleAsk = async (queryText?: string) => {
@@ -36,7 +38,7 @@ export const CbsAiAssistant: React.FC<CbsAiAssistantProps> = ({ dayNumber, dayTi
       setResponse(res);
       if (queryText) setQuestion(queryText);
     } catch (err: any) {
-      setError(err?.message || 'AI উত্তর সংগ্রহ করতে ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+      setError(err?.message || t.cbsAi.errorResponse);
     } finally {
       setIsLoading(false);
     }
@@ -52,13 +54,15 @@ export const CbsAiAssistant: React.FC<CbsAiAssistantProps> = ({ dayNumber, dayTi
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center space-x-2">
-              <span>CBS AI Technical Lead</span>
+              <span>{t.cbsAi.mentorTitle}</span>
               <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-300 border border-teal-400/30">
                 Gemini 2.0
               </span>
             </h3>
             <p className="text-xs text-teal-200/70 mt-0.5">
-              Day {dayNumber} বিষয়ক যেকোনো ডাউট, আর্কিটেকচারাল কারণ বা ট্রাবলশুটিং প্রশ্ন জিজ্ঞেস করুন
+              {language === 'bn'
+                ? `Day ${dayNumber} বিষয়ক যেকোনো ডাউট, আর্কিটেকচারাল কারণ বা ট্রাবলশুটিং প্রশ্ন জিজ্ঞেস করুন`
+                : `Ask any technical doubt, architectural rationale, or diagnostic triage questions regarding Day ${dayNumber}`}
             </p>
           </div>
         </div>
@@ -67,7 +71,7 @@ export const CbsAiAssistant: React.FC<CbsAiAssistantProps> = ({ dayNumber, dayTi
       {/* Quick Suggestion Chips */}
       <div className="flex flex-wrap gap-1.5 pt-1">
         <span className="text-[10px] font-extrabold text-teal-300/60 uppercase tracking-wider self-center mr-1">
-          কুইক প্রশ্ন:
+          {t.cbsAi.quickQuestions}
         </span>
         {quickQuestions.map((chip, idx) => (
           <button
@@ -89,7 +93,7 @@ export const CbsAiAssistant: React.FC<CbsAiAssistantProps> = ({ dayNumber, dayTi
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleAsk()}
-            placeholder="যেমন: এই কুয়েরিতে deadlock হওয়ার ঝুঁকি কীভাবে পরিহার করব?"
+            placeholder={t.cbsAi.askPlaceholder}
             className="w-full bg-slate-900/90 border border-teal-500/40 rounded-xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/50"
           />
         </div>

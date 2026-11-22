@@ -5,6 +5,7 @@ import {
   Search,
   ArrowRight
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface CbsLabsTabProps {
   onOpenDay: (dayNumber: number) => void;
@@ -23,6 +24,7 @@ interface LabItem {
 }
 
 export const CbsLabsTab: React.FC<CbsLabsTabProps> = ({ onOpenDay }) => {
+  const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -150,10 +152,10 @@ export const CbsLabsTab: React.FC<CbsLabsTabProps> = ({ onOpenDay }) => {
       <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-xs">
         <div>
           <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-            Diagnostic Labs & Incident Scenarios (হ্যান্ডস-অন ল্যাব ক্যাটালগ)
+            {t.cbsLabs.title}
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            প্রোডাকশন-গ্রেড SQL স্ক্রিপ্ট, লিনাক্স ট্রাবলশুটিং কমান্ড ও ইনসিডেন্ট সিনারিও ১-ক্লিকে কপি ও প্র্যাকটিস করুন।
+            {t.cbsLabs.subtitle}
           </p>
         </div>
 
@@ -165,19 +167,19 @@ export const CbsLabsTab: React.FC<CbsLabsTabProps> = ({ onOpenDay }) => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="কীওয়ার্ড দিয়ে সার্চ করুন (যেমন: deadlock, duplicate, tail, rollback)..."
+              placeholder={t.cbsLabs.searchPlaceholder}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white"
             />
           </div>
 
           <div className="flex items-center space-x-1.5 overflow-x-auto w-full sm:w-auto py-1">
             {[
-              { id: 'all', label: 'All Labs' },
-              { id: 'sql', label: 'SQL Forensics' },
-              { id: 'accounting', label: 'Accounting GL' },
-              { id: 'linux', label: 'Linux Logs' },
-              { id: 'docker', label: 'Docker Ops' },
-              { id: 'cbs', label: 'CBS Incident RCA' }
+              { id: 'all', label: t.cbsLabs.allCategories },
+              { id: 'sql', label: t.cbsLabs.catSql },
+              { id: 'accounting', label: t.cbsLabs.catAccounting },
+              { id: 'linux', label: t.cbsLabs.catLinux },
+              { id: 'docker', label: t.cbsLabs.catDocker },
+              { id: 'cbs', label: t.cbsLabs.catCbs }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -221,7 +223,7 @@ export const CbsLabsTab: React.FC<CbsLabsTabProps> = ({ onOpenDay }) => {
                     onClick={() => onOpenDay(lab.dayNumber)}
                     className="text-xs font-bold text-teal-700 hover:text-teal-900 flex items-center space-x-1 self-start sm:self-auto cursor-pointer"
                   >
-                    <span>সম্পূর্ণ পাঠে যান</span>
+                    <span>{language === 'bn' ? 'সম্পূর্ণ পাঠে যান' : 'Go to Full Lesson'}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -229,7 +231,7 @@ export const CbsLabsTab: React.FC<CbsLabsTabProps> = ({ onOpenDay }) => {
                 {/* Scenario & Code */}
                 <div className="p-4 sm:p-6 space-y-4">
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    <strong className="text-slate-900">Scenario Context:</strong> {lab.scenario}
+                    <strong className="text-slate-900">{t.cbsLabs.scenario}:</strong> {lab.scenario}
                   </p>
 
                   {/* Dark Terminal Code Snippet */}
@@ -245,12 +247,12 @@ export const CbsLabsTab: React.FC<CbsLabsTabProps> = ({ onOpenDay }) => {
                         {isCopied ? (
                           <>
                             <Check className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-[11px] text-emerald-400 font-bold">কপি হয়েছে!</span>
+                            <span className="text-[11px] text-emerald-400 font-bold">{t.cbsLabs.copied}</span>
                           </>
                         ) : (
                           <>
                             <Copy className="w-3.5 h-3.5 text-slate-400" />
-                            <span className="text-[11px]">১-ক্লিক কপি</span>
+                            <span className="text-[11px]">{t.cbsLabs.copy}</span>
                           </>
                         )}
                       </button>
@@ -263,12 +265,16 @@ export const CbsLabsTab: React.FC<CbsLabsTabProps> = ({ onOpenDay }) => {
                   {/* Explanation & Senior Tip */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-1">
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70 text-slate-700 space-y-1">
-                      <span className="font-bold text-slate-900 block">কমান্ডের উদ্দেশ্য:</span>
+                      <span className="font-bold text-slate-900 block">
+                        {language === 'bn' ? 'কমান্ডের উদ্দেশ্য:' : 'Command Purpose & Forensics:'}
+                      </span>
                       <span>{lab.explanation}</span>
                     </div>
 
                     <div className="p-3 rounded-xl bg-teal-50/70 border border-teal-200/70 text-teal-900 space-y-1">
-                      <span className="font-black text-teal-950 block">সিনিয়র ইঞ্জিনিয়ার ভেরিফিকেশন রুল:</span>
+                      <span className="font-black text-teal-950 block">
+                        {language === 'bn' ? 'সিনিয়র ইঞ্জিনিয়ার ভেরিফিকেশন রুল:' : 'Senior Engineer Verification Rule:'}
+                      </span>
                       <span>{lab.verificationTip}</span>
                     </div>
                   </div>
@@ -278,7 +284,9 @@ export const CbsLabsTab: React.FC<CbsLabsTabProps> = ({ onOpenDay }) => {
           })
         ) : (
           <div className="p-12 text-center rounded-2xl border border-slate-200 bg-white text-slate-500 text-xs">
-            সার্চের সাথে মিলে এমন কোনো ল্যাব পাওয়া যায়নি। অন্য কীওয়ার্ড দিয়ে চেষ্টা করুন।
+            {language === 'bn'
+              ? 'সার্চের সাথে মিলে এমন কোনো ল্যাব পাওয়া যায়নি। অন্য কীওয়ার্ড দিয়ে চেষ্টা করুন।'
+              : 'No diagnostic labs matched your search. Try different keywords or clear filters.'}
           </div>
         )}
       </div>

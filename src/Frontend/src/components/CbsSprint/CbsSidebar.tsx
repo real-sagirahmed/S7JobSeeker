@@ -12,6 +12,7 @@ import {
   Layers,
   Sparkles
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 import type { CbsCurriculumItem, CbsProgress } from '../../types';
 
 interface CbsSidebarProps {
@@ -29,6 +30,7 @@ export const CbsSidebar: React.FC<CbsSidebarProps> = ({
   onSelectDay,
   className = ''
 }) => {
+  const { language } = useLanguage();
   const completedCount = progress.completedDays.length;
   const percentage = Math.round((completedCount / (curriculum.length || 14)) * 100);
 
@@ -60,10 +62,12 @@ export const CbsSidebar: React.FC<CbsSidebarProps> = ({
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-black uppercase tracking-wider text-teal-900">14-Day Sprint Roadmap</span>
+            <span className="text-xs font-black uppercase tracking-wider text-teal-900">
+              {language === 'bn' ? '১৪-দিনের স্প্রিন্ট রোডম্যাপ' : '14-Day Sprint Roadmap'}
+            </span>
           </div>
           <span className="text-xs font-black text-teal-800 bg-teal-100/80 px-2 py-0.5 rounded-full">
-            {completedCount} / {curriculum.length || 14} Days ({percentage}%)
+            {completedCount} / {curriculum.length || 14} {language === 'bn' ? 'দিন' : 'Days'} ({percentage}%)
           </span>
         </div>
 

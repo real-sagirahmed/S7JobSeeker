@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle2, XCircle, HelpCircle, Award, RotateCcw } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 import type { CbsQuizQuestion } from '../../types';
 
 interface CbsInteractiveQuizProps {
@@ -15,6 +16,7 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
   savedScore,
   onSaveScore
 }) => {
+  const { t, language } = useLanguage();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
@@ -65,11 +67,11 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
               <Award className="w-5 h-5" />
             </span>
             <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-              Day {dayNumber} Self-Check Assessment
+              {t.cbsQuiz.title.replace('{day}', dayNumber.toString())}
             </h3>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            সঠিক ধারণা নিশ্চিত করতে প্রতিটি প্রশ্নের উত্তর দিন এবং তাৎক্ষণিক ব্যাখ্যা পর্যালোচনা করুন।
+            {t.cbsQuiz.subtitle}
           </p>
         </div>
 
@@ -77,13 +79,13 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
           <div className="flex items-center space-x-3 bg-emerald-50 border border-emerald-200/80 px-3.5 py-2 rounded-xl">
             <div className="text-right">
               <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 block">
-                {isSubmitted ? 'Assessment Score' : 'Previous Score'}
+                {isSubmitted ? t.cbsQuiz.assessmentScore : t.cbsQuiz.previousScore}
               </span>
               <span className="text-lg font-black text-emerald-900">{currentScore}%</span>
             </div>
             <button
               onClick={handleReset}
-              title="পুনরায় কুইজ দিন"
+              title={t.cbsQuiz.retake}
               className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100/60 rounded-lg transition-colors cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
@@ -112,12 +114,12 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
                     {isCorrect ? (
                       <span className="inline-flex items-center space-x-1 text-[11px] font-extrabold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>সঠিক</span>
+                        <span>{language === 'bn' ? 'সঠিক' : 'Correct'}</span>
                       </span>
                     ) : (
                       <span className="inline-flex items-center space-x-1 text-[11px] font-extrabold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md">
                         <XCircle className="w-3.5 h-3.5" />
-                        <span>ভুল</span>
+                        <span>{language === 'bn' ? 'ভুল' : 'Incorrect'}</span>
                       </span>
                     )}
                   </span>
@@ -168,7 +170,9 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
                 <div className="mt-2 p-3 rounded-lg bg-teal-50/70 border border-teal-100 text-xs text-teal-900 flex items-start space-x-2">
                   <HelpCircle className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-teal-950 block mb-0.5">ব্যাখ্যা ও সিনিয়র অবজারভেশন:</span>
+                    <span className="font-bold text-teal-950 block mb-0.5">
+                      {language === 'bn' ? 'ব্যাখ্যা ও সিনিয়র অবজারভেশন:' : 'Explanation & Senior Observation:'}
+                    </span>
                     <span>{q.explanation}</span>
                   </div>
                 </div>
@@ -182,7 +186,7 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
       {!isSubmitted && (
         <div className="flex items-center justify-between pt-2 border-t border-slate-100">
           <span className="text-xs text-slate-500">
-            {answeredCount} / {questions.length} প্রশ্নের উত্তর দেওয়া হয়েছে
+            {answeredCount} / {questions.length} {language === 'bn' ? 'প্রশ্নের উত্তর দেওয়া হয়েছে' : 'questions answered'}
           </span>
           <button
             disabled={!allAnswered}
@@ -193,7 +197,7 @@ export const CbsInteractiveQuiz: React.FC<CbsInteractiveQuizProps> = ({
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}
           >
-            কুইজ জমা দিন এবং প্রোগ্রেস সেভ করুন
+            {t.cbsQuiz.submit}
           </button>
         </div>
       )}
