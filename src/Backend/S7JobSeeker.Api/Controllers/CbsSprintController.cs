@@ -115,4 +115,27 @@ public class CbsSprintController : ControllerBase
         var response = await _sprintService.AskAiDoubtAsync(request, cancellationToken);
         return Ok(response);
     }
+
+    /// <summary>
+    /// Public credential verification endpoint for employers and recruiters.
+    /// </summary>
+    [HttpGet("verify/{certificateId}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(CbsCertificateVerificationDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> VerifyCertificate(string certificateId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(certificateId))
+        {
+            return BadRequest(new { message = "Certificate ID is required." });
+        }
+
+        var result = await _sprintService.VerifyCertificateAsync(certificateId.Trim(), cancellationToken);
+        if (result == null)
+        {
+            return NotFound(new { isValid = false, message = "Certificate ID not found or could not be authenticated." });
+        }
+
+        return Ok(result);
+    }
 }

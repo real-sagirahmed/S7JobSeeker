@@ -17,7 +17,8 @@ import type {
   CbsProgress,
   CbsProgressUpdate,
   CbsAiDoubtRequest,
-  CbsAiDoubtResponse
+  CbsAiDoubtResponse,
+  CbsCertificateVerification
 } from '../types';
 
 const API_BASE = '/api';
@@ -552,6 +553,15 @@ export const api = {
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: 'AI doubt inquiry failed' }));
         throw new Error(err.message || 'AI doubt inquiry failed');
+      }
+      return res.json();
+    },
+
+    async verifyCertificate(certificateId: string): Promise<CbsCertificateVerification> {
+      const res = await fetch(`${API_BASE}/cbs-sprint/verify/${encodeURIComponent(certificateId)}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Certificate not found' }));
+        throw new Error(err.message || 'Certificate not found or invalid');
       }
       return res.json();
     }

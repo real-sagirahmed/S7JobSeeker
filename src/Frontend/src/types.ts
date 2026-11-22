@@ -304,7 +304,22 @@ export interface CbsProgress {
   quizScores: Record<string, number>;
   checklist: Record<string, boolean>;
   lastAccessedDay: number;
+  certificateId?: string;
+  certificateIssuedAt?: string;
   updatedAt: string;
+}
+
+export interface CbsCertificateVerification {
+  isValid: boolean;
+  certificateId: string;
+  candidateName: string;
+  trackTitle: string;
+  issuedAt: string;
+  completedDaysCount: number;
+  averageScore: number;
+  competencies: string[];
+  issuer: string;
+  verificationUrl: string;
 }
 
 export interface CbsProgressUpdate {

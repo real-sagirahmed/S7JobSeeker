@@ -126,4 +126,116 @@ public class CbsSprintTests
         Assert.True(updatedProgress.Checklist["1-1"]);
         Assert.Equal(1, updatedProgress.LastAccessedDay);
     }
+
+    [Fact]
+    public async Task CompletingAll14Days_GeneratesAndPersistsPermanentCertificateId()
+    {
+        using var db = CreateInMemoryDbContext();
+        var service = new CbsSprintService(db, new DummyChatCompletionService(), NullLogger<CbsSprintService>.Instance);
+        var userId = "user-graduating-14";
+
+        // Mark days 1 through 13 complete
+        for (int day = 1; day <= 13; day++)
+        {
+            await service.UpdateUserProgressAsync(userId, new CbsProgressUpdateDto
+            {
+                DayNumber = day,
+                MarkCompleted = true,
+                QuizScore = 90
+            });
+        }
+
+        var progress13 = await service.GetUserProgressAsync(userId);
+        Assert.Null(progress13.CertificateId);
+
+        // Mark day 14 complete
+        var progress14 = await service.UpdateUserProgressAsync(userId, new CbsProgressUpdateDto
+        {
+            DayNumber = 14,
+            MarkCompleted = true,
+            QuizScore = 95
+        });
+
+        Assert.NotNull(progress14.CertificateId);
+        Assert.StartsWith("S7-CBS-", progress14.CertificateId);
+        Assert.NotNull(progress14.CertificateIssuedAt);
+    }
+
+    [Fact]
+    public async Task CertificateId_IsIdempotent_AndNeverRegeneratedOnSubsequentUpdates()
+    {
+        using var db = CreateInMemoryDbContext();
+        var service = new CbsSprintService(db, new DummyChatCompletionService(), NullLogger<CbsSprintService>.Instance);
+        var userId = "user-idempotent-cbs";
+
+        for (int day = 1; day <= 14; day++)
+        {
+            await service.UpdateUserProgressAsync(userId, new CbsProgressUpdateDto
+            {
+                DayNumber = day,
+                MarkCompleted = true,
+                QuizScore = 100
+            });
+        }
+
+        var initialProgress = await service.GetUserProgressAsync(userId);
+        var originalCertId = initialProgress.CertificateId;
+        var originalIssuedAt = initialProgress.CertificateIssuedAt;
+        Assert.NotNull(originalCertId);
+
+        // Subsequent update (e.g. retaking a quiz or accessing a day)
+        var updatedProgress = await service.UpdateUserProgressAsync(userId, new CbsProgressUpdateDto
+        {
+            DayNumber = 5,
+            QuizScore = 95
+        });
+
+        Assert.Equal(originalCertId, updatedProgress.CertificateId);
+        Assert.Equal(originalIssuedAt, updatedProgress.CertificateIssuedAt);
+    }
+
+    [Fact]
+    public async Task VerifyCertificate_ValidId_ReturnsFullCandidateCredentialDto()
+    {
+        using var db = CreateInMemoryDbContext();
+        var service = new CbsSprintService(db, new DummyChatCompletionService(), NullLogger<CbsSprintService>.Instance);
+        var controller = new CbsSprintController(service, NullLogger<CbsSprintController>.Instance);
+
+        var userId = "candidate-verified-cbs";
+        for (int day = 1; day <= 14; day++)
+        {
+            await service.UpdateUserProgressAsync(userId, new CbsProgressUpdateDto
+            {
+                DayNumber = day,
+                MarkCompleted = true,
+                QuizScore = 90
+            });
+        }
+
+        var progress = await service.GetUserProgressAsync(userId);
+        var certId = progress.CertificateId;
+        Assert.NotNull(certId);
+
+        // Public verification
+        var actionResult = await controller.VerifyCertificate(certId, default);
+        var okResult = Assert.IsType<OkObjectResult>(actionResult);
+        var certDto = Assert.IsType<CbsCertificateVerificationDto>(okResult.Value);
+
+        Assert.True(certDto.IsValid);
+        Assert.Equal(certId, certDto.CertificateId);
+        Assert.Equal(14, certDto.CompletedDaysCount);
+        Assert.NotEmpty(certDto.Competencies);
+    }
+
+    [Fact]
+    public async Task VerifyCertificate_NonExistentId_ReturnsNotFound()
+    {
+        using var db = CreateInMemoryDbContext();
+        var service = new CbsSprintService(db, new DummyChatCompletionService(), NullLogger<CbsSprintService>.Instance);
+        var controller = new CbsSprintController(service, NullLogger<CbsSprintController>.Instance);
+
+        var actionResult = await controller.VerifyCertificate("S7-CBS-FAKE-9999", default);
+        var notFound = Assert.IsType<NotFoundObjectResult>(actionResult);
+        Assert.NotNull(notFound.Value);
+    }
 }

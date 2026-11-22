@@ -333,6 +333,8 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
         user={user}
         completedCount={progress.completedDays.length}
         averageScore={averageScore}
+        certificateId={progress.certificateId}
+        certificateIssuedAt={progress.certificateIssuedAt}
       />
     </div>
   );

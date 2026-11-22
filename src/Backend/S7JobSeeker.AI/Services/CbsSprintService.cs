@@ -149,12 +149,21 @@ public class CbsSprintService : ICbsSprintService
         }
 
         var progress = await _dbContext.UserCbsProgresses
-            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
 
         if (progress == null)
         {
             return new CbsProgressDto();
+        }
+
+        // Auto-backfill certificate for candidates who completed all 14 days
+        var completedList = DeserializeOrDefault<List<int>>(progress.CompletedDaysJson) ?? [];
+        if (completedList.Count >= 14 && string.IsNullOrWhiteSpace(progress.CertificateId))
+        {
+            var hash = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+            progress.CertificateId = $"S7-CBS-{DateTime.UtcNow:yyyyMM}-{hash}";
+            progress.CertificateIssuedAt = progress.UpdatedAt;
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         return MapToDto(progress);
@@ -224,6 +233,14 @@ public class CbsSprintService : ICbsSprintService
         progress.QuizScoresJson = JsonSerializer.Serialize(quizDict);
         progress.ChecklistJson = JsonSerializer.Serialize(checkDict);
         progress.UpdatedAt = DateTime.UtcNow;
+
+        // Issue permanent certificate when all 14 days completed
+        if (completedList.Count >= 14 && string.IsNullOrWhiteSpace(progress.CertificateId))
+        {
+            var hash = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+            progress.CertificateId = $"S7-CBS-{DateTime.UtcNow:yyyyMM}-{hash}";
+            progress.CertificateIssuedAt = DateTime.UtcNow;
+        }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -302,6 +319,62 @@ public class CbsSprintService : ICbsSprintService
         };
     }
 
+    public async Task<CbsCertificateVerificationDto?> VerifyCertificateAsync(
+        string certificateId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(certificateId))
+        {
+            return null;
+        }
+
+        var cleanId = certificateId.Trim();
+
+        var progress = await _dbContext.UserCbsProgresses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.CertificateId == cleanId, cancellationToken);
+
+        if (progress == null || string.IsNullOrWhiteSpace(progress.CertificateId))
+        {
+            return null;
+        }
+
+        var candidateName = "CBS Graduate Candidate";
+        var user = await _dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == progress.UserId, cancellationToken);
+        if (user != null && !string.IsNullOrWhiteSpace(user.FullName))
+        {
+            candidateName = user.FullName;
+        }
+
+        var quizScores = DeserializeOrDefault<Dictionary<string, int>>(progress.QuizScoresJson) ?? [];
+        var avgScore = quizScores.Count > 0 ? (int)Math.Round(quizScores.Values.Average()) : 85;
+        var completedDays = DeserializeOrDefault<List<int>>(progress.CompletedDaysJson) ?? [];
+
+        return new CbsCertificateVerificationDto
+        {
+            IsValid = true,
+            CertificateId = progress.CertificateId,
+            CandidateName = candidateName,
+            TrackTitle = "Junior Software Engineer (Service) — Current & NextGen CBS Support",
+            IssuedAt = progress.CertificateIssuedAt ?? progress.UpdatedAt,
+            CompletedDaysCount = completedDays.Count,
+            AverageScore = avgScore,
+            Competencies =
+            [
+                "SQL Server Forensics & OLTP",
+                "Double-Entry Accounting GL",
+                "Linux Services & Logs",
+                "Docker Container Ops",
+                "CBS EOD Batch Triage",
+                "L1/L2 Incident RCA & Rollback"
+            ],
+            Issuer = "teamS7 Enterprise Intelligence & Learning",
+            VerificationUrl = $"/verify?id={progress.CertificateId}"
+        };
+    }
+
     private static CbsProgressDto MapToDto(UserCbsProgress entity)
     {
         return new CbsProgressDto
@@ -310,6 +383,8 @@ public class CbsSprintService : ICbsSprintService
             QuizScores = DeserializeOrDefault<Dictionary<string, int>>(entity.QuizScoresJson) ?? [],
             Checklist = DeserializeOrDefault<Dictionary<string, bool>>(entity.ChecklistJson) ?? [],
             LastAccessedDay = entity.LastAccessedDay,
+            CertificateId = entity.CertificateId,
+            CertificateIssuedAt = entity.CertificateIssuedAt,
             UpdatedAt = entity.UpdatedAt
         };
     }

@@ -10,6 +10,7 @@ import { CompanyDirectory } from './components/CompanyDirectory';
 import { BuyCreditsModal } from './components/BuyCreditsModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { CbsSprintPortal } from './components/CbsSprint/CbsSprintPortal';
+import { CertificateVerificationView } from './components/CbsSprint/CertificateVerificationView';
 import { ToastContainer, type ToastMessage } from './components/Toast';
 import { api } from './services/api';
 import type { User, ResumeProfile, JobMatch, TailoredApplication, JobPrepGuide } from './types';
@@ -36,6 +37,21 @@ export const App: React.FC = () => {
   const [remoteOnly, setRemoteOnly] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
+  // Public certificate verification route detection (?verify=S7-CBS-... or /verify/S7-CBS-...)
+  const [verificationCertId, setVerificationCertId] = useState<string | null>(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const verifyParam = urlParams.get('verify');
+    if (verifyParam) return verifyParam;
+
+    if (window.location.pathname.startsWith('/verify/')) {
+      const parts = window.location.pathname.split('/');
+      if (parts.length >= 3 && parts[2].trim()) {
+        return decodeURIComponent(parts[2].trim());
+      }
+    }
+    return null;
+  });
+
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, type, message }]);
@@ -44,6 +60,19 @@ export const App: React.FC = () => {
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
+
+  // If user is directly accessing the public certificate verification view, render standalone view
+  if (verificationCertId !== null) {
+    return (
+      <CertificateVerificationView
+        initialCertificateId={verificationCertId}
+        onBackToApp={() => {
+          window.history.replaceState({}, document.title, window.location.pathname.split('?')[0]);
+          setVerificationCertId(null);
+        }}
+      />
+    );
+  }
 
   // Initial user check
   useEffect(() => {

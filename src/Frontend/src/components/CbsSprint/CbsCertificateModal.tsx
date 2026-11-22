@@ -1,5 +1,5 @@
-import React from 'react';
-import { Award, Printer, ShieldCheck, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Award, Printer, ShieldCheck, X, Link, Check, ExternalLink } from 'lucide-react';
 import type { User } from '../../types';
 
 interface CbsCertificateModalProps {
@@ -9,6 +9,8 @@ interface CbsCertificateModalProps {
   completedCount: number;
   averageScore: number;
   completionDate?: string;
+  certificateId?: string;
+  certificateIssuedAt?: string;
 }
 
 export const CbsCertificateModal: React.FC<CbsCertificateModalProps> = ({
@@ -17,15 +19,30 @@ export const CbsCertificateModal: React.FC<CbsCertificateModalProps> = ({
   user,
   completedCount,
   averageScore,
-  completionDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  completionDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+  certificateId,
+  certificateIssuedAt
 }) => {
+  const [copied, setCopied] = useState(false);
+
   if (!isOpen) return null;
 
   const candidateName = user?.fullName || 'CBS Support Candidate';
-  const certificateId = `S7-CBS-${(user?.email || 'GUEST').substring(0, 4).toUpperCase()}-${Date.now().toString().slice(-6)}`;
+  const effectiveCertId = certificateId || `S7-CBS-PREVIEW-${Date.now().toString().slice(-6)}`;
+  const displayIssuedDate = certificateIssuedAt
+    ? new Date(certificateIssuedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    : completionDate;
+
+  const verifyUrl = `${window.location.origin}/?verify=${encodeURIComponent(effectiveCertId)}`;
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(verifyUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -39,6 +56,17 @@ export const CbsCertificateModal: React.FC<CbsCertificateModalProps> = ({
           </div>
 
           <div className="flex items-center space-x-3">
+            {certificateId && (
+              <button
+                onClick={handleCopyLink}
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer border border-slate-700"
+                title="Copy public verification URL to clipboard"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Link className="w-3.5 h-3.5" />}
+                <span>{copied ? 'লিংক কপি হয়েছে!' : 'ভেরিফিকেশন লিংক'}</span>
+              </button>
+            )}
+
             <button
               onClick={handlePrint}
               className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-black flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer shadow-md"
@@ -134,15 +162,23 @@ export const CbsCertificateModal: React.FC<CbsCertificateModalProps> = ({
                 <div className="w-12 h-12 rounded-full border border-dashed border-teal-600 flex items-center justify-center mx-auto text-[8px] font-bold text-teal-800 uppercase tracking-tighter">
                   OFFICIAL<br/>SEAL
                 </div>
-                <span className="text-[9px] text-slate-400 mt-1 block">Issued: {completionDate}</span>
+                <span className="text-[9px] text-slate-400 mt-1 block">Issued: {displayIssuedDate}</span>
               </div>
 
               <div className="text-right space-y-1">
                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
                   Credential Verification
                 </span>
-                <span className="font-mono text-[10px] text-teal-800 font-bold block">{certificateId}</span>
-                <span className="text-[9px] text-slate-400">https://s7jobseeker.com/verify</span>
+                <span className="font-mono text-[10px] text-teal-800 font-bold block">{effectiveCertId}</span>
+                <a
+                  href={verifyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[9px] text-teal-700 hover:text-teal-900 hover:underline inline-flex items-center gap-1 font-semibold"
+                >
+                  <span>Verify Credential</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
               </div>
             </div>
           </div>
