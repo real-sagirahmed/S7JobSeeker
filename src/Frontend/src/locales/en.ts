@@ -33,7 +33,11 @@ export const en = {
     loginRegister: 'Login / Register',
     logout: 'Logout',
     history: 'History',
-    topUpCredits: 'Click to view AI Credits or Top Up via bKash/Nagad'
+    topUpCredits: 'Click to view AI Credits or Top Up via bKash/Nagad',
+    topUp: 'Top Up',
+    director: 'Director',
+    menu: 'Menu',
+    closeMenu: 'Close menu'
   },
   matches: {
     title: 'Top Matching Opportunities',

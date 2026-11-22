@@ -35,7 +35,11 @@ export const bn: TranslationDictionary = {
     loginRegister: 'লগইন / রেজিস্টার',
     logout: 'লগআউট',
     history: 'পেমেন্ট হিস্ট্রি',
-    topUpCredits: 'এআই ক্রেডিট দেখতে বা বিকাশ/নগদে টপ-আপ করতে ক্লিক করুন'
+    topUpCredits: 'এআই ক্রেডিট দেখতে বা বিকাশ/নগদে টপ-আপ করতে ক্লিক করুন',
+    topUp: 'টপ-আপ',
+    director: 'ডিরেক্টর',
+    menu: 'মেনু',
+    closeMenu: 'মেনু বন্ধ করুন'
   },
   matches: {
     title: 'সেরা ম্যাচিং ক্যারিয়ার সুযোগ',
