@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { CbsCurriculumItem, CbsDayLesson, CbsProgress } from '../../types';
 import { CbsLessonView } from './CbsLessonView';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface CbsCurriculumTabProps {
   curriculum: CbsCurriculumItem[];
@@ -38,8 +39,40 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
   onToggleComplete,
   onSaveQuizScore
 }) => {
-  // Define 4 modules
-  const modules = [
+  const { t, language } = useLanguage();
+
+  const modulesEn = [
+    {
+      id: 1,
+      title: 'Module 1: Relational Database & SQL Forensics',
+      description: 'OLTP Database architecture, customer filtering, multi-table JOINs, Aggregates, sub-queries, CTEs, transaction deadlocks, and duplicate resolution.',
+      dayRange: [1, 2, 3],
+      icon: <Database className="w-5 h-5 text-emerald-600" />
+    },
+    {
+      id: 2,
+      title: 'Module 2: Banking Accounting & General Ledger Invariants',
+      description: 'Accounting equation, account types, Debit/Credit normal balances, journal entries, ledger posting, and bank reconciliation.',
+      dayRange: [4, 5],
+      icon: <Layers className="w-5 h-5 text-amber-600" />
+    },
+    {
+      id: 3,
+      title: 'Module 3: Linux & Docker Infrastructure Operations',
+      description: 'Linux filesystem, permissions, process troubleshooting, service logs, network ports, Docker container lifecycle, and ASP.NET Core local labs.',
+      dayRange: [6, 7, 8, 9],
+      icon: <Terminal className="w-5 h-5 text-sky-600" />
+    },
+    {
+      id: 4,
+      title: 'Module 4: Core Banking Systems, Incidents & Certification',
+      description: 'CBS architecture, EOD batch & idempotency, UAT & data migration testing, L1/L2 incident RCA, rollback verification, and final mock interview.',
+      dayRange: [10, 11, 12, 13, 14],
+      icon: <Server className="w-5 h-5 text-teal-600" />
+    }
+  ];
+
+  const modulesBn = [
     {
       id: 1,
       title: 'Module 1: Relational Database & SQL Forensics',
@@ -70,6 +103,8 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
     }
   ];
 
+  const modules = language === 'bn' ? modulesBn : modulesEn;
+
   const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({
     1: true,
     2: true,
@@ -89,7 +124,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
     return (
       <div className="min-h-[40vh] flex flex-col items-center justify-center space-y-3">
         <RefreshCw className="w-8 h-8 text-teal-600 animate-spin" />
-        <p className="text-xs font-bold text-slate-600">Coursera লেসন কন্টেন্ট লোড হচ্ছে...</p>
+        <p className="text-xs font-bold text-slate-600">{language === 'bn' ? 'Coursera লেসন কন্টেন্ট লোড হচ্ছে...' : 'Loading Coursera lesson content...'}</p>
       </div>
     );
   }
@@ -126,7 +161,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
             onClick={onClearActiveLesson}
             className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-900 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
           >
-            ← কারিকুলাম তালিকায় ফিরে যান
+            {language === 'bn' ? '← কারিকুলাম তালিকায় ফিরে যান' : '← Back to Curriculum'}
           </button>
         </div>
 
@@ -147,7 +182,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
                 className="flex items-center space-x-2 text-xs font-bold text-slate-300 hover:text-white px-3 py-2 rounded-xl hover:bg-slate-800 transition-all cursor-pointer active:scale-95"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">পূর্ববর্তী পাঠ: Day {currentDay - 1}</span>
+                <span className="hidden sm:inline">{language === 'bn' ? `পূর্ববর্তী পাঠ: Day ${currentDay - 1}` : `Previous Lesson: Day ${currentDay - 1}`}</span>
                 <span className="sm:hidden">Day {currentDay - 1}</span>
               </button>
             ) : (
@@ -167,12 +202,12 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
             {isCompleted ? (
               <>
                 <CheckCircle2 className="w-4 h-4" />
-                <span>সম্পন্ন হয়েছে</span>
+                <span>{t.cbs?.completed || (language === 'bn' ? 'সম্পন্ন হয়েছে' : 'Completed')}</span>
               </>
             ) : (
               <>
                 <Circle className="w-4 h-4" />
-                <span>পাঠটি সম্পন্ন মার্ক করুন</span>
+                <span>{t.cbs?.markComplete || (language === 'bn' ? 'পাঠটি সম্পন্ন মার্ক করুন' : 'Mark Complete')}</span>
               </>
             )}
           </button>
@@ -183,7 +218,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
                 onClick={() => onSelectDay(currentDay + 1)}
                 className="flex items-center space-x-2 text-xs font-bold text-teal-300 hover:text-teal-200 px-3 py-2 rounded-xl hover:bg-slate-800 transition-all cursor-pointer active:scale-95"
               >
-                <span className="hidden sm:inline">পরবর্তী পাঠ: Day {currentDay + 1}</span>
+                <span className="hidden sm:inline">{language === 'bn' ? `পরবর্তী পাঠ: Day ${currentDay + 1}` : `Next Lesson: Day ${currentDay + 1}`}</span>
                 <span className="sm:hidden">Day {currentDay + 1}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -193,7 +228,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
                 className="flex items-center space-x-1.5 text-xs font-black text-amber-300 hover:text-amber-200 px-3 py-2 rounded-xl hover:bg-slate-800"
               >
                 <Award className="w-4 h-4" />
-                <span>কোর্স সম্পন্ন!</span>
+                <span>{language === 'bn' ? 'কোর্স সম্পন্ন!' : 'Course Completed!'}</span>
               </button>
             )}
           </div>
@@ -208,10 +243,10 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
       <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <div>
           <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-            Curriculum (মডিউল ও পাঠ তালিকা)
+            {language === 'bn' ? 'কারিকুলাম (মডিউল ও পাঠ তালিকা)' : 'Curriculum (Modules & Lessons)'}
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            যে পাঠটি পড়তে চান সেটিতে ক্লিক করুন। সম্পূর্ণ কন্টেন্ট, কোড ল্যাব ও সেলফ-চেক কুইজ তাৎক্ষণিক লোড হবে।
+            {language === 'bn' ? 'যে পাঠটি পড়তে চান সেটিতে ক্লিক করুন। সম্পূর্ণ কন্টেন্ট, কোড ল্যাব ও সেলফ-চেক কুইজ তাৎক্ষণিক লোড হবে।' : 'Click on any lesson to open. Complete content, code labs, and self-check quizzes load instantly.'}
           </p>
         </div>
 
@@ -223,7 +258,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
           }}
           className="text-xs font-bold text-teal-700 hover:text-teal-900 cursor-pointer"
         >
-          {Object.values(expandedModules).every(v => v) ? 'সবগুলো কলাপস করুন' : 'সবগুলো এক্সপ্যান্ড করুন'}
+          {Object.values(expandedModules).every(v => v) ? (language === 'bn' ? 'সবগুলো কলাপস করুন' : 'Collapse All') : (language === 'bn' ? 'সবগুলো এক্সপ্যান্ড করুন' : 'Expand All')}
         </button>
       </div>
 
@@ -270,7 +305,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
                 <div className="flex items-center space-x-4 shrink-0">
                   <div className="text-right hidden sm:block">
                     <span className="text-xs font-bold text-slate-700 block">
-                      {completedInModule} / {moduleDays.length} সম্পন্ন
+                      {completedInModule} / {moduleDays.length} {language === 'bn' ? 'সম্পন্ন' : 'completed'}
                     </span>
                     <span className="text-[10px] text-slate-400">
                       {Math.round((completedInModule / (moduleDays.length || 1)) * 100)}%
@@ -318,7 +353,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
                                 </span>
                                 <span className="text-[11px] text-slate-400 flex items-center space-x-1">
                                   <Clock className="w-3 h-3" />
-                                  <span>{item.estimatedMinutes} মিনিট</span>
+                                  <span>{item.estimatedMinutes} {language === 'bn' ? 'মিনিট' : 'mins'}</span>
                                 </span>
                               </div>
                               <p className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-teal-950 truncate mt-0.5">
@@ -336,7 +371,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
                               </span>
                             ) : (
                               <span className="text-xs font-bold text-teal-700 group-hover:underline flex items-center space-x-1">
-                                <span>পাঠ খুলুন</span>
+                                <span>{language === 'bn' ? 'পাঠ খুলুন' : 'Open Lesson'}</span>
                                 <ArrowRight className="w-3.5 h-3.5" />
                               </span>
                             )}

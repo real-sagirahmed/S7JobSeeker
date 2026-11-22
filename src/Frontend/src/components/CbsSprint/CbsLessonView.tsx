@@ -15,6 +15,7 @@ import {
 import type { CbsDayLesson, CbsProgress } from '../../types';
 import { CbsInteractiveQuiz } from './CbsInteractiveQuiz';
 import { CbsAiAssistant } from './CbsAiAssistant';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface CbsLessonViewProps {
   lesson: CbsDayLesson;
@@ -29,6 +30,7 @@ export const CbsLessonView: React.FC<CbsLessonViewProps> = ({
   onToggleComplete,
   onSaveQuizScore
 }) => {
+  const { t, language } = useLanguage();
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
 
   const isCompleted = progress.completedDays.includes(lesson.dayNumber);
@@ -61,17 +63,17 @@ export const CbsLessonView: React.FC<CbsLessonViewProps> = ({
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-teal-100 text-teal-900 border border-teal-200">
-                Day {lesson.dayNumber} of 14
+                {language === 'bn' ? `দিন ${lesson.dayNumber} / ১৪` : `Day ${lesson.dayNumber} of 14`}
               </span>
               <span className="flex items-center space-x-1 text-slate-500 text-xs font-medium">
                 <Clock className="w-3.5 h-3.5" />
-                <span>{lesson.estimatedMinutes} মিনিট</span>
+                <span>{lesson.estimatedMinutes} {language === 'bn' ? 'মিনিট' : 'mins'}</span>
               </span>
               {quizScore !== undefined && (
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-black ${
                   quizScore >= 70 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                 }`}>
-                  কুইজ স্কোর: {quizScore}%
+                  {language === 'bn' ? 'কুইজ স্কোর:' : 'Quiz Score:'} {quizScore}%
                 </span>
               )}
             </div>
@@ -98,19 +100,19 @@ export const CbsLessonView: React.FC<CbsLessonViewProps> = ({
               {isCompleted ? (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>সম্পন্ন হয়েছে</span>
+                  <span>{t.cbs?.completed || (language === 'bn' ? 'সম্পন্ন হয়েছে' : 'Completed')}</span>
                 </>
               ) : (
                 <>
                   <Circle className="w-4 h-4 text-slate-400" />
-                  <span>সম্পন্ন মার্ক করুন</span>
+                  <span>{t.cbs?.markComplete || (language === 'bn' ? 'সম্পন্ন মার্ক করুন' : 'Mark Complete')}</span>
                 </>
               )}
             </button>
 
             <button
               onClick={handleDownloadMarkdown}
-              title="সম্পূর্ণ দিনের নোট Markdown হিসেবে ডাউনলোড করুন"
+              title={t.cbs?.downloadNotes || (language === 'bn' ? 'সম্পূর্ণ দিনের নোট Markdown হিসেবে ডাউনলোড করুন' : 'Download daily notes as Markdown')}
               className="p-2.5 rounded-xl text-slate-700 hover:text-teal-900 bg-slate-100 hover:bg-teal-50 border border-slate-200 transition-all active:scale-95 cursor-pointer"
             >
               <Download className="w-4 h-4" />
@@ -123,7 +125,7 @@ export const CbsLessonView: React.FC<CbsLessonViewProps> = ({
           <div className="bg-gradient-to-br from-teal-50/70 via-white to-slate-50 p-5 rounded-2xl border border-teal-200/80 space-y-2">
             <span className="text-xs font-black uppercase tracking-wider text-teal-950 flex items-center space-x-2 mb-1">
               <BookOpen className="w-4 h-4 text-teal-700" />
-              <span>আজকের মূল লক্ষ্য ও শেখার বিষয়</span>
+              <span>{t.cbs?.objectivesTitle || (language === 'bn' ? 'আজকের মূল লক্ষ্য ও শেখার বিষয়' : 'Daily Core Objectives')}</span>
             </span>
             <ul className="space-y-1.5">
               {lesson.objectives.map((obj, oIdx) => (
@@ -216,12 +218,12 @@ export const CbsLessonView: React.FC<CbsLessonViewProps> = ({
                         {isCopied ? (
                           <>
                             <Check className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-[11px] text-emerald-400 font-bold">কপি হয়েছে!</span>
+                            <span className="text-[11px] text-emerald-400 font-bold">{t.common?.copied || (language === 'bn' ? 'কপি হয়েছে!' : 'Copied!')}</span>
                           </>
                         ) : (
                           <>
                             <Copy className="w-3.5 h-3.5 text-slate-400" />
-                            <span className="text-[11px]">কপি কোড</span>
+                            <span className="text-[11px]">{t.common?.copy || (language === 'bn' ? 'কপি কোড' : 'Copy Code')}</span>
                           </>
                         )}
                       </button>
@@ -251,7 +253,7 @@ export const CbsLessonView: React.FC<CbsLessonViewProps> = ({
           <div className="flex items-center space-x-2.5 text-amber-900">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
             <h3 className="text-sm sm:text-base font-black tracking-tight">
-              CBS Support Common Mistakes — যেগুলো কঠোরভাবে এড়িয়ে চলবে
+              {t.cbs?.commonMistakesTitle || (language === 'bn' ? 'CBS Support Common Mistakes — যেগুলো কঠোরভাবে এড়িয়ে চলবে' : 'CBS Support Common Pitfalls — Mistakes to Strictly Avoid')}
             </h3>
           </div>
           <ul className="space-y-2 pt-1">

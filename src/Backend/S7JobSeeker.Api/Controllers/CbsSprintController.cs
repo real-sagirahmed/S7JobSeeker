@@ -103,6 +103,7 @@ public class CbsSprintController : ControllerBase
     /// <summary>
     /// On-demand AI doubt clearing using Gemini API for a given day's concept.
     /// </summary>
+    [EnableRateLimiting("AiPolicy")]
     [HttpPost("ask-ai")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(CbsAiDoubtResponseDto), StatusCodes.Status200OK)]

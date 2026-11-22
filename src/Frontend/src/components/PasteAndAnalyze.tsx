@@ -3,6 +3,7 @@ import { ClipboardCheck, Sparkles, AlertCircle, RotateCcw, CheckSquare, BookOpen
 import type { JobMatch } from '../types';
 import { api } from '../services/api';
 import { JobMatchCard } from './JobMatchCard';
+import { useLanguage } from '../context/LanguageContext';
 
 interface PasteAndAnalyzeProps {
   onGenerateApplication: (jobId: string) => void;
@@ -19,6 +20,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
   onRefreshUser,
   isGeneratingPrep
 }) => {
+  const { t } = useLanguage();
   const [title, setTitle] = useState('');
   const [company, setCompany] = useState('');
   const [url, setUrl] = useState('');
@@ -87,8 +89,8 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
               <ClipboardCheck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-black text-[#0B0B0B] text-base leading-tight">Paste & Analyze Custom Circular</h3>
-              <p className="text-xs text-[#7C7C7C] mt-0.5">Paste any job circular from LinkedIn, BDJobs or an email to evaluate candidate fit</p>
+              <h3 className="font-black text-[#0B0B0B] text-base leading-tight">{t.paste.title}</h3>
+              <p className="text-xs text-[#7C7C7C] mt-0.5">{t.paste.subtitle}</p>
             </div>
           </div>
           {evaluatedMatch && (
@@ -97,7 +99,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
               className="w-full sm:w-auto min-h-[40px] px-3.5 py-2 rounded-xl border border-black/10 hover:bg-black/5 text-xs text-[#333333] font-semibold flex items-center justify-center space-x-1.5 transition-colors active:scale-95 shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5 text-[#7C7C7C]" />
-              <span>Clear & Paste Another</span>
+              <span>{t.paste.clearAndPaste}</span>
             </button>
           )}
         </div>
@@ -105,30 +107,30 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#333333] mb-1">Job Title (Optional)</label>
+              <label className="block text-xs font-bold text-[#333333] mb-1">{t.paste.jobTitle}</label>
               <input
                 type="text"
-                placeholder="e.g. Senior .NET Architect"
+                placeholder={t.paste.jobTitlePlaceholder}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3.5 py-2.5 min-h-[44px] rounded-xl bg-[#F8FAFC] border border-black/10 text-base sm:text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#333333] mb-1">Company (Optional)</label>
+              <label className="block text-xs font-bold text-[#333333] mb-1">{t.paste.company}</label>
               <input
                 type="text"
-                placeholder="e.g. Microsoft / Acme Corp"
+                placeholder={t.paste.companyPlaceholder}
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 className="w-full px-3.5 py-2.5 min-h-[44px] rounded-xl bg-[#F8FAFC] border border-black/10 text-base sm:text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#333333] mb-1">Circular / Application URL (Optional)</label>
+              <label className="block text-xs font-bold text-[#333333] mb-1">{t.paste.url}</label>
               <input
                 type="url"
-                placeholder="https://..."
+                placeholder={t.paste.urlPlaceholder}
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="w-full px-3.5 py-2.5 min-h-[44px] rounded-xl bg-[#F8FAFC] border border-black/10 text-base sm:text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070]"
@@ -138,12 +140,12 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-[#333333] mb-1">
-              Job Circular / Requirements Text <span className="text-rose-500">*</span>
+              {t.paste.requirementsText} <span className="text-rose-500">*</span>
             </label>
             <textarea
               rows={6}
               required
-              placeholder="Paste the job requirements, responsibilities, or entire circular text here..."
+              placeholder={t.paste.requirementsPlaceholder}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-black/10 text-base sm:text-xs text-[#0B0B0B] placeholder-[#7C7C7C] focus:outline-none focus:border-[#007070] font-mono leading-relaxed"
@@ -164,7 +166,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
                 onClick={handleReset}
                 className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl border border-black/10 hover:bg-black/5 text-xs text-[#333333] font-semibold transition-colors active:scale-95"
               >
-                Reset
+                {t.common.clear}
               </button>
             )}
             <button
@@ -173,7 +175,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
               className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(0,112,112,0.25)]"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{isAnalyzing ? 'Evaluating Match via Gemini RAG...' : 'Evaluate Match with My Resume'}</span>
+              <span>{isAnalyzing ? t.paste.evaluatingButton : t.paste.evaluateButton}</span>
             </button>
           </div>
         </form>
@@ -183,10 +185,10 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-bold text-[#0B0B0B] flex items-center">
-              <Sparkles className="w-4 h-4 mr-1.5 text-[#007070]" /> Evaluation Result & Actions
+              <Sparkles className="w-4 h-4 mr-1.5 text-[#007070]" /> {t.paste.resultTitle}
             </h4>
             <span className="text-xs text-[#7C7C7C]">
-              Persisted in Database & ready for tailored cover letter or bookmarking
+              {t.paste.resultSubtitle}
             </span>
           </div>
 
@@ -203,7 +205,7 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
                   <BookOpen className="w-4 h-4 text-amber-600" />
-                  <span>Skill Gap Bridge & Interview Preparation Checklist</span>
+                  <span>{t.paste.gapChecklistTitle}</span>
                 </div>
                 {onOpenPrepGuide && (
                   <button
@@ -211,12 +213,12 @@ export const PasteAndAnalyze: React.FC<PasteAndAnalyzeProps> = ({
                     className="min-h-[36px] px-3 py-1.5 rounded-xl bg-[#007070] hover:bg-[#005a5a] text-white text-xs font-bold flex items-center space-x-1.5 transition-colors self-start sm:self-auto shadow-xs active:scale-95"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Open 4-Stage Interview & Assessment Blueprint</span>
+                    <span>{t.paste.openBlueprint}</span>
                   </button>
                 )}
               </div>
               <p className="text-xs text-amber-800 leading-relaxed">
-                এই সার্কুলারে উল্লিখিত নিচের স্কিলগুলো আপনার রেজুমিতে পাওয়া যায়নি। ইন্টারভিউতে অংশ নেওয়ার আগে বা কভার লেটারে হাইলাইট করার জন্য এগুলো রিভিশন দিন:
+                {t.paste.gapChecklistDesc}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
                 {evaluatedMatch.missingSkills.map((skill) => (

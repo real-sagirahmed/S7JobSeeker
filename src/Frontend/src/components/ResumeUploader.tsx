@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import type { ResumeProfile, User } from '../types';
 import { api } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ResumeUploaderProps {
   profile: ResumeProfile | null;
@@ -47,6 +48,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
   onNavigateToMatches,
   onNavigateToCompanies
 }) => {
+  const { t } = useLanguage();
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newSkillName, setNewSkillName] = useState('');
@@ -154,11 +156,11 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
               <FileCheck className="w-5 h-5" />
             </span>
             <h1 className="font-bold text-lg sm:text-xl text-slate-900 tracking-tight leading-snug">
-              Career Profile & Resume Intelligence
+              {t.profile.title}
             </h1>
           </div>
           <p className="text-xs text-slate-500">
-            AI-extracted competencies, career summary, and verified credentials for BD & Global tech matching.
+            {t.profile.subtitle}
           </p>
         </div>
 
@@ -169,14 +171,14 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
               className="flex-1 sm:flex-initial min-h-[44px] justify-center px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 bg-[#F8FAFC] text-slate-700 hover:bg-[#E6F4F4] hover:text-[#007070] border border-slate-200 shrink-0 active:scale-95"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>{showUploaderDrawer ? 'Hide Re-upload' : 'Update Resume'}</span>
+              <span>{showUploaderDrawer ? 'Hide' : t.profile.uploadTitle}</span>
             </button>
             {onNavigateToMatches && (
               <button
                 onClick={onNavigateToMatches}
                 className="flex-1 sm:flex-initial min-h-[44px] justify-center px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 bg-[#007070] text-white hover:bg-[#005a5a] shadow-xs shrink-0 active:scale-95"
               >
-                <span>View Job Matches</span>
+                <span>{t.profile.viewMatches}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
@@ -214,10 +216,10 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
 
             <div>
               <h3 className="text-base font-bold text-slate-900">
-                {isUploading ? 'Extracting Resume & Structuring Profile...' : 'Upload your Resume / CV'}
+                {isUploading ? t.profile.uploading : t.profile.uploadTitle}
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Drag and drop your PDF or TXT resume here (Max 10MB)
+                {t.profile.dragDrop}
               </p>
             </div>
 
@@ -327,7 +329,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                   <FileText className="w-4 h-4 text-[#007070]" />
-                  Executive Professional Summary
+                  {t.profile.summaryTitle}
                 </h3>
                 <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
                   AI-Extracted Overview
@@ -345,7 +347,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
               <div>
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <Layers className="w-4 h-4 text-[#007070]" />
-                  Extracted Skills & Competencies ({profile.skills.length})
+                  {t.profile.skillsTitle} ({profile.skills.length})
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Categorized skills extracted from your resume used in semantic RAG matching
@@ -362,7 +364,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  All ({profile.skills.length})
+                  {t.common.all} ({profile.skills.length})
                 </button>
                 {[1, 2, 3, 4, 7].map((catId) => {
                   const count = profile.skills.filter((s) => s.category === catId).length;
@@ -442,7 +444,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
             >
               <input
                 type="text"
-                placeholder="Add another skill (e.g., PostgreSQL, RabbitMQ, Tailwind)..."
+                placeholder={t.profile.skillNamePlaceholder}
                 value={newSkillName}
                 onChange={(e) => setNewSkillName(e.target.value)}
                 className="px-3.5 py-2.5 min-h-[44px] text-base sm:text-xs rounded-xl border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#007070] focus:border-transparent flex-1 shadow-2xs"
@@ -453,7 +455,7 @@ export const ResumeUploader: React.FC<ResumeUploaderProps> = ({
                 className="min-h-[44px] px-5 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center space-x-1.5 shadow-xs shrink-0"
               >
                 <Plus className="w-4 h-4" />
-                <span>{isAddingSkill ? 'Adding...' : 'Add Skill'}</span>
+                <span>{isAddingSkill ? '...' : t.profile.addSkillButton}</span>
               </button>
             </form>
           </div>

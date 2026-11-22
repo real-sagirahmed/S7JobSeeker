@@ -51,8 +51,13 @@ export const en = {
     noJobsFoundTitle: 'No Matching Jobs Found',
     noJobsFoundDesc: 'Click the "Sync Tech Jobs" button above to ingest new jobs from live sources, or paste any circular directly via "Paste & Analyze".',
     fetchNow: 'Fetch & Ingest Live Jobs Now',
+    loadMore: 'Load More Matches',
+    loadingMore: 'Loading Next Matches...',
+    showingAll: 'All matching opportunities displayed',
     savedJobsTitle: 'Saved Jobs',
     savedJobsSubtitle: 'Your bookmarked career opportunities',
+    loadingSaved: 'Loading saved opportunities...',
+    refreshSaved: 'Refresh Saved Jobs',
     noSavedJobs: 'You have not saved any jobs yet. Bookmark opportunities from Smart Matches.'
   },
   jobCard: {
@@ -67,7 +72,10 @@ export const en = {
     tailorApp: 'Tailor Application',
     draftingApp: 'Drafting Application...',
     applyOnPortal: 'Apply on',
-    remote: 'Remote'
+    remote: 'Remote',
+    saveJob: 'Save Job',
+    removeBookmark: 'Remove Bookmark',
+    anywhere: 'Anywhere'
   },
   paste: {
     title: 'Paste & Analyze Custom Circular',
@@ -240,4 +248,8 @@ export const en = {
   }
 } as const;
 
-export type TranslationDictionary = typeof en;
+type StringRecord<T> = {
+  [K in keyof T]: T[K] extends Record<string, any> ? StringRecord<T[K]> : string;
+};
+
+export type TranslationDictionary = StringRecord<typeof en>;

@@ -16,6 +16,7 @@ import {
   History
 } from 'lucide-react';
 import type { User } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
   user: User | null;
@@ -36,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBuyCredits,
   onOpenHistory
 }) => {
+  const { language, setLanguage, t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Close mobile drawer on ESC key
@@ -87,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <p className="text-[10px] sm:text-[11px] text-[#7C7C7C] font-semibold leading-none mt-0.5 hidden xs:block truncate">
-                teamS7 Intelligence
+                {t.nav.brandSubtitle}
               </p>
             </div>
           </div>
@@ -105,7 +107,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Smart Matches</span>
+                  <span>{t.nav.matches}</span>
                 </button>
 
                 <button
@@ -117,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <ClipboardCheck className="w-3.5 h-3.5" />
-                  <span>Paste & Analyze</span>
+                  <span>{t.nav.paste}</span>
                 </button>
 
                 <button
@@ -129,7 +131,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  <span>Resume & Profile</span>
+                  <span>{t.nav.profile}</span>
                 </button>
 
                 <button
@@ -141,7 +143,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <Bookmark className="w-3.5 h-3.5" />
-                  <span>Saved Jobs</span>
+                  <span>{t.nav.saved}</span>
                 </button>
 
                 <button
@@ -153,7 +155,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <Building2 className="w-3.5 h-3.5" />
-                  <span>BD Tech</span>
+                  <span>{t.nav.companies}</span>
                 </button>
               </>
             )}
@@ -167,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Server className="w-3.5 h-3.5" />
-              <span>CBS Sprint</span>
+              <span>{t.nav.cbsSprint}</span>
               <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-amber-400 text-slate-950 ml-0.5">
                 14D
               </span>
@@ -183,27 +185,55 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-                <span>Director Console</span>
+                <span>{t.nav.directorConsole}</span>
               </button>
             )}
           </nav>
 
           {/* Right Action Icons / User Pills */}
           <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+            {/* Language Switcher Pill (Bilingual EN / BN) */}
+            <div className="flex items-center rounded-xl border border-black/10 bg-slate-100 p-0.5 text-xs font-bold text-slate-600 shrink-0 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setLanguage('en')}
+                title="Switch to English"
+                className={`px-2.5 py-1 rounded-lg transition-all min-h-[30px] cursor-pointer ${
+                  language === 'en'
+                    ? 'bg-white text-[#007070] font-black shadow-2xs'
+                    : 'text-slate-600 hover:text-[#0B0B0B]'
+                }`}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('bn')}
+                title="বাংলায় পরিবর্তন করুন"
+                className={`px-2.5 py-1 rounded-lg transition-all min-h-[30px] cursor-pointer ${
+                  language === 'bn'
+                    ? 'bg-white text-[#007070] font-black shadow-2xs'
+                    : 'text-slate-600 hover:text-[#0B0B0B]'
+                }`}
+              >
+                BN
+              </button>
+            </div>
+
             {user ? (
               <>
                 {/* AI Credits Badge / Paywall Trigger */}
                 <button
                   onClick={onOpenBuyCredits}
-                  title="Click to view AI Credits or Top Up via bKash/Nagad"
+                  title={t.nav.topUpCredits}
                   className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-black bg-[#E6F4F4] text-[#007070] border border-[#007070]/25 hover:bg-[#d4eded] active:scale-95 transition-all flex items-center space-x-1 sm:space-x-1.5 min-h-[40px]"
                 >
                   <Zap className="w-3.5 h-3.5 fill-current shrink-0" />
                   <span>
-                    {user.isAdmin ? 'Unlimited' : user.aiCredits ?? 0}
+                    {user.isAdmin ? t.common.unlimited : user.aiCredits ?? 0}
                   </span>
                   <span className="hidden sm:inline font-semibold">
-                    {user.isAdmin ? '' : 'Credits'}
+                    {user.isAdmin ? '' : t.common.credits}
                   </span>
                 </button>
 
@@ -211,11 +241,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {onOpenHistory && (
                   <button
                     onClick={onOpenHistory}
-                    title="View bKash/Nagad Payment History & Status"
+                    title={t.nav.history}
                     className="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-[#007070] border border-black/10 hover:border-[#007070]/30 hover:bg-[#E6F4F4]/50 active:scale-95 transition-all flex items-center gap-1.5 min-h-[40px]"
                   >
                     <History className="w-4 h-4 shrink-0 text-[#007070]" />
-                    <span className="hidden xl:inline">History</span>
+                    <span className="hidden xl:inline">{t.nav.history}</span>
                   </button>
                 )}
 
@@ -237,7 +267,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {/* Desktop Logout Button */}
                 <button
                   onClick={onLogout}
-                  title="Logout"
+                  title={t.nav.logout}
                   className="hidden md:flex p-2 rounded-xl border border-black/10 text-[#7C7C7C] hover:text-rose-600 hover:border-rose-500/30 hover:bg-rose-50 active:scale-95 transition-all min-h-[40px] min-w-[40px] items-center justify-center"
                 >
                   <LogOut className="w-4 h-4" />
@@ -258,7 +288,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="px-3.5 sm:px-4 py-2 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-95 text-white font-extrabold text-xs transition-all shadow-[0_6px_20px_rgba(0,112,112,0.25)] flex items-center space-x-1.5 min-h-[42px]"
               >
                 <UserIcon className="w-4 h-4" />
-                <span>Sign In / Register</span>
+                <span>{t.nav.loginRegister}</span>
               </button>
             )}
           </div>
@@ -287,17 +317,45 @@ export const Navbar: React.FC<NavbarProps> = ({
                   />
                   <div>
                     <h3 className="font-black text-[#0B0B0B] text-sm">s7job-seeker</h3>
-                    <p className="text-[10px] text-[#7C7C7C] font-semibold">Navigation Menu</p>
+                    <p className="text-[10px] text-[#7C7C7C] font-semibold">{t.nav.brandSubtitle}</p>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
-                  aria-label="Close Menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  {/* Mobile Drawer Language Switcher */}
+                  <div className="flex items-center rounded-lg border border-black/10 bg-slate-100 p-0.5 text-xs font-bold text-slate-600 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => setLanguage('en')}
+                      className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                        language === 'en'
+                          ? 'bg-white text-[#007070] font-black shadow-2xs'
+                          : 'text-slate-600'
+                      }`}
+                    >
+                      EN
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLanguage('bn')}
+                      className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                        language === 'bn'
+                          ? 'bg-white text-[#007070] font-black shadow-2xs'
+                          : 'text-slate-600'
+                      }`}
+                    >
+                      BN
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
+                    aria-label="Close Menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* User Profile Card (if logged in) */}
@@ -322,7 +380,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-[#007070] flex items-center gap-1">
                       <Zap className="w-3.5 h-3.5 fill-current" />
-                      <span>{user.isAdmin ? 'Unlimited Credits' : `${user.aiCredits ?? 0} Credits`}</span>
+                      <span>{user.isAdmin ? t.common.unlimited : `${user.aiCredits ?? 0} ${t.common.credits}`}</span>
                     </span>
 
                     <button
@@ -350,7 +408,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <Sparkles className="w-4 h-4 shrink-0" />
-                  <span>Smart Matches</span>
+                  <span>{t.nav.matches}</span>
                 </button>
 
                 <button
@@ -362,7 +420,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <ClipboardCheck className="w-4 h-4 shrink-0" />
-                  <span>Paste & Analyze</span>
+                  <span>{t.nav.paste}</span>
                 </button>
 
                 <button
@@ -374,7 +432,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <FileText className="w-4 h-4 shrink-0" />
-                  <span>Resume & Profile</span>
+                  <span>{t.nav.profile}</span>
                 </button>
 
                 <button
@@ -386,7 +444,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <Bookmark className="w-4 h-4 shrink-0" />
-                  <span>Saved Jobs</span>
+                  <span>{t.nav.saved}</span>
                 </button>
 
                 <button
@@ -398,7 +456,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }`}
                 >
                   <Building2 className="w-4 h-4 shrink-0" />
-                  <span>BD Tech Companies</span>
+                  <span>{t.nav.companies}</span>
                 </button>
 
                 <button
@@ -411,9 +469,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <Server className="w-4 h-4 shrink-0 text-teal-600" />
                   <div className="flex items-center space-x-2">
-                    <span>CBS Sprint (14 Days)</span>
+                    <span>{t.nav.cbsSprint}</span>
                     <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-amber-400 text-slate-950">
-                      Track
+                      14D
                     </span>
                   </div>
                 </button>
@@ -428,7 +486,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
-                    <span>Director Console</span>
+                    <span>{t.nav.directorConsole}</span>
                   </button>
                 )}
               </nav>
@@ -447,7 +505,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs flex items-center justify-center space-x-2 hover:bg-slate-50 active:scale-95 transition-all min-h-[44px] shadow-2xs"
                     >
                       <History className="w-4 h-4 text-[#007070]" />
-                      <span>My Payment Transactions</span>
+                      <span>{t.nav.history}</span>
                     </button>
                   )}
                   <button
@@ -458,7 +516,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="w-full py-2.5 px-4 rounded-xl border border-rose-200 bg-white text-rose-600 font-bold text-xs flex items-center justify-center space-x-2 hover:bg-rose-50 active:scale-95 transition-all min-h-[44px] shadow-2xs"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Sign Out</span>
+                    <span>{t.nav.logout}</span>
                   </button>
                 </>
               ) : (
@@ -470,12 +528,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="w-full py-2.5 px-4 rounded-xl bg-[#007070] text-white font-bold text-xs flex items-center justify-center space-x-2 hover:bg-[#005858] active:scale-95 transition-all min-h-[44px] shadow-sm"
                 >
                   <UserIcon className="w-4 h-4" />
-                  <span>Sign In / Register</span>
+                  <span>{t.nav.loginRegister}</span>
                 </button>
               )}
 
               <p className="text-[10px] text-center text-slate-400 font-medium">
-                s7job-seeker · teamS7 Intelligence
+                s7job-seeker · {t.nav.brandSubtitle}
               </p>
             </div>
           </div>

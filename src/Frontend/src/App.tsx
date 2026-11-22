@@ -7,6 +7,7 @@ import { ToastContainer, type ToastMessage } from './components/Toast';
 import { api } from './services/api';
 import type { User, ResumeProfile, JobMatch, TailoredApplication, JobPrepGuide } from './types';
 import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu, DownloadCloud } from 'lucide-react';
+import { useLanguage } from './context/LanguageContext';
 
 // ARCHITECTURAL INTENT: Lazy-load heavy and on-demand components to reduce initial JavaScript bundle by >60%
 const PasteAndAnalyze = React.lazy(() => import('./components/PasteAndAnalyze').then(m => ({ default: m.PasteAndAnalyze })));
@@ -26,6 +27,7 @@ const ComponentFallback: React.FC = () => (
 );
 
 export const App: React.FC = () => {
+  const { t, language } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint'>('matches');
   const [profile, setProfile] = useState<ResumeProfile | null>(null);
@@ -400,10 +402,10 @@ export const App: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/8">
                   <div>
                     <h2 className="text-xl font-black text-[#0B0B0B] flex items-center">
-                      <Sparkles className="w-5 h-5 mr-2 text-[#007070]" /> AI-Ranked Job Matches
+                      <Sparkles className="w-5 h-5 mr-2 text-[#007070]" /> {t.matches.title}
                     </h2>
                     <p className="text-xs text-[#7C7C7C] mt-0.5">
-                      Showing {filteredMatches.length} of {totalMatchesCount || filteredMatches.length} opportunities ranked by vector similarity & skill alignment
+                      {t.matches.subtitle}
                     </p>
                   </div>
 
@@ -412,10 +414,10 @@ export const App: React.FC = () => {
                       onClick={handleSyncJobs}
                       disabled={isSyncingJobs}
                       className="min-h-[40px] px-3.5 py-2 rounded-xl bg-[#E6F4F4] hover:bg-[#007070]/20 text-[#007070] border border-[#007070]/30 text-xs font-bold flex items-center space-x-1.5 transition-all disabled:opacity-50 active:scale-95"
-                      title="Fetch latest tech jobs from BDJobs, LinkedIn, Jobicy, Himalayas, WWR, Remotive & Arbeitnow"
+                      title="Fetch latest tech jobs from live sources"
                     >
                       <DownloadCloud className={`w-3.5 h-3.5 ${isSyncingJobs ? 'animate-bounce' : ''}`} />
-                      <span>{isSyncingJobs ? 'Syncing...' : 'Sync Tech Jobs'}</span>
+                      <span>{isSyncingJobs ? t.matches.syncing : t.matches.syncJobs}</span>
                     </button>
 
                     <label className="min-h-[40px] px-3 py-2 rounded-xl border border-black/10 bg-white flex items-center space-x-2 text-xs text-[#333333] font-medium cursor-pointer">
@@ -429,7 +431,7 @@ export const App: React.FC = () => {
                         }}
                         className="rounded border-black/20 text-[#007070] focus:ring-0"
                       />
-                      <span>Remote Only</span>
+                      <span>{t.matches.remoteOnly}</span>
                     </label>
 
                     <select
@@ -441,8 +443,8 @@ export const App: React.FC = () => {
                       }}
                       className="min-h-[40px] px-3 py-2 rounded-xl bg-white border border-black/10 text-base sm:text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
                     >
-                      <option value={0}>All Sources (৭টি সোর্স)</option>
-                      <option value={7}>BDJobs (Local BD)</option>
+                      <option value={0}>{t.matches.allSources}</option>
+                      <option value={7}>{t.matches.localJobs}</option>
                       <option value={8}>LinkedIn Jobs</option>
                       <option value={3}>Jobicy (Remote)</option>
                       <option value={5}>Himalayas (Remote)</option>
@@ -457,10 +459,9 @@ export const App: React.FC = () => {
                       onChange={(e) => setMinScoreFilter(Number(e.target.value))}
                       className="min-h-[40px] px-3 py-2 rounded-xl bg-white border border-black/10 text-base sm:text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
                     >
-                      <option value={0}>All Scores</option>
-                      <option value={60}>Min 60% Match</option>
-                      <option value={75}>Min 75% Match</option>
-                      <option value={85}>Min 85% Match</option>
+                      <option value={0}>{t.matches.anyScore}</option>
+                      <option value={60}>{t.matches.fairMatch}</option>
+                      <option value={75}>{t.matches.highMatch}</option>
                     </select>
 
                     <button
@@ -477,7 +478,7 @@ export const App: React.FC = () => {
                 {isLoadingMatches ? (
                   <div className="py-20 text-center space-y-3">
                     <div className="w-8 h-8 border-2 border-[#007070] border-t-transparent rounded-full animate-spin mx-auto" />
-                    <p className="text-xs text-[#7C7C7C]">Evaluating semantic relevance with Gemini RAG...</p>
+                    <p className="text-xs text-[#7C7C7C]">{t.matches.evaluatingSemantic}</p>
                   </div>
                 ) : filteredMatches.length > 0 ? (
                   <div className="space-y-6">
@@ -504,12 +505,12 @@ export const App: React.FC = () => {
                           {isLoadingMore ? (
                             <>
                               <RefreshCw className="w-4 h-4 animate-spin" />
-                              <span>Loading Next 20 Matches...</span>
+                              <span>{t.matches.loadingMore}</span>
                             </>
                           ) : (
                             <>
                               <Sparkles className="w-4 h-4" />
-                              <span>Load More Matches (পরবর্তী ২০টি জব দেখুন)</span>
+                              <span>{t.matches.loadMore}</span>
                             </>
                           )}
                         </button>
@@ -519,16 +520,16 @@ export const App: React.FC = () => {
                     {!hasMoreMatches && matches.length > 0 && (
                       <div className="pt-4 pb-2 text-center text-xs text-[#7C7C7C] font-medium flex items-center justify-center gap-1.5">
                         <ShieldCheck className="w-4 h-4 text-[#007070]" />
-                        <span>সকল {totalMatchesCount}টি ম্যাচিং অপরচুনিটি প্রদর্শিত হয়েছে</span>
+                        <span>{language === 'bn' ? `সকল ${totalMatchesCount}টি ম্যাচিং অপরচুনিটি প্রদর্শিত হয়েছে` : `Showing all ${totalMatchesCount} matching opportunities`}</span>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="p-12 text-center rounded-2xl border border-black/8 bg-white space-y-4 shadow-xs">
                     <Briefcase className="w-10 h-10 text-[#7C7C7C] mx-auto" />
-                    <h3 className="text-base font-bold text-[#0B0B0B]">কোনো ম্যাচিং জব পাওয়া যায়নি</h3>
+                    <h3 className="text-base font-bold text-[#0B0B0B]">{t.matches.noJobsFoundTitle}</h3>
                     <p className="text-xs text-[#7C7C7C] max-w-md mx-auto">
-                      ডাটাবেজে নতুন জব ফেচ করার জন্য উপরের <b>"Sync Tech Jobs"</b> বাটনে ক্লিক করুন, অথবা <b>"Paste & Analyze"</b> ট্যাব ব্যবহার করে সরাসরি সার্কুলার পেস্ট করুন।
+                      {t.matches.noJobsFoundDesc}
                     </p>
                     <button
                       onClick={handleSyncJobs}
@@ -536,7 +537,7 @@ export const App: React.FC = () => {
                       className="px-5 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white font-bold text-xs inline-flex items-center space-x-2 transition-all shadow-[0_4px_16px_rgba(0,112,112,0.25)]"
                     >
                       <DownloadCloud className="w-4 h-4" />
-                      <span>{isSyncingJobs ? 'Fetching from APIs...' : 'Fetch & Ingest Live Jobs Now'}</span>
+                      <span>{isSyncingJobs ? t.matches.syncing : t.matches.fetchNow}</span>
                     </button>
                   </div>
                 )}
@@ -574,14 +575,14 @@ export const App: React.FC = () => {
               <div className="space-y-6">
                 <div className="pb-4 border-b border-black/8 flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-black text-[#0B0B0B]">Saved Jobs ({savedList.length})</h2>
-                    <p className="text-xs text-[#7C7C7C] mt-0.5">Your permanently bookmarked career opportunities</p>
+                    <h2 className="text-xl font-black text-[#0B0B0B]">{t.matches.savedJobsTitle} ({savedList.length})</h2>
+                    <p className="text-xs text-[#7C7C7C] mt-0.5">{t.matches.savedJobsSubtitle}</p>
                   </div>
                   <button
                     onClick={fetchSavedMatches}
                     disabled={isLoadingSaved}
                     className="p-2 rounded-xl border border-black/10 hover:border-[#007070] text-[#7C7C7C] hover:text-[#007070] transition-colors"
-                    title="Refresh Saved Jobs"
+                    title={t.matches.refreshSaved}
                   >
                     <RefreshCw className={`w-4 h-4 ${isLoadingSaved ? 'animate-spin text-[#007070]' : ''}`} />
                   </button>
@@ -590,7 +591,7 @@ export const App: React.FC = () => {
                 {isLoadingSaved ? (
                   <div className="p-12 text-center space-y-3">
                     <div className="w-8 h-8 border-2 border-[#007070] border-t-transparent rounded-full animate-spin mx-auto" />
-                    <p className="text-xs text-[#7C7C7C] font-semibold">Loading saved opportunities...</p>
+                    <p className="text-xs text-[#7C7C7C] font-semibold">{t.matches.loadingSaved}</p>
                   </div>
                 ) : savedList.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6">
@@ -607,7 +608,7 @@ export const App: React.FC = () => {
                   </div>
                 ) : (
                   <div className="p-12 text-center rounded-2xl border border-black/8 bg-white space-y-2 shadow-xs">
-                    <p className="text-xs text-[#7C7C7C]">এখনও কোনো জব বুকমার্ক করেননি। "Smart Matches" থেকে বুকমার্ক করুন।</p>
+                    <p className="text-xs text-[#7C7C7C]">{t.matches.noSavedJobs}</p>
                   </div>
                 )}
               </div>
@@ -700,14 +701,14 @@ export const App: React.FC = () => {
             />
             <span className="font-bold text-[#0B0B0B]">s7job-seeker</span>
             <span>•</span>
-            <span>teamS7 Intelligence</span>
+            <span>{t.footer.tagline}</span>
           </div>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-3 gap-y-1 text-[11px] text-center">
-            <span>Semantic AI Job Matcher</span>
+            <span>{t.footer.matcher}</span>
             <span>•</span>
-            <span>RAG Tailored Application Engine</span>
+            <span>{t.footer.ragEngine}</span>
             <span>•</span>
-            <span>© {new Date().getFullYear()} teamS7. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} {t.footer.copyright}</span>
           </div>
         </div>
       </footer>

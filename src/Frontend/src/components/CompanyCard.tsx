@@ -1,6 +1,7 @@
 import React from 'react';
 import type { BdCompany } from '../types';
 import { ExternalLink, Sparkles, ShieldCheck, MapPin, Briefcase, Globe, Users, Layers, Check } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CompanyCardProps {
   company: BdCompany;
@@ -9,7 +10,7 @@ interface CompanyCardProps {
   onSelectTech?: (tech: string) => void;
 }
 
-const CATEGORY_NAMES: Record<number, string> = {
+const CATEGORY_NAMES_EN: Record<number, string> = {
   1: 'Enterprise Outsourcing',
   2: 'Global SaaS & Product',
   3: 'Fintech & High-Scale',
@@ -18,17 +19,29 @@ const CATEGORY_NAMES: Record<number, string> = {
   6: 'Digital Agency & Consulting'
 };
 
+const CATEGORY_NAMES_BN: Record<number, string> = {
+  1: 'এন্টারপ্রাইজ সার্ভিসেস',
+  2: 'গ্লোবাল সাস ও প্রোডাক্ট',
+  3: 'ফিনটেক ও হাই-স্কেল',
+  4: 'ক্লাউড ও ডেভঅপস',
+  5: 'এআই ও ডাটা ইন্টেলিজেন্স',
+  6: 'ডিজিটাল এজেন্সি ও কনসাল্টিং'
+};
+
 export const CompanyCard: React.FC<CompanyCardProps> = ({
   company,
   onGeneratePitch,
   onViewActiveJobs,
   onSelectTech
 }) => {
+  const { t, language } = useLanguage();
   const matchingSet = new Set(company.matchingSkills?.map((s) => s.toLowerCase()) ?? []);
 
   const isDotNetCompany = company.primaryTechStack.some((t) =>
     ['c#', '.net', 'dotnet', 'asp.net', 'ef core'].includes(t.toLowerCase())
   );
+
+  const categoryName = (language === 'bn' ? CATEGORY_NAMES_BN : CATEGORY_NAMES_EN)[company.category] || (language === 'bn' ? 'টেক' : 'Tech');
 
   return (
     <div className={`bg-white border rounded-2xl p-4 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group ${
@@ -56,7 +69,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
                 </span>
               )}
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-[#F8FAFC] text-[#555555] border border-black/5">
-                {CATEGORY_NAMES[company.category] || 'Tech'}
+                {categoryName}
               </span>
               <span className="text-xs text-[#7C7C7C] flex items-center">
                 <MapPin className="w-3 h-3 mr-0.5 text-[#7C7C7C]" /> {company.headquarters.split(',')[0]}
@@ -97,8 +110,8 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
         {/* Primary Tech Stack Pills */}
         <div className="mb-4">
           <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#7C7C7C] mb-1.5">
-            <span>Core Tech Stack</span>
-            <span className="text-[10px] text-slate-400 font-normal lowercase">(click to filter)</span>
+            <span>{t.companies?.coreTechStack || 'Core Tech Stack'}</span>
+            <span className="text-[10px] text-slate-400 font-normal lowercase">({language === 'bn' ? 'ফিল্টার করতে ক্লিক করুন' : 'click to filter'})</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {company.primaryTechStack.map((tech) => {
@@ -152,11 +165,11 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
             className="w-full min-h-[40px] py-1.5 px-3 rounded-xl text-xs font-bold bg-[#E6F4F4] text-[#007070] hover:bg-[#d0eded] active:scale-[0.98] transition-colors flex items-center justify-center space-x-1.5 border border-[#007070]/20"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>{company.activeJobsCount} Active Circular{company.activeJobsCount > 1 ? 's' : ''} in S7</span>
+            <span>{company.activeJobsCount} {language === 'bn' ? 'টি নিয়োগ বিজ্ঞপ্তি S7-এ চলমান' : `Active Circular${company.activeJobsCount > 1 ? 's' : ''} in S7`}</span>
           </button>
         ) : (
           <div className="text-[11px] text-[#7C7C7C] text-center italic py-1">
-            No active openings in S7 today • Pitch proactively below
+            {language === 'bn' ? 'আজ S7-এ নতুন সার্কুলার নেই • সরাসরি কোল্ড পিচ পাঠান' : 'No active openings in S7 today • Pitch proactively below'}
           </div>
         )}
 
@@ -168,7 +181,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
             rel="noopener noreferrer"
             className="min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] active:scale-[0.98] transition-colors flex items-center justify-center space-x-1.5 border border-black/10"
           >
-            <span>Careers Portal</span>
+            <span>{language === 'bn' ? 'ক্যারিয়ার পোর্টাল' : 'Careers Portal'}</span>
             <ExternalLink className="w-3 h-3" />
           </a>
 
@@ -178,7 +191,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
             className="min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-[#007070] hover:bg-[#005a5a] text-white active:scale-[0.98] transition-colors flex items-center justify-center space-x-1.5 shadow-xs"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Tailor Pitch</span>
+            <span>{t.companies?.generatePitch || 'Tailor Pitch'}</span>
           </button>
         </div>
       </div>

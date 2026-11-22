@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
@@ -471,6 +472,7 @@ public class JobsController : ControllerBase
     public record PasteAndMatchRequest(string? Title, string? Company, string Description, string? Url = null);
 
     [Authorize]
+    [EnableRateLimiting("AiPolicy")]
     [HttpPost("paste-and-match")]
     public async Task<ActionResult<JobMatchResultDto>> PasteAndMatch(
         [FromBody] PasteAndMatchRequest request,
@@ -548,6 +550,7 @@ public class JobsController : ControllerBase
     }
 
     [Authorize]
+    [EnableRateLimiting("AiPolicy")]
     [HttpPost("{id:guid}/tailored-application")]
     public async Task<ActionResult<TailoredApplicationResult>> GenerateTailoredApplication(
         Guid id,
@@ -682,6 +685,7 @@ public class JobsController : ControllerBase
     }
 
     [Authorize]
+    [EnableRateLimiting("AiPolicy")]
     [HttpPost("{id:guid}/preparation-guide")]
     public async Task<IActionResult> GeneratePreparationGuide(Guid id, CancellationToken cancellationToken)
     {
@@ -783,6 +787,7 @@ public class JobsController : ControllerBase
     }
 
     [Authorize]
+    [EnableRateLimiting("AiPolicy")]
     [HttpPost("custom/preparation-guide")]
     public async Task<IActionResult> GenerateCustomPreparationGuide(
         [FromBody] CustomJobPrepRequest request,

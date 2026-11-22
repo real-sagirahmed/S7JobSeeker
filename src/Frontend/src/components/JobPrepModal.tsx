@@ -19,6 +19,7 @@ import {
   Cpu
 } from 'lucide-react';
 import type { JobPrepGuide } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface JobPrepModalProps {
   guide: JobPrepGuide | null;
@@ -27,6 +28,7 @@ interface JobPrepModalProps {
 }
 
 export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, onClose }) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'domain' | 'labs' | 'mock' | 'checklist'>('domain');
   const [viewMode, setViewMode] = useState<'personalized' | 'full'>('personalized');
   const [copiedSnippetIndex, setCopiedSnippetIndex] = useState<string | null>(null);
@@ -78,7 +80,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
             <div className="truncate">
               <div className="flex items-center space-x-2">
                 <h3 className="font-black text-[#0B0B0B] text-base leading-tight truncate">
-                  {guide ? guide.targetRole : 'Generating Preparation Master Guide...'}
+                  {guide ? guide.targetRole : t.prep.generatingTitle}
                 </h3>
                 {guide?.companyName && (
                   <span className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-bold rounded-md bg-[#007070]/10 text-[#007070]">
@@ -87,7 +89,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                 )}
               </div>
               <p className="text-xs text-[#7C7C7C] truncate">
-                Enterprise 4-Stage Interview & Assessment Master Blueprint
+                {t.prep.subtitle}
               </p>
             </div>
           </div>
@@ -100,7 +102,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                 title="Download Master Dossier (.md)"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Export Dossier</span>
+                <span className="hidden md:inline">{t.prep.exportDossier}</span>
               </button>
             )}
             <button
@@ -118,7 +120,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
           <div className="p-12 flex flex-col items-center justify-center space-y-4 text-center">
             <div className="w-12 h-12 rounded-full border-4 border-[#007070]/20 border-t-[#007070] animate-spin" />
             <div className="space-y-1">
-              <h4 className="font-bold text-gray-900 text-sm">Synthesizing Technical Interview Blueprint...</h4>
+              <h4 className="font-bold text-gray-900 text-sm">{t.prep.generatingTitle}</h4>
               <p className="text-xs text-gray-500 max-w-md">
                 Analyzing practical SQL test patterns, Linux/Docker diagnostic commands, Core Banking transaction flows, and incident scenarios.
               </p>
@@ -142,7 +144,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                   }`}
                 >
                   <BookOpen className="w-3.5 h-3.5" />
-                  <span>1. Domain Fundamentals</span>
+                  <span>{t.prep.tabDomain}</span>
                 </button>
 
                 <button
@@ -154,7 +156,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                   }`}
                 >
                   <Terminal className="w-3.5 h-3.5" />
-                  <span>2. Diagnostic Labs</span>
+                  <span>{t.prep.tabLabs}</span>
                 </button>
 
                 <button
@@ -166,7 +168,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                   }`}
                 >
                   <HelpCircle className="w-3.5 h-3.5" />
-                  <span>3. Mock Assessment</span>
+                  <span>{t.prep.tabMock}</span>
                 </button>
 
                 <button
@@ -178,7 +180,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                   }`}
                 >
                   <CheckSquare className="w-3.5 h-3.5" />
-                  <span>4. Readiness Checklist</span>
+                  <span>{t.prep.tabChecklist}</span>
                 </button>
               </div>
 
@@ -193,7 +195,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                   }`}
                 >
                   <Sparkles className="w-3 h-3" />
-                  <span>Personalized Gap Focus</span>
+                  <span>{t.prep.viewPersonalized}</span>
                 </button>
                 <button
                   onClick={() => setViewMode('full')}
@@ -204,7 +206,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                   }`}
                 >
                   <Layers className="w-3 h-3" />
-                  <span>Full Role Syllabus</span>
+                  <span>{t.prep.viewFull}</span>
                 </button>
               </div>
             </div>
@@ -218,7 +220,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                   <div className="p-4 sm:p-5 rounded-2xl bg-[#F0FDF4] border border-emerald-200 shadow-xs space-y-2">
                     <div className="flex items-center space-x-2">
                       <ShieldCheck className="w-5 h-5 text-emerald-700" />
-                      <h4 className="font-bold text-sm text-emerald-950">Domain Architecture Overview</h4>
+                      <h4 className="font-bold text-sm text-emerald-950">{t.prep.domainOverview}</h4>
                     </div>
                     <p className="text-xs sm:text-sm text-emerald-900 leading-relaxed">
                       {guide.domainFundamentals.overview}
@@ -231,7 +233,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                       <div className="flex items-center space-x-2">
                         <AlertTriangle className="w-4 h-4 text-amber-600" />
                         <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                          High-Priority Assessment Focus (Your Skill Gaps)
+                          {t.prep.gapFocusTitle}
                         </h5>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -249,7 +251,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                   <div className="space-y-3">
                     <h5 className="text-xs font-bold text-[#0B0B0B] uppercase tracking-wider flex items-center">
                       <BookOpen className="w-4 h-4 mr-1.5 text-[#007070]" />
-                      Core Production Pillars ({guide.domainFundamentals.coreTopics.length})
+                      {t.prep.corePillars} ({guide.domainFundamentals.coreTopics.length})
                     </h5>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -293,10 +295,10 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                   <div className="p-3.5 rounded-2xl bg-slate-900 text-slate-100 text-xs flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Terminal className="w-4 h-4 text-[#00E599]" />
-                      <span>Production Assessment Command & Script Benchmarks</span>
+                      <span>{t.prep.labsHeader}</span>
                     </div>
                     <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
-                      Click "Copy" to test in your local sandbox
+                      {t.prep.labsHint}
                     </span>
                   </div>
 
@@ -306,7 +308,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                       <div className="flex items-center space-x-2">
                         <Database className="w-4 h-4 text-[#007070]" />
                         <h5 className="font-bold text-xs uppercase tracking-wider text-[#0B0B0B]">
-                          1. Practical SQL Test & Reconciliation Labs
+                          {t.prep.sqlSection}
                         </h5>
                       </div>
 
@@ -358,7 +360,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                       <div className="flex items-center space-x-2">
                         <Server className="w-4 h-4 text-[#007070]" />
                         <h5 className="font-bold text-xs uppercase tracking-wider text-[#0B0B0B]">
-                          2. Linux Diagnostic Exercises & Incident Troubleshooting
+                          {t.prep.linuxSection}
                         </h5>
                       </div>
 
@@ -410,7 +412,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                       <div className="flex items-center space-x-2">
                         <Cpu className="w-4 h-4 text-[#007070]" />
                         <h5 className="font-bold text-xs uppercase tracking-wider text-[#0B0B0B]">
-                          3. Docker Operational Tasks & Container Health
+                          {t.prep.dockerSection}
                         </h5>
                       </div>
 
@@ -522,7 +524,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                     <div className="space-y-3 pt-2">
                       <h5 className="text-xs font-bold text-[#0B0B0B] uppercase tracking-wider flex items-center">
                         <AlertTriangle className="w-4 h-4 mr-1.5 text-amber-600" />
-                        Live Production Incident Scenarios ({guide.mockAssessment.scenarioTroubleshooting.length})
+                        {t.prep.incidentScenarios} ({guide.mockAssessment.scenarioTroubleshooting.length})
                       </h5>
 
                       <div className="space-y-2.5">
@@ -546,7 +548,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                                   <div className="space-y-1">
                                     <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider flex items-center">
                                       <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                                      Incident RCA & Resolution Playbook
+                                      {t.prep.incidentPlaybook}
                                     </span>
                                     <p className="text-xs text-slate-800 leading-relaxed whitespace-pre-line bg-slate-50 p-3 rounded-xl border border-slate-200/80">
                                       {q.seniorAnswerGuide}
@@ -557,7 +559,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                                     <div className="space-y-1">
                                       <span className="text-[11px] font-bold text-rose-800 uppercase tracking-wider flex items-center">
                                         <AlertTriangle className="w-3.5 h-3.5 mr-1 text-rose-600" />
-                                        Critical Mistake to Avoid (P1 Risk)
+                                        {t.prep.p1Risk}
                                       </span>
                                       <p className="text-xs text-rose-900 leading-relaxed bg-rose-50/50 p-2.5 rounded-xl border border-rose-100">
                                         {q.commonPitfallsToAvoid}
@@ -578,7 +580,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                     <div className="space-y-3 pt-2">
                       <h5 className="text-xs font-bold text-[#0B0B0B] uppercase tracking-wider flex items-center">
                         <HelpCircle className="w-4 h-4 mr-1.5 text-sky-600" />
-                        Learning Agility & Production Mindset ({guide.mockAssessment.behavioralAgility.length})
+                        {t.prep.behavioralTitle} ({guide.mockAssessment.behavioralAgility.length})
                       </h5>
 
                       <div className="space-y-2.5">
@@ -601,7 +603,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                                 <div className="p-4 space-y-3 border-t border-slate-200/60 bg-white">
                                   <div className="space-y-1">
                                     <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wider">
-                                      Strategic Senior Response
+                                      {t.prep.seniorAnswer}
                                     </span>
                                     <p className="text-xs text-slate-800 leading-relaxed whitespace-pre-line bg-sky-50/40 p-3 rounded-xl border border-sky-100">
                                       {q.seniorAnswerGuide}
@@ -628,7 +630,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                         <div className="flex items-center space-x-2">
                           <CheckSquare className="w-4 h-4 text-[#007070]" />
                           <h5 className="font-bold text-xs sm:text-sm text-[#0B0B0B] uppercase tracking-wider">
-                            1. Pre-Assessment Setup & Verification
+                            {t.prep.preTestTitle}
                           </h5>
                         </div>
                         <span className="text-[11px] text-slate-500 font-medium">
@@ -674,7 +676,7 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                         <div className="flex items-center space-x-2">
                           <Terminal className="w-4 h-4 text-[#007070]" />
                           <h5 className="font-bold text-xs sm:text-sm text-[#0B0B0B] uppercase tracking-wider">
-                            2. Practical 48-Hour Drills
+                            {t.prep.drillsTitle}
                           </h5>
                         </div>
                         <span className="text-[11px] text-slate-500 font-medium">
@@ -719,11 +721,11 @@ export const JobPrepModal: React.FC<JobPrepModalProps> = ({ guide, isLoading, on
                       <div className="flex items-center space-x-2">
                         <Sparkles className="w-4 h-4 text-[#007070]" />
                         <h5 className="font-bold text-xs sm:text-sm text-[#0B0B0B] uppercase tracking-wider">
-                          3. High-Impact Resume & Interview Keywords
+                          {t.prep.keywordsTitle}
                         </h5>
                       </div>
                       <p className="text-xs text-slate-600">
-                        Weave these exact terms into your resume summary, project bullets, and verbal interview answers:
+                        {t.prep.keywordsDesc}
                       </p>
 
                       <div className="flex flex-wrap gap-2 pt-1">

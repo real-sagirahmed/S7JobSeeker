@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using S7JobSeeker.Api.Controllers;
 using S7JobSeeker.Api.DTOs;
+using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Infrastructure.Data;
@@ -280,5 +281,59 @@ public class SaaSCreditWorkflowTests
         Assert.Equal(PaymentMethod.AdminGift, giftTrx.Method);
         Assert.Equal(10, giftTrx.CreditsAmount);
         Assert.Equal(TransactionStatus.Approved, giftTrx.Status);
+    }
+
+    [Fact]
+    public async Task GenerateTargetedPitch_ReturnsBadRequest_WhenTrialExpiredAndZeroCredits()
+    {
+        var (db, userManager) = CreateServices();
+        var candidate = new ApplicationUser
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserName = "expired@example.com",
+            Email = "expired@example.com",
+            FullName = "Expired Candidate",
+            AiCredits = 0,
+            TrialEndsAt = DateTime.UtcNow.AddDays(-1)
+        };
+        await userManager.CreateAsync(candidate, "Password123!");
+
+        var company = new BdTechCompany
+        {
+            Id = Guid.NewGuid(),
+            Name = "Enosis Solutions",
+            Slug = "enosis-solutions",
+            Website = "https://enosisbd.com",
+            PrimaryTechStackJson = "[\"C#\",\".NET\"]",
+            IsVerified = true
+        };
+        db.BdTechCompanies.Add(company);
+
+        var profile = new UserProfile
+        {
+            UserId = candidate.Id,
+            ParsedProfileJson = "{\"Skills\":[{\"Name\":\"C#\"}],\"Summary\":\"Senior Engineer\"}"
+        };
+        db.UserProfiles.Add(profile);
+        await db.SaveChangesAsync();
+
+        var config = new ConfigurationBuilder().Build();
+        var controller = new CompaniesController(db, new DummyChatCompletionService(), config, NullLogger<CompaniesController>.Instance);
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity([
+                    new Claim(ClaimTypes.NameIdentifier, candidate.Id),
+                    new Claim(ClaimTypes.Email, candidate.Email!)
+                ], "mock"))
+            }
+        };
+
+        var response = await controller.GenerateTargetedPitch(company.Id, new GeneratePitchRequest("ColdEmail"), CancellationToken.None);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(response.Result);
+        Assert.NotNull(badRequest.Value);
+        Assert.Contains("exhausted your AI Credits", badRequest.Value.ToString());
     }
 }

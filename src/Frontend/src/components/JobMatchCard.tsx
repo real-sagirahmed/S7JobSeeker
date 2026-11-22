@@ -1,6 +1,7 @@
 import React from 'react';
 import { ExternalLink, Bookmark, Sparkles, CheckCircle2, AlertTriangle, FileEdit, BookOpen } from 'lucide-react';
 import type { JobMatch } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface JobMatchCardProps {
   match: JobMatch;
@@ -19,6 +20,8 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
   isGenerating,
   isGeneratingPrep
 }) => {
+  const { t } = useLanguage();
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-[#007070] bg-[#E6F4F4] border-[#007070]/40';
     if (score >= 65) return 'text-sky-700 bg-sky-50 border-sky-200';
@@ -89,7 +92,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
             {getSourceBadge()}
             {match.isRemote && (
               <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-[#E6F4F4] text-[#007070] border border-[#007070]/20">
-                Remote
+                {t.jobCard.remote}
               </span>
             )}
             {match.jobType && (
@@ -99,7 +102,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
             )}
           </div>
           <div className="text-xs font-medium text-[#7C7C7C]">
-            {match.company} • <span className="text-[#333333]">{match.location || 'Anywhere'}</span>
+            {match.company} • <span className="text-[#333333]">{match.location || t.jobCard.anywhere}</span>
             {match.salaryRange && <span className="text-[#007070] ml-2 font-bold">• {match.salaryRange}</span>}
           </div>
         </div>
@@ -108,7 +111,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
         <div className="flex items-center space-x-3 self-start sm:self-auto shrink-0">
           <button
             onClick={() => onToggleBookmark(match.jobId)}
-            title={match.isBookmarked ? 'Remove Bookmark' : 'Save Job'}
+            title={match.isBookmarked ? t.jobCard.removeBookmark : t.jobCard.saveJob}
             className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border transition-colors active:scale-95 ${
               match.isBookmarked
                 ? 'bg-amber-100 border-amber-300 text-amber-700'
@@ -120,7 +123,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
 
           <div className={`px-3.5 py-2 rounded-xl border text-center font-bold ${getScoreColor(match.overallScore)}`}>
             <div className="text-lg sm:text-xl leading-none font-black">{match.overallScore}%</div>
-            <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-0.5 opacity-80">Match Score</div>
+            <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-0.5 opacity-80">{t.jobCard.matchScore}</div>
           </div>
         </div>
       </div>
@@ -128,11 +131,11 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
       {/* Score breakdown metrics */}
       <div className="grid grid-cols-2 gap-3 text-xs bg-[#F8FAFC] p-3 rounded-xl border border-black/5">
         <div>
-          <span className="text-[#7C7C7C]">Semantic Relevance:</span>{' '}
+          <span className="text-[#7C7C7C]">{t.jobCard.semanticRelevance}:</span>{' '}
           <span className="font-bold text-[#007070]">{match.semanticSimilarityScore}%</span>
         </div>
         <div>
-          <span className="text-[#7C7C7C]">Skill Competency:</span>{' '}
+          <span className="text-[#7C7C7C]">{t.jobCard.skillCompetency}:</span>{' '}
           <span className="font-bold text-emerald-700">{match.skillMatchScore}%</span>
         </div>
       </div>
@@ -142,7 +145,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
         {match.matchingSkills.length > 0 && (
           <div>
             <div className="text-xs font-bold text-emerald-800 flex items-center mb-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Matching Competencies ({match.matchingSkills.length})
+              <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" /> {t.jobCard.matchingSkills} ({match.matchingSkills.length})
             </div>
             <div className="flex flex-wrap gap-1.5">
               {match.matchingSkills.map((skill, idx) => (
@@ -160,7 +163,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
         {match.missingSkills.length > 0 && (
           <div>
             <div className="text-xs font-bold text-amber-800 flex items-center mb-1.5">
-              <AlertTriangle className="w-3.5 h-3.5 mr-1 text-amber-600" /> Skill Gaps To Bridge ({match.missingSkills.length})
+              <AlertTriangle className="w-3.5 h-3.5 mr-1 text-amber-600" /> {t.jobCard.missingSkills} ({match.missingSkills.length})
             </div>
             <div className="flex flex-wrap gap-1.5">
               {match.missingSkills.map((skill, idx) => (
@@ -180,7 +183,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
       {match.recommendations && (
         <div className="p-3.5 rounded-xl bg-[#E6F4F4]/70 border border-[#007070]/25 text-xs text-[#333333] space-y-1">
           <div className="font-bold text-[#007070] flex items-center">
-            <Sparkles className="w-3.5 h-3.5 mr-1.5" /> AI Advisor Insight
+            <Sparkles className="w-3.5 h-3.5 mr-1.5" /> {t.jobCard.aiInsight}
           </div>
           <p className="leading-relaxed">{match.recommendations}</p>
         </div>
@@ -196,7 +199,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
               className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#007070] to-[#004e4e] hover:from-[#005a5a] hover:to-[#003d3d] active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center space-x-2 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(0,112,112,0.22)]"
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>{isGeneratingPrep ? 'Loading Guide...' : 'Prep & Interview Guide'}</span>
+              <span>{isGeneratingPrep ? t.jobCard.loadingGuide : t.jobCard.prepGuide}</span>
             </button>
           )}
 
@@ -206,7 +209,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
             className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] border border-black/10 active:scale-[0.98] text-xs font-bold flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
           >
             <FileEdit className="w-3.5 h-3.5" />
-            <span>{isGenerating ? 'Drafting Application...' : 'Tailor Application'}</span>
+            <span>{isGenerating ? t.jobCard.draftingApp : t.jobCard.tailorApp}</span>
           </button>
         </div>
 
@@ -217,7 +220,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
             rel="noopener noreferrer"
             className="w-full sm:w-auto min-h-[44px] px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#E6F4F4] text-[#333333] hover:text-[#007070] active:scale-[0.98] text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors border border-black/8"
           >
-            <span>Apply on {match.sourceName || 'Portal'}</span>
+            <span>{t.jobCard.applyOnPortal} {match.sourceName || 'Portal'}</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}

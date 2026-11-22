@@ -54,4 +54,41 @@ public class RateLimitingPolicyTests
         Assert.NotNull(attr);
         Assert.Equal("UploadPolicy", attr.PolicyName);
     }
+
+    [Theory]
+    [InlineData(nameof(JobsController.PasteAndMatch))]
+    [InlineData(nameof(JobsController.GenerateTailoredApplication))]
+    [InlineData(nameof(JobsController.GeneratePreparationGuide))]
+    [InlineData(nameof(JobsController.GenerateCustomPreparationGuide))]
+    public void JobsController_AiEndpoints_MustEnforceAiRateLimitingPolicy(string methodName)
+    {
+        var method = typeof(JobsController).GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
+        Assert.NotNull(method);
+
+        var attr = method.GetCustomAttribute<EnableRateLimitingAttribute>();
+        Assert.NotNull(attr);
+        Assert.Equal("AiPolicy", attr.PolicyName);
+    }
+
+    [Fact]
+    public void CompaniesController_GenerateTargetedPitch_MustEnforceAiRateLimitingPolicy()
+    {
+        var method = typeof(CompaniesController).GetMethod(nameof(CompaniesController.GenerateTargetedPitch), BindingFlags.Public | BindingFlags.Instance);
+        Assert.NotNull(method);
+
+        var attr = method.GetCustomAttribute<EnableRateLimitingAttribute>();
+        Assert.NotNull(attr);
+        Assert.Equal("AiPolicy", attr.PolicyName);
+    }
+
+    [Fact]
+    public void CbsSprintController_AskAi_MustEnforceAiRateLimitingPolicy()
+    {
+        var method = typeof(CbsSprintController).GetMethod(nameof(CbsSprintController.AskAi), BindingFlags.Public | BindingFlags.Instance);
+        Assert.NotNull(method);
+
+        var attr = method.GetCustomAttribute<EnableRateLimitingAttribute>();
+        Assert.NotNull(attr);
+        Assert.Equal("AiPolicy", attr.PolicyName);
+    }
 }

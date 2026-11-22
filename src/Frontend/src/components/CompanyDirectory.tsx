@@ -4,6 +4,7 @@ import { CompanyCard } from './CompanyCard';
 import { CompanyPitchModal } from './CompanyPitchModal';
 import { SuggestCompanyModal } from './SuggestCompanyModal';
 import { api } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 import {
   Search,
   Building2,
@@ -28,7 +29,7 @@ interface CompanyDirectoryProps {
   showToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
 }
 
-const CATEGORIES = [
+const CATEGORIES_EN = [
   { id: 0, name: 'All Sectors' },
   { id: 1, name: 'Enterprise & Global Services' },
   { id: 2, name: 'Global SaaS & Products' },
@@ -36,6 +37,16 @@ const CATEGORIES = [
   { id: 4, name: 'Cloud & DevOps' },
   { id: 5, name: 'AI & Data Intelligence' },
   { id: 6, name: 'Digital Agencies' }
+];
+
+const CATEGORIES_BN = [
+  { id: 0, name: 'সকল সেক্টর' },
+  { id: 1, name: 'এন্টারপ্রাইজ ও গ্লোবাল সার্ভিস' },
+  { id: 2, name: 'গ্লোবাল সাস ও প্রোডাক্ট' },
+  { id: 3, name: 'ফিনটেক ও হাই-স্কেল' },
+  { id: 4, name: 'ক্লাউড ও ডেভঅপস' },
+  { id: 5, name: 'এআই ও ডাটা ইন্টেলিজেন্স' },
+  { id: 6, name: 'ডিজিটাল এজেন্সি' }
 ];
 
 const CLUSTER_STYLES: Record<string, {
@@ -109,6 +120,9 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
   onSelectJobForApplication,
   showToast
 }) => {
+  const { t, language } = useLanguage();
+  const categories = language === 'bn' ? CATEGORIES_BN : CATEGORIES_EN;
+
   const [companies, setCompanies] = useState<BdCompany[]>([]);
   const [clustersSummary, setClustersSummary] = useState<ClusterSummary[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -331,11 +345,11 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
               <Building2 className="w-5 h-5" />
             </span>
             <h2 className="font-bold text-lg sm:text-xl text-[#0B0B0B]">
-              180+ BD Global Tech Companies Ecosystem
+              {t.companies?.title || '180+ BD Global Tech Companies Ecosystem'}
             </h2>
           </div>
           <p className="text-xs text-[#555555]">
-            Curated directory of top enterprise software houses, global SaaS creators & high-growth tech innovators in Bangladesh.
+            {t.companies?.subtitle || 'Curated directory of top enterprise software houses, global SaaS creators & high-growth tech innovators in Bangladesh.'}
           </p>
         </div>
 
@@ -346,7 +360,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
             className="flex-1 sm:flex-initial min-h-[44px] justify-center px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 bg-[#E6F4F4] text-[#007070] hover:bg-[#007070] hover:text-white border border-[#007070]/20 shrink-0 active:scale-95"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Suggest a Company</span>
+            <span>{t.companies?.suggestCompany || 'Suggest a Company'}</span>
           </button>
 
           {/* Best Fit Switch */}
@@ -363,7 +377,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
               }`}
             >
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>{isBestFitMode ? 'Showing: My Best Tech Fits' : 'Sort by: My Best Tech Fits'}</span>
+              <span>{isBestFitMode ? (language === 'bn' ? 'প্রদর্শিত: আমার বেস্ট টেক ফিট' : 'Showing: My Best Tech Fits') : (language === 'bn' ? 'বাছাই: আমার বেস্ট টেক ফিট' : 'Sort by: My Best Tech Fits')}</span>
             </button>
           )}
         </div>
@@ -456,7 +470,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C7C7C]" />
             <input
               type="text"
-              placeholder="Search companies by name, products, or tech stack (e.g., .NET, React, Python)..."
+              placeholder={t.companies?.searchPlaceholder || "Search companies by name, products, or tech stack (e.g., .NET, React, Python)..."}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -496,7 +510,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
 
         {/* Category Pills & Active Filter Tags */}
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-black/5">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => {
@@ -550,7 +564,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
               onClick={handleClearFilters}
               className="text-xs font-medium text-slate-500 hover:text-rose-600 ml-auto transition-colors"
             >
-              Clear all filters
+              {t.companies?.clearFilters || 'Clear all filters'}
             </button>
           )}
         </div>
@@ -559,8 +573,11 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
       {/* Results Header */}
       <div className="flex items-center justify-between text-xs text-[#7C7C7C] px-1">
         <span>
-          Showing <strong className="text-[#0B0B0B]">{companies.length}</strong> of{' '}
-          <strong className="text-[#0B0B0B]">{totalCount}</strong> verified tech companies
+          {language === 'bn' ? 'প্রদর্শিত হচ্ছে' : 'Showing'}{' '}
+          <strong className="text-[#0B0B0B]">{companies.length}</strong>{' '}
+          {language === 'bn' ? 'টি / মোট' : 'of'}{' '}
+          <strong className="text-[#0B0B0B]">{totalCount}</strong>{' '}
+          {t.companies?.verifiedCompanies || 'verified tech companies'}
           {selectedClusterKey === 'dotnet' && (
             <span className="text-purple-700 font-bold ml-1.5 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
               (.NET Ecosystem)
@@ -570,7 +587,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
         {isBestFitMode && (
           <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-flex items-center gap-1">
             <Check className="w-3.5 h-3.5 inline text-emerald-700 shrink-0" />
-            <span>Ranked by your resume tech overlap</span>
+            <span>{t.companies?.rankedByOverlap || 'Ranked by your resume tech overlap'}</span>
           </span>
         )}
       </div>

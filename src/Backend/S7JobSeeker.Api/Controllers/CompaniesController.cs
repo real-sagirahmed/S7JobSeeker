@@ -325,6 +325,7 @@ public class CompaniesController : ControllerBase
     }
 
     [Authorize]
+    [EnableRateLimiting("AiPolicy")]
     [HttpPost("{id}/generate-pitch")]
     public async Task<ActionResult<TailoredPitchDto>> GenerateTargetedPitch(
         Guid id,
@@ -349,8 +350,16 @@ public class CompaniesController : ControllerBase
             return BadRequest(new { message = "Please upload your resume first to generate a tailored pitch." });
         }
 
-        var user = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-        var candidateName = user?.FullName ?? "Candidate";
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user == null) return NotFound(new { message = "User not found." });
+
+        // ARCHITECTURAL INTENT: Metered AI quota check (1 credit per pitch generation)
+        if (!user.IsAdmin && user.TrialEndsAt <= DateTime.UtcNow && user.AiCredits <= 0)
+        {
+            return BadRequest(new { message = "You have exhausted your AI Credits and your trial has expired. Please top up credits to generate tailored company pitches." });
+        }
+
+        var candidateName = user.FullName ?? "Candidate";
 
         var parsedProfile = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson);
         var companyStack = !string.IsNullOrEmpty(company.PrimaryTechStackJson)
@@ -462,6 +471,13 @@ public class CompaniesController : ControllerBase
             {
                 subject = subjectMatch.Groups[1].Value.Trim();
                 body = text.Replace(subjectMatch.Value, "").Trim();
+            }
+
+            // Deduct 1 credit upon LLM invocation
+            if (!user.IsAdmin && (user.TrialEndsAt <= DateTime.UtcNow || user.AiCredits > 0))
+            {
+                user.AiCredits = Math.Max(0, user.AiCredits - 1);
+                await _dbContext.SaveChangesAsync(cancellationToken);
             }
 
             return Ok(new TailoredPitchDto(
