@@ -73,28 +73,4 @@ jobs:
         FTP_SERVER: ${{ secrets.MONSTERASP_FTP_SERVER }}
         FTP_USER: ${{ secrets.MONSTERASP_FTP_USERNAME }}
         FTP_PASS: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
-      run: |
-        cat << 'EOF' > remove_offline.py
-import os
-from ftplib import FTP_TLS
-
-server = os.environ.get("FTP_SERVER", "")
-user = os.environ.get("FTP_USER", "")
-passwd = os.environ.get("FTP_PASS", "")
-
-try:
-    ftps = FTP_TLS(server)
-    ftps.login(user, passwd)
-    ftps.prot_p()
-    for path in ["wwwroot/app_offline.htm", "app_offline.htm"]:
-        try:
-            ftps.delete(path)
-            print(f"Successfully removed {path}")
-        except Exception as e:
-            print(f"Notice: {path} - {e}")
-    ftps.quit()
-    print("IIS app_offline removal complete.")
-except Exception as err:
-    print(f"FTP online error: {err}")
-EOF
-        python3 remove_offline.py
+      run: python3 .github/scripts/remove_offline.py
