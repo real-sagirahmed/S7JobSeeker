@@ -22,3 +22,11 @@ public record JobMatchResultDto(
     JobSource Source = JobSource.CustomPaste,
     string? SourceName = null
 );
+
+public record PagedJobMatchesDto(
+    List<JobMatchResultDto> Items,
+    int TotalCount,
+    int Page,
+    int PageSize,
+    bool HasMore
+);

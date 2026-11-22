@@ -138,4 +138,17 @@ public class CbsSprintController : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Single-endpoint export of the complete 14-day master curriculum dossier in Markdown format.
+    /// Eliminates 14 sequential HTTP client requests with a single in-memory compilation (<50ms).
+    /// </summary>
+    [HttpGet("export-all")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(CbsFullExportDto), StatusCodes.Status200OK)]
+    public ActionResult<CbsFullExportDto> ExportAllLessons()
+    {
+        var export = _sprintService.GetFullExport();
+        return Ok(export);
+    }
 }

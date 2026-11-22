@@ -1,6 +1,7 @@
 import type {
   AuthResponse,
   JobMatch,
+  PagedJobMatches,
   ResumeProfile,
   TailoredApplication,
   User,
@@ -18,7 +19,8 @@ import type {
   CbsProgressUpdate,
   CbsAiDoubtRequest,
   CbsAiDoubtResponse,
-  CbsCertificateVerification
+  CbsCertificateVerification,
+  CbsFullExport
 } from '../types';
 
 const API_BASE = '/api';
@@ -131,11 +133,18 @@ export const api = {
   },
 
   jobs: {
-    async getMatches(source?: number, remoteOnly?: boolean): Promise<JobMatch[]> {
+    async getMatches(
+      source?: number,
+      remoteOnly?: boolean,
+      page: number = 1,
+      pageSize: number = 20
+    ): Promise<PagedJobMatches> {
       const params = new URLSearchParams();
       if (source && source !== 0) params.append('source', source.toString());
       if (remoteOnly) params.append('remoteOnly', 'true');
-      const query = params.toString() ? `?${params.toString()}` : '';
+      params.append('page', page.toString());
+      params.append('pageSize', pageSize.toString());
+      const query = `?${params.toString()}`;
 
       const res = await fetch(`${API_BASE}/jobs/matches${query}`, {
         headers: { ...getAuthHeader() }
@@ -562,6 +571,15 @@ export const api = {
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: 'Certificate not found' }));
         throw new Error(err.message || 'Certificate not found or invalid');
+      }
+      return res.json();
+    },
+
+    async exportAllLessons(): Promise<CbsFullExport> {
+      const res = await fetch(`${API_BASE}/cbs-sprint/export-all`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Export failed' }));
+        throw new Error(err.message || 'Failed to export curriculum blueprint');
       }
       return res.json();
     }

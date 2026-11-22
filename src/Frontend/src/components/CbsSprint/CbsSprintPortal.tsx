@@ -178,23 +178,34 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
     }
   };
 
-  // 6. Download Full 14-Day Blueprint
+  // 6. Download Full 14-Day Blueprint (Instant Single-Endpoint Export with Fallback)
   const handleDownloadFullDossier = async () => {
     try {
       showToast('সম্পূর্ণ ১৪ দিনের স্পেশালাইজেশন ব্লুপ্রিন্ট প্রস্তুত হচ্ছে...', 'info');
-      const allLessons: string[] = [];
-      for (let i = 1; i <= 14; i++) {
-        const l = await api.cbsSprint.getDayLesson(i);
-        allLessons.push(l.exportMarkdown);
-      }
 
-      const fullContent = `# Junior Software Engineer (Service) – Current & NextGen CBS Support\n## 14-Day Comprehensive Specialization Master Blueprint\n\nGenerated on: ${new Date().toLocaleString()}\n\n---\n\n` + allLessons.join('\n\n---\n\n');
+      let fullContent = '';
+      let fileName = 'CBS-Support-14-Day-Specialization-Blueprint.md';
+
+      try {
+        // Fast single-endpoint export (<50ms)
+        const exportRes = await api.cbsSprint.exportAllLessons();
+        fullContent = exportRes.fullContent;
+        if (exportRes.fileName) fileName = exportRes.fileName;
+      } catch (err) {
+        console.warn('Single-endpoint export failed, falling back to parallel fetch:', err);
+        // Resilient parallel fallback using Promise.all instead of sequential loop
+        const lessonPromises = Array.from({ length: 14 }, (_, i) => api.cbsSprint.getDayLesson(i + 1));
+        const allLessons = await Promise.all(lessonPromises);
+        fullContent =
+          `# Junior Software Engineer (Service) – Current & NextGen CBS Support\n## 14-Day Comprehensive Specialization Master Blueprint\n\nGenerated on: ${new Date().toLocaleString()}\n\n---\n\n` +
+          allLessons.map((l) => l.exportMarkdown).join('\n\n---\n\n');
+      }
 
       const blob = new Blob([fullContent], { type: 'text/markdown;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `CBS-Support-14-Day-Specialization-Blueprint.md`;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

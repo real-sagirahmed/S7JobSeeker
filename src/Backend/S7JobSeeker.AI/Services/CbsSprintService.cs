@@ -141,6 +141,36 @@ public class CbsSprintService : ICbsSprintService
         return LessonsDict.TryGetValue(dayNumber, out var lesson) ? lesson : null;
     }
 
+    public CbsFullExportDto GetFullExport()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("# Junior Software Engineer (Service) – Current & NextGen CBS Support");
+        sb.AppendLine("## 14-Day Comprehensive Specialization Master Blueprint");
+        sb.AppendLine($"Generated on: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+        sb.AppendLine("Platform: s7job-seeker | teamS7 Enterprise Intelligence");
+        sb.AppendLine("\n---\n");
+
+        for (int i = 1; i <= 14; i++)
+        {
+            if (LessonsDict.TryGetValue(i, out var lesson))
+            {
+                sb.AppendLine(lesson.ExportMarkdown);
+                if (i < 14)
+                {
+                    sb.AppendLine("\n---\n");
+                }
+            }
+        }
+
+        return new CbsFullExportDto
+        {
+            FullContent = sb.ToString(),
+            FileName = "CBS-Support-14-Day-Specialization-Blueprint.md",
+            TotalDays = 14,
+            GeneratedAt = DateTime.UtcNow
+        };
+    }
+
     public async Task<CbsProgressDto> GetUserProgressAsync(string userId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
@@ -340,12 +370,15 @@ public class CbsSprintService : ICbsSprintService
         }
 
         var candidateName = "CBS Graduate Candidate";
-        var user = await _dbContext.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == progress.UserId, cancellationToken);
-        if (user != null && !string.IsNullOrWhiteSpace(user.FullName))
+        if (!string.IsNullOrWhiteSpace(progress.UserId))
         {
-            candidateName = user.FullName;
+            var user = await _dbContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == progress.UserId, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(user?.FullName))
+            {
+                candidateName = user.FullName;
+            }
         }
 
         var quizScores = DeserializeOrDefault<Dictionary<string, int>>(progress.QuizScoresJson) ?? [];

@@ -27,6 +27,7 @@ export const App: React.FC = () => {
   const [isSyncingJobs, setIsSyncingJobs] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isBuyCreditsOpen, setIsBuyCreditsOpen] = useState(false);
+  const [buyCreditsInitialView, setBuyCreditsInitialView] = useState<'buy' | 'history'>('buy');
   const [selectedApplication, setSelectedApplication] = useState<TailoredApplication | null>(null);
   const [selectedPrepGuide, setSelectedPrepGuide] = useState<JobPrepGuide | null>(null);
   const [isLoadingPrepGuide, setIsLoadingPrepGuide] = useState(false);
@@ -35,6 +36,10 @@ export const App: React.FC = () => {
   const [minScoreFilter, setMinScoreFilter] = useState<number>(0);
   const [sourceFilter, setSourceFilter] = useState<number>(0);
   const [remoteOnly, setRemoteOnly] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalMatchesCount, setTotalMatchesCount] = useState<number>(0);
+  const [hasMoreMatches, setHasMoreMatches] = useState<boolean>(false);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   // Public certificate verification route detection (?verify=S7-CBS-... or /verify/S7-CBS-...)
@@ -102,18 +107,44 @@ export const App: React.FC = () => {
     }
   };
 
-  const fetchMatches = async (targetSource?: number, isRemote?: boolean) => {
-    setIsLoadingMatches(true);
+  const fetchMatches = async (
+    targetSource?: number,
+    isRemote?: boolean,
+    pageToFetch: number = 1,
+    isAppending: boolean = false
+  ) => {
+    if (isAppending) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoadingMatches(true);
+    }
+
     try {
       const src = targetSource !== undefined ? targetSource : sourceFilter;
       const rem = isRemote !== undefined ? isRemote : remoteOnly;
-      const list = await api.jobs.getMatches(src, rem);
-      setMatches(list);
+      const res = await api.jobs.getMatches(src, rem, pageToFetch, 20);
+
+      if (isAppending) {
+        setMatches((prev) => [...prev, ...res.items]);
+      } else {
+        setMatches(res.items);
+      }
+
+      setCurrentPage(res.page);
+      setTotalMatchesCount(res.totalCount);
+      setHasMoreMatches(res.hasMore);
     } catch (e) {
       console.error(e);
+      showToast('জব ম্যাচ লোড করতে সমস্যা হয়েছে।', 'error');
     } finally {
       setIsLoadingMatches(false);
+      setIsLoadingMore(false);
     }
+  };
+
+  const handleLoadMoreMatches = () => {
+    if (isLoadingMore || !hasMoreMatches) return;
+    fetchMatches(sourceFilter, remoteOnly, currentPage + 1, true);
   };
 
   const fetchSavedMatches = async () => {
@@ -189,7 +220,7 @@ export const App: React.FC = () => {
       const errorMsg = err instanceof Error ? err.message : 'Failed to generate preparation guide.';
       if (errorMsg.includes('Credit') || errorMsg.includes('402')) {
         showToast('আপনার এআই ক্রেডিট শেষ হয়ে গেছে। দয়া করে ক্রেডিট টপ-আপ করুন।', 'error');
-        setIsBuyCreditsOpen(true);
+        handleOpenBuyCredits();
         setIsPrepModalOpen(false);
       } else {
         showToast(errorMsg, 'error');
@@ -225,6 +256,16 @@ export const App: React.FC = () => {
     return true;
   });
 
+  const handleOpenBuyCredits = () => {
+    setBuyCreditsInitialView('buy');
+    setIsBuyCreditsOpen(true);
+  };
+
+  const handleOpenTransactionsHistory = () => {
+    setBuyCreditsInitialView('history');
+    setIsBuyCreditsOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#333333] flex flex-col font-sans overflow-x-hidden">
       <Navbar
@@ -238,7 +279,8 @@ export const App: React.FC = () => {
           setMatches([]);
         }}
         onOpenAuth={() => setIsAuthModalOpen(true)}
-        onOpenBuyCredits={() => setIsBuyCreditsOpen(true)}
+        onOpenBuyCredits={handleOpenBuyCredits}
+        onOpenHistory={handleOpenTransactionsHistory}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -348,7 +390,7 @@ export const App: React.FC = () => {
                       <Sparkles className="w-5 h-5 mr-2 text-[#007070]" /> AI-Ranked Job Matches
                     </h2>
                     <p className="text-xs text-[#7C7C7C] mt-0.5">
-                      {filteredMatches.length} opportunities ranked by vector similarity & skill alignment
+                      Showing {filteredMatches.length} of {totalMatchesCount || filteredMatches.length} opportunities ranked by vector similarity & skill alignment
                     </p>
                   </div>
 
@@ -367,7 +409,11 @@ export const App: React.FC = () => {
                       <input
                         type="checkbox"
                         checked={remoteOnly}
-                        onChange={(e) => setRemoteOnly(e.target.checked)}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          setRemoteOnly(val);
+                          fetchMatches(sourceFilter, val, 1, false);
+                        }}
                         className="rounded border-black/20 text-[#007070] focus:ring-0"
                       />
                       <span>Remote Only</span>
@@ -375,7 +421,11 @@ export const App: React.FC = () => {
 
                     <select
                       value={sourceFilter}
-                      onChange={(e) => setSourceFilter(Number(e.target.value))}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setSourceFilter(val);
+                        fetchMatches(val, remoteOnly, 1, false);
+                      }}
                       className="min-h-[40px] px-3 py-2 rounded-xl bg-white border border-black/10 text-base sm:text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
                     >
                       <option value={0}>All Sources (৭টি সোর্স)</option>
@@ -401,7 +451,7 @@ export const App: React.FC = () => {
                     </select>
 
                     <button
-                      onClick={() => fetchMatches()}
+                      onClick={() => fetchMatches(sourceFilter, remoteOnly, 1, false)}
                       disabled={isLoadingMatches}
                       title="Refresh Matches"
                       className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl border border-black/10 text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-all disabled:opacity-50 active:scale-95"
@@ -417,17 +467,48 @@ export const App: React.FC = () => {
                     <p className="text-xs text-[#7C7C7C]">Evaluating semantic relevance with Gemini RAG...</p>
                   </div>
                 ) : filteredMatches.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-6">
-                    {filteredMatches.map((match) => (
-                      <JobMatchCard
-                        key={match.jobId}
-                        match={match}
-                        onGenerateApplication={handleGenerateApplication}
-                        onToggleBookmark={handleToggleBookmark}
-                        onOpenPrepGuide={handleOpenPrepGuide}
-                        isGenerating={generatingAppId === match.jobId}
-                      />
-                    ))}
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                      {filteredMatches.map((match) => (
+                        <JobMatchCard
+                          key={match.jobId}
+                          match={match}
+                          onGenerateApplication={handleGenerateApplication}
+                          onToggleBookmark={handleToggleBookmark}
+                          onOpenPrepGuide={handleOpenPrepGuide}
+                          isGenerating={generatingAppId === match.jobId}
+                        />
+                      ))}
+                    </div>
+
+                    {hasMoreMatches && (
+                      <div className="pt-2 text-center">
+                        <button
+                          onClick={handleLoadMoreMatches}
+                          disabled={isLoadingMore}
+                          className="min-h-[44px] px-8 py-3 rounded-2xl bg-white hover:bg-[#E6F4F4] text-[#007070] border border-[#007070]/30 hover:border-[#007070] text-xs font-black shadow-xs hover:shadow-md transition-all disabled:opacity-50 inline-flex items-center space-x-2 active:scale-98 cursor-pointer"
+                        >
+                          {isLoadingMore ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              <span>Loading Next 20 Matches...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4" />
+                              <span>Load More Matches (পরবর্তী ২০টি জব দেখুন)</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {!hasMoreMatches && matches.length > 0 && (
+                      <div className="pt-4 pb-2 text-center text-xs text-[#7C7C7C] font-medium flex items-center justify-center gap-1.5">
+                        <ShieldCheck className="w-4 h-4 text-[#007070]" />
+                        <span>সকল {totalMatchesCount}টি ম্যাচিং অপরচুনিটি প্রদর্শিত হয়েছে</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="p-12 text-center rounded-2xl border border-black/8 bg-white space-y-4 shadow-xs">
@@ -553,6 +634,7 @@ export const App: React.FC = () => {
 
       <BuyCreditsModal
         isOpen={isBuyCreditsOpen}
+        initialView={buyCreditsInitialView}
         onClose={() => setIsBuyCreditsOpen(false)}
         onSuccess={() => {
           showToast('পেমেন্ট রিকোয়েস্ট জমা নেওয়া হয়েছে। পরিচালক ভেরিফাই করলেই ক্রেডিট যুক্ত হবে।', 'success');

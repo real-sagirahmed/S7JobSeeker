@@ -55,6 +55,14 @@ export interface JobMatch {
   sourceName?: string;
 }
 
+export interface PagedJobMatches {
+  items: JobMatch[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
 export interface TailoredApplication {
   coverLetter: string;
   resumeTips: string;
@@ -340,6 +348,13 @@ export interface CbsAiDoubtResponse {
   answer: string;
   seniorInsight: string;
   relatedTopicsToReview: string[];
+}
+
+export interface CbsFullExport {
+  fullContent: string;
+  fileName: string;
+  totalDays: number;
+  generatedAt: string;
 }
 
 

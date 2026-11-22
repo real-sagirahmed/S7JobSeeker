@@ -272,3 +272,4 @@ export const CertificateVerificationView: React.FC<CertificateVerificationViewPr
     </div>
   );
 };
+

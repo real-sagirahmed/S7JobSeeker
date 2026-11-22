@@ -122,3 +122,11 @@ public class CbsAiDoubtResponseDto
     public string SeniorInsight { get; set; } = string.Empty;
     public List<string> RelatedTopicsToReview { get; set; } = [];
 }
+
+public record CbsFullExportDto
+{
+    public string FullContent { get; init; } = string.Empty;
+    public string FileName { get; init; } = "CBS-Support-14-Day-Specialization-Blueprint.md";
+    public int TotalDays { get; init; } = 14;
+    public DateTime GeneratedAt { get; init; } = DateTime.UtcNow;
+}

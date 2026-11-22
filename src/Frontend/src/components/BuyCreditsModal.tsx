@@ -20,13 +20,15 @@ interface BuyCreditsModalProps {
   onClose: () => void;
   onSuccess: () => void;
   userCredits?: number;
+  initialView?: 'buy' | 'history';
 }
 
 export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
-  userCredits = 0
+  userCredits = 0,
+  initialView = 'buy'
 }) => {
   const [bundles, setBundles] = useState<CreditBundle[]>([]);
   const [settings, setSettings] = useState<SaaSPlatformSettings | null>(null);
@@ -45,9 +47,10 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
     if (isOpen) {
       setErrorMessage(null);
       setSuccessMessage(null);
+      setShowHistory(initialView === 'history');
       loadInitialData();
     }
-  }, [isOpen]);
+  }, [isOpen, initialView]);
 
   const loadInitialData = async () => {
     try {

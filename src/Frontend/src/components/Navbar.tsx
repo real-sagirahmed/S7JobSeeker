@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   CreditCard,
-  Server
+  Server,
+  History
 } from 'lucide-react';
 import type { User } from '../types';
 
@@ -23,6 +24,7 @@ interface NavbarProps {
   onLogout: () => void;
   onOpenAuth: () => void;
   onOpenBuyCredits: () => void;
+  onOpenHistory?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -31,7 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   onLogout,
   onOpenAuth,
-  onOpenBuyCredits
+  onOpenBuyCredits,
+  onOpenHistory
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -203,6 +206,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                     {user.isAdmin ? '' : 'Credits'}
                   </span>
                 </button>
+
+                {/* Direct Mobile Banking Transaction History Trigger (P2-4) */}
+                {onOpenHistory && (
+                  <button
+                    onClick={onOpenHistory}
+                    title="View bKash/Nagad Payment History & Status"
+                    className="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-[#007070] border border-black/10 hover:border-[#007070]/30 hover:bg-[#E6F4F4]/50 active:scale-95 transition-all flex items-center gap-1.5 min-h-[40px]"
+                  >
+                    <History className="w-4 h-4 shrink-0 text-[#007070]" />
+                    <span className="hidden xl:inline">History</span>
+                  </button>
+                )}
 
                 {/* User Profile Info (Desktop) */}
                 <div className="hidden lg:block text-right">
@@ -422,16 +437,30 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Drawer Bottom Actions */}
             <div className="p-5 border-t border-slate-200/80 space-y-3 bg-slate-50/50">
               {user ? (
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    onLogout();
-                  }}
-                  className="w-full py-2.5 px-4 rounded-xl border border-rose-200 bg-white text-rose-600 font-bold text-xs flex items-center justify-center space-x-2 hover:bg-rose-50 active:scale-95 transition-all min-h-[44px] shadow-2xs"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sign Out</span>
-                </button>
+                <>
+                  {onOpenHistory && (
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        onOpenHistory();
+                      }}
+                      className="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs flex items-center justify-center space-x-2 hover:bg-slate-50 active:scale-95 transition-all min-h-[44px] shadow-2xs"
+                    >
+                      <History className="w-4 h-4 text-[#007070]" />
+                      <span>My Payment Transactions</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl border border-rose-200 bg-white text-rose-600 font-bold text-xs flex items-center justify-center space-x-2 hover:bg-rose-50 active:scale-95 transition-all min-h-[44px] shadow-2xs"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={() => {

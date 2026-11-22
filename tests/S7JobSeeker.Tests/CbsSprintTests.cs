@@ -202,6 +202,15 @@ public class CbsSprintTests
         var controller = new CbsSprintController(service, NullLogger<CbsSprintController>.Instance);
 
         var userId = "candidate-verified-cbs";
+        db.Users.Add(new Core.Entities.ApplicationUser
+        {
+            Id = userId,
+            UserName = "candidate@s7jobseeker.com",
+            Email = "candidate@s7jobseeker.com",
+            FullName = "Md. Verified Candidate"
+        });
+        await db.SaveChangesAsync();
+
         for (int day = 1; day <= 14; day++)
         {
             await service.UpdateUserProgressAsync(userId, new CbsProgressUpdateDto
@@ -237,5 +246,53 @@ public class CbsSprintTests
         var actionResult = await controller.VerifyCertificate("S7-CBS-FAKE-9999", default);
         var notFound = Assert.IsType<NotFoundObjectResult>(actionResult);
         Assert.NotNull(notFound.Value);
+    }
+
+    [Fact]
+    public void GetFullExport_CompilesAll14Days_WithCorrectHeaderAndLength()
+    {
+        // Arrange
+        using var db = CreateInMemoryDbContext();
+        var service = new CbsSprintService(db, new DummyChatCompletionService(), NullLogger<CbsSprintService>.Instance);
+
+        // Act
+        var export = service.GetFullExport();
+
+        // Assert
+        Assert.NotNull(export);
+        Assert.Equal(14, export.TotalDays);
+        Assert.Equal("CBS-Support-14-Day-Specialization-Blueprint.md", export.FileName);
+        Assert.NotEmpty(export.FullContent);
+        Assert.Contains("14-Day Comprehensive Specialization Master Blueprint", export.FullContent);
+
+        // Verify all 14 days are present in markdown compilation
+        for (int day = 1; day <= 14; day++)
+        {
+            Assert.Contains($"# Day {day}/14", export.FullContent);
+        }
+    }
+
+    [Fact]
+    public void ExportAllLessons_Endpoint_HasAllowAnonymous_AndReturns200Ok()
+    {
+        // Arrange
+        using var db = CreateInMemoryDbContext();
+        var service = new CbsSprintService(db, new DummyChatCompletionService(), NullLogger<CbsSprintService>.Instance);
+        var controller = new CbsSprintController(service, NullLogger<CbsSprintController>.Instance);
+
+        // Verify AllowAnonymousAttribute presence on action method
+        var methodInfo = typeof(CbsSprintController).GetMethod(nameof(CbsSprintController.ExportAllLessons));
+        Assert.NotNull(methodInfo);
+        var hasAllowAnonymous = methodInfo.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute), inherit: true).Any();
+        Assert.True(hasAllowAnonymous, "ExportAllLessons must be publicly accessible via [AllowAnonymous]");
+
+        // Act
+        var actionResult = controller.ExportAllLessons();
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+        var exportDto = Assert.IsType<CbsFullExportDto>(okResult.Value);
+        Assert.Equal(14, exportDto.TotalDays);
+        Assert.NotEmpty(exportDto.FullContent);
     }
 }

@@ -10,4 +10,5 @@ public interface ICbsSprintService
     Task<CbsProgressDto> UpdateUserProgressAsync(string userId, CbsProgressUpdateDto dto, CancellationToken cancellationToken = default);
     Task<CbsAiDoubtResponseDto> AskAiDoubtAsync(CbsAiDoubtRequestDto request, CancellationToken cancellationToken = default);
     Task<CbsCertificateVerificationDto?> VerifyCertificateAsync(string certificateId, CancellationToken cancellationToken = default);
+    CbsFullExportDto GetFullExport();
 }
