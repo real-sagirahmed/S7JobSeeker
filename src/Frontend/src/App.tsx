@@ -2,19 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { ResumeUploader } from './components/ResumeUploader';
 import { JobMatchCard } from './components/JobMatchCard';
-import { PasteAndAnalyze } from './components/PasteAndAnalyze';
-import { TailoredModal } from './components/TailoredModal';
-import { JobPrepModal } from './components/JobPrepModal';
 import { AuthModal } from './components/AuthModal';
-import { CompanyDirectory } from './components/CompanyDirectory';
-import { BuyCreditsModal } from './components/BuyCreditsModal';
-import { AdminDashboard } from './components/AdminDashboard';
-import { CbsSprintPortal } from './components/CbsSprint/CbsSprintPortal';
-import { CertificateVerificationView } from './components/CbsSprint/CertificateVerificationView';
 import { ToastContainer, type ToastMessage } from './components/Toast';
 import { api } from './services/api';
 import type { User, ResumeProfile, JobMatch, TailoredApplication, JobPrepGuide } from './types';
 import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu, DownloadCloud } from 'lucide-react';
+
+// ARCHITECTURAL INTENT: Lazy-load heavy and on-demand components to reduce initial JavaScript bundle by >60%
+const PasteAndAnalyze = React.lazy(() => import('./components/PasteAndAnalyze').then(m => ({ default: m.PasteAndAnalyze })));
+const TailoredModal = React.lazy(() => import('./components/TailoredModal').then(m => ({ default: m.TailoredModal })));
+const JobPrepModal = React.lazy(() => import('./components/JobPrepModal').then(m => ({ default: m.JobPrepModal })));
+const CompanyDirectory = React.lazy(() => import('./components/CompanyDirectory').then(m => ({ default: m.CompanyDirectory })));
+const BuyCreditsModal = React.lazy(() => import('./components/BuyCreditsModal').then(m => ({ default: m.BuyCreditsModal })));
+const AdminDashboard = React.lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const CbsSprintPortal = React.lazy(() => import('./components/CbsSprint/CbsSprintPortal').then(m => ({ default: m.CbsSprintPortal })));
+const CertificateVerificationView = React.lazy(() => import('./components/CbsSprint/CertificateVerificationView').then(m => ({ default: m.CertificateVerificationView })));
+
+const ComponentFallback: React.FC = () => (
+  <div className="p-12 text-center space-y-3">
+    <div className="w-8 h-8 border-2 border-[#007070] border-t-transparent rounded-full animate-spin mx-auto" />
+    <p className="text-xs text-[#7C7C7C] font-semibold">মডিউল লোড হচ্ছে...</p>
+  </div>
+);
 
 export const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -69,13 +78,15 @@ export const App: React.FC = () => {
   // If user is directly accessing the public certificate verification view, render standalone view
   if (verificationCertId !== null) {
     return (
-      <CertificateVerificationView
-        initialCertificateId={verificationCertId}
-        onBackToApp={() => {
-          window.history.replaceState({}, document.title, window.location.pathname.split('?')[0]);
-          setVerificationCertId(null);
-        }}
-      />
+      <React.Suspense fallback={<ComponentFallback />}>
+        <CertificateVerificationView
+          initialCertificateId={verificationCertId}
+          onBackToApp={() => {
+            window.history.replaceState({}, document.title, window.location.pathname.split('?')[0]);
+            setVerificationCertId(null);
+          }}
+        />
+      </React.Suspense>
     );
   }
 
@@ -285,11 +296,13 @@ export const App: React.FC = () => {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'cbs-sprint' ? (
-          <CbsSprintPortal
-            user={user}
-            onOpenAuth={() => setIsAuthModalOpen(true)}
-            showToast={showToast}
-          />
+          <React.Suspense fallback={<ComponentFallback />}>
+            <CbsSprintPortal
+              user={user}
+              onOpenAuth={() => setIsAuthModalOpen(true)}
+              showToast={showToast}
+            />
+          </React.Suspense>
         ) : !user ? (
           // Landing Hero for Logged-Out Users
           <div className="py-12 text-center space-y-6 max-w-3xl mx-auto">
@@ -429,7 +442,7 @@ export const App: React.FC = () => {
                       className="min-h-[40px] px-3 py-2 rounded-xl bg-white border border-black/10 text-base sm:text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
                     >
                       <option value={0}>All Sources (৭টি সোর্স)</option>
-                      <option value={7}>🇧🇩 BDJobs (Local BD)</option>
+                      <option value={7}>BDJobs (Local BD)</option>
                       <option value={8}>LinkedIn Jobs</option>
                       <option value={3}>Jobicy (Remote)</option>
                       <option value={5}>Himalayas (Remote)</option>
@@ -532,12 +545,14 @@ export const App: React.FC = () => {
 
             {/* TAB: Paste & Analyze */}
             {activeTab === 'paste' && (
-              <PasteAndAnalyze
-                onGenerateApplication={handleGenerateApplication}
-                onToggleBookmark={handleToggleBookmark}
-                onOpenPrepGuide={handleOpenPrepGuide}
-                onRefreshUser={() => api.auth.getMe().then(setUser).catch(() => {})}
-              />
+              <React.Suspense fallback={<ComponentFallback />}>
+                <PasteAndAnalyze
+                  onGenerateApplication={handleGenerateApplication}
+                  onToggleBookmark={handleToggleBookmark}
+                  onOpenPrepGuide={handleOpenPrepGuide}
+                  onRefreshUser={() => api.auth.getMe().then(setUser).catch(() => {})}
+                />
+              </React.Suspense>
             )}
 
             {/* TAB: Resume & Profile */}
@@ -600,16 +615,20 @@ export const App: React.FC = () => {
 
             {/* TAB: BD Tech Ecosystem */}
             {activeTab === 'companies' && (
-              <CompanyDirectory
-                hasProfile={!!profile}
-                onSelectJobForApplication={handleGenerateApplication}
-                showToast={showToast}
-              />
+              <React.Suspense fallback={<ComponentFallback />}>
+                <CompanyDirectory
+                  hasProfile={!!profile}
+                  onSelectJobForApplication={handleGenerateApplication}
+                  showToast={showToast}
+                />
+              </React.Suspense>
             )}
 
             {/* TAB: Director Admin Console */}
             {activeTab === 'admin' && user?.isAdmin && (
-              <AdminDashboard onNotify={showToast} />
+              <React.Suspense fallback={<ComponentFallback />}>
+                <AdminDashboard onNotify={showToast} />
+              </React.Suspense>
             )}
           </div>
         )}
@@ -632,31 +651,41 @@ export const App: React.FC = () => {
         }}
       />
 
-      <BuyCreditsModal
-        isOpen={isBuyCreditsOpen}
-        initialView={buyCreditsInitialView}
-        onClose={() => setIsBuyCreditsOpen(false)}
-        onSuccess={() => {
-          showToast('পেমেন্ট রিকোয়েস্ট জমা নেওয়া হয়েছে। পরিচালক ভেরিফাই করলেই ক্রেডিট যুক্ত হবে।', 'success');
-          api.auth.getMe().then(setUser).catch(() => {});
-        }}
-        userCredits={user?.aiCredits}
-      />
+      {isBuyCreditsOpen && (
+        <React.Suspense fallback={null}>
+          <BuyCreditsModal
+            isOpen={isBuyCreditsOpen}
+            initialView={buyCreditsInitialView}
+            onClose={() => setIsBuyCreditsOpen(false)}
+            onSuccess={() => {
+              showToast('পেমেন্ট রিকোয়েস্ট জমা নেওয়া হয়েছে। পরিচালক ভেরিফাই করলেই ক্রেডিট যুক্ত হবে।', 'success');
+              api.auth.getMe().then(setUser).catch(() => {});
+            }}
+            userCredits={user?.aiCredits}
+          />
+        </React.Suspense>
+      )}
 
-      <TailoredModal
-        application={selectedApplication}
-        onClose={() => setSelectedApplication(null)}
-      />
+      {selectedApplication && (
+        <React.Suspense fallback={null}>
+          <TailoredModal
+            application={selectedApplication}
+            onClose={() => setSelectedApplication(null)}
+          />
+        </React.Suspense>
+      )}
 
       {isPrepModalOpen && (
-        <JobPrepModal
-          guide={selectedPrepGuide}
-          isLoading={isLoadingPrepGuide}
-          onClose={() => {
-            setIsPrepModalOpen(false);
-            setSelectedPrepGuide(null);
-          }}
-        />
+        <React.Suspense fallback={null}>
+          <JobPrepModal
+            guide={selectedPrepGuide}
+            isLoading={isLoadingPrepGuide}
+            onClose={() => {
+              setIsPrepModalOpen(false);
+              setSelectedPrepGuide(null);
+            }}
+          />
+        </React.Suspense>
       )}
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />

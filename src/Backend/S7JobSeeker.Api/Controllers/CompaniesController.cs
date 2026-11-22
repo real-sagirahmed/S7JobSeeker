@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -478,6 +479,7 @@ public class CompaniesController : ControllerBase
         }
     }
 
+    [EnableRateLimiting("PublicPolicy")]
     [Authorize]
     [HttpPost("suggest")]
     public async Task<IActionResult> SuggestCompany(

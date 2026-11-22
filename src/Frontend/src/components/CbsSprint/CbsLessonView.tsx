@@ -9,7 +9,8 @@ import {
   Circle,
   Clock,
   Copy,
-  Download
+  Download,
+  X
 } from 'lucide-react';
 import type { CbsDayLesson, CbsProgress } from '../../types';
 import { CbsInteractiveQuiz } from './CbsInteractiveQuiz';
@@ -97,7 +98,7 @@ export const CbsLessonView: React.FC<CbsLessonViewProps> = ({
               {isCompleted ? (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>সম্পন্ন হয়েছে ✓</span>
+                  <span>সম্পন্ন হয়েছে</span>
                 </>
               ) : (
                 <>
@@ -127,7 +128,7 @@ export const CbsLessonView: React.FC<CbsLessonViewProps> = ({
             <ul className="space-y-1.5">
               {lesson.objectives.map((obj, oIdx) => (
                 <li key={oIdx} className="text-xs sm:text-sm text-slate-800 flex items-start space-x-2.5">
-                  <span className="text-teal-600 font-black mt-0.5">✓</span>
+                  <Check className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
                   <span className="font-medium leading-relaxed">{obj}</span>
                 </li>
               ))}
@@ -256,7 +257,7 @@ export const CbsLessonView: React.FC<CbsLessonViewProps> = ({
           <ul className="space-y-2 pt-1">
             {lesson.commonMistakes.map((mistake, mIdx) => (
               <li key={mIdx} className="text-xs sm:text-sm text-amber-950 flex items-start space-x-2.5">
-                <span className="text-amber-600 font-black mr-1 shrink-0">✕</span>
+                <X className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
                 <span className="leading-relaxed font-medium">{mistake}</span>
               </li>
             ))}

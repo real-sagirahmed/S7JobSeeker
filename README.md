@@ -1,4 +1,4 @@
-# S7JobSeeker 🚀
+# S7JobSeeker
 > **AI-Powered Semantic & RAG Job Matching SaaS Platform, 180+ BD Tech Companies Ecosystem & Core Banking Career Intelligence**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-s7jobseeker.runasp.net-007070?style=for-the-badge&logo=google-chrome&logoColor=white)](https://s7jobseeker.runasp.net)
@@ -15,14 +15,14 @@
 
 ---
 
-## 🌐 Live Production Application
+## Live Production Application
 - **Production URL**: [https://s7jobseeker.runasp.net](https://s7jobseeker.runasp.net)
 - **API Swagger Documentation**: [https://s7jobseeker.runasp.net/swagger](https://s7jobseeker.runasp.net/swagger)
 - **Status Endpoint**: [https://s7jobseeker.runasp.net/api/health](https://s7jobseeker.runasp.net/api/health)
 
 ---
 
-## 📌 Executive Overview
+## Executive Overview
 `S7JobSeeker` হলো একটি এন্টারপ্রাইজ-গ্রেড AI-চালিত SaaS প্ল্যাটফর্ম, যা সফটওয়্যার ইঞ্জিনিয়ার ও টেক প্রফেশনালদের ক্যারিয়ার গ্রোথ, জব ম্যাচিং এবং টেকনিক্যাল প্রিপারেশনের সম্পূর্ণ যাত্রা সহজ করার জন্য নির্মিত। 
 
 সিস্টেমটি প্রার্থীর রেজুমি পার্স করে ৭৬৮-ডাইমেনশনাল ভেক্টর এমবেডিং তৈরি করে, Qdrant ভেক্টর ক্লাউডের মাধ্যমে রিয়েল-টাইম জবের সাথে সিম্যান্টিক সিমিলারিটি স্কোরিং করে, স্কিল গ্যাপ চিহ্নিত করে এবং জব সার্কুলার অনুযায়ী কাস্টমাইজড কভার লেটার প্রস্তুত করে। 
@@ -31,7 +31,7 @@
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
@@ -79,7 +79,7 @@ flowchart TD
 
 ---
 
-## 🌟 Flagship Features
+## Flagship Features
 
 ### ১. Semantic RAG Job Matching & Custom Circular Analyzer
 - **Automatic Resume Parsing**: `PdfPig`-এর মাধ্যমে কোনো বাহ্যিক থার্ড-পার্টি সার্ভিস ছাড়া লোকালি ও নিরাপদে প্রার্থীর রেজুমি (PDF) থেকে টেক্সট, স্কিল ও কাজের অভিজ্ঞতা এক্সট্রাক্ট করা হয়।
@@ -124,7 +124,7 @@ flowchart TD
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
@@ -142,7 +142,7 @@ flowchart TD
 
 ---
 
-## 🔒 Clean Architecture & Anti-Regression Standards
+## Clean Architecture & Anti-Regression Standards
 
 প্রজেক্টটি মনোলিথিক ওভার-ইঞ্জিনিয়ারিং পরিহার করে ক্লিন আর্কিটেকচার এবং **Anti-Regression In-Code Decision Locks** কঠোরভাবে অনুসরণ করে:
 
@@ -171,7 +171,7 @@ await _dbContext.SaveChangesAsync(cancellationToken);
 
 ---
 
-## ⚡ Quickstart Guide (Local Development)
+## Quickstart Guide (Local Development)
 
 ### পূর্বশর্ত (Prerequisites)
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
@@ -231,7 +231,7 @@ dotnet test S7JobSeeker.sln --configuration Release
 
 ---
 
-## 🚀 Production Deployment & CI/CD Pipeline
+## Production Deployment & CI/CD Pipeline
 
 প্ল্যাটফর্মটি **GitHub Actions**-এর মাধ্যমে সম্পূর্ণ স্বয়ংক্রিয়ভাবে বিল্ড, টেস্ট ও ডিপ্লয় হয়:
 1. `main` ব্রাঞ্চে কোনো কমিট পুশ হলে `.github/workflows/deploy.yml` ট্রিগার হয়।
@@ -242,18 +242,18 @@ dotnet test S7JobSeeker.sln --configuration Release
 
 ---
 
-## 👨‍💻 Author & Professional Profile
+## Author & Professional Profile
 
 **Sagir Ahmed**  
 *Senior Full Stack .NET Developer, Solutions Architect & AI Systems Engineer*  
 
-- 🌐 **Personal Portfolio**: [https://sagirahmed.com](https://sagirahmed.com)
-- 💼 **LinkedIn Profile**: [linkedin.com/in/real-sagirahmed](https://www.linkedin.com/in/real-sagirahmed)
-- 🐙 **GitHub Profile**: [@real-sagirahmed](https://github.com/real-sagirahmed)
-- 📧 **Professional Email**: [real.sagirahmed@gmail.com](mailto:real.sagirahmed@gmail.com)
+- **Personal Portfolio**: [https://sagirahmed.com](https://sagirahmed.com)
+- **LinkedIn Profile**: [linkedin.com/in/real-sagirahmed](https://www.linkedin.com/in/real-sagirahmed)
+- **GitHub Profile**: [@real-sagirahmed](https://github.com/real-sagirahmed)
+- **Professional Email**: [real.sagirahmed@gmail.com](mailto:real.sagirahmed@gmail.com)
 
 ---
 
-## 📄 License
+## License
 This project is open-source and licensed under the [MIT License](LICENSE).
-Feel free to star ⭐ the repository and fork for personal use or learning.
+Feel free to star the repository and fork for personal use or learning.

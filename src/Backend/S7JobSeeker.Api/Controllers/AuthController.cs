@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using S7JobSeeker.Api.DTOs;
 using S7JobSeeker.Core.Entities;
@@ -36,6 +37,7 @@ public class AuthController : ControllerBase
         return string.Equals(cleanEmail, masterEmail.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
+    [EnableRateLimiting("AuthPolicy")]
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequestDto dto)
     {
@@ -75,6 +77,7 @@ public class AuthController : ControllerBase
         return GenerateAuthResponse(user);
     }
 
+    [EnableRateLimiting("AuthPolicy")]
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequestDto dto)
     {

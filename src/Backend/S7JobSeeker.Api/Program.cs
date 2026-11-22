@@ -24,16 +24,40 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 
-// Defensive Rate Limiting (LLM Denial-of-Wallet & Upload DoS Protection)
+// Defensive Rate Limiting (LLM Denial-of-Wallet, Brute-Force & Flooding Protection)
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Upload & Resume Policy
     options.AddPolicy("UploadPolicy", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.User.Identity?.Name ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 15,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    // Authentication Brute-Force & Registration Flooding Defense
+    options.AddPolicy("AuthPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous_auth",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    // Public Sensitive Endpoints Defense (CBS Verification & Company Suggestions)
+    options.AddPolicy("PublicPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous_public",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 30,
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
@@ -135,7 +159,7 @@ var geminiChatModel = builder.Configuration["GeminiSettings:ModelId"] ?? "gemini
 var geminiEmbedModel = builder.Configuration["GeminiSettings:EmbeddingModelId"] ?? "text-embedding-004";
 
 builder.Services.AddGoogleAIGeminiChatCompletion(geminiChatModel, geminiApiKey);
-builder.Services.AddGoogleAIEmbeddingGeneration(geminiEmbedModel, geminiApiKey);
+builder.Services.AddGoogleAIEmbeddingGenerator(geminiEmbedModel, geminiApiKey);
 
 builder.Services.AddScoped<ISkillExtractorService, SkillExtractorService>();
 builder.Services.AddScoped<IJobMatcherService, JobMatcherService>();
@@ -249,12 +273,18 @@ using (var scope = app.Services.CreateScope())
         {
             try
             {
-                var rowsUpdated = dbContext.Database.ExecuteSqlRaw(
-                    "UPDATE JobPostings SET Url = REPLACE(REPLACE(Url, 'https://jobs.bdjobs.com/jobdetails.asp?id=', 'https://bdjobs.com/h/details/'), 'https://bdjobs.com/h/jobdetails/', 'https://bdjobs.com/h/details/') WHERE Source = 7 AND Url NOT LIKE '%/h/details/%';"
-                );
-                if (rowsUpdated > 0)
+                // P3-2 ARCHITECTURAL INTENT: Fast existence guard avoids acquiring write locks or firing raw SQL updates
+                // when all BDJobs URLs are already healed (the steady-state condition for 99.9% of application startups).
+                var hasUnhealedUrls = dbContext.JobPostings.Any(j => j.Source == S7JobSeeker.Core.Enums.JobSource.Bdjobs && j.Url != null && !j.Url.Contains("/h/details/"));
+                if (hasUnhealedUrls)
                 {
-                    logger.LogInformation("Auto-healed {Count} BDJobs URLs to modern SPA details route.", rowsUpdated);
+                    var rowsUpdated = dbContext.Database.ExecuteSqlRaw(
+                        "UPDATE JobPostings SET Url = REPLACE(REPLACE(Url, 'https://jobs.bdjobs.com/jobdetails.asp?id=', 'https://bdjobs.com/h/details/'), 'https://bdjobs.com/h/jobdetails/', 'https://bdjobs.com/h/details/') WHERE Source = 7 AND Url NOT LIKE '%/h/details/%';"
+                    );
+                    if (rowsUpdated > 0)
+                    {
+                        logger.LogInformation("Auto-healed {Count} BDJobs URLs to modern SPA details route.", rowsUpdated);
+                    }
                 }
             }
             catch (Exception ex)

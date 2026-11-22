@@ -14,7 +14,8 @@ import {
   Copy,
   Check,
   Building2,
-  ExternalLink
+  ExternalLink,
+  Zap
 } from 'lucide-react';
 import { api } from '../services/api';
 import type {
@@ -558,8 +559,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="font-black text-[#007070] bg-[#E6F4F4] px-2.5 py-1 rounded-lg">
-                          ⚡ {u.aiCredits}
+                        <span className="font-black text-[#007070] bg-[#E6F4F4] px-2.5 py-1 rounded-lg inline-flex items-center gap-1">
+                          <Zap className="w-3.5 h-3.5 text-[#007070]" />
+                          {u.aiCredits}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-slate-500">

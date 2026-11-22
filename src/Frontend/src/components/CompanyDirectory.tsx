@@ -517,7 +517,8 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
           {/* Active Quick Filters */}
           {selectedClusterKey === 'dotnet' && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300 shadow-2xs">
-              <span>🟣 .NET & C# Companies</span>
+              <span className="w-2 h-2 rounded-full bg-purple-600 inline-block shrink-0" />
+              <span>.NET & C# Companies</span>
               <button
                 type="button"
                 onClick={() => {
@@ -567,8 +568,9 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
           )}
         </span>
         {isBestFitMode && (
-          <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-            ✓ Ranked by your resume tech overlap
+          <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-flex items-center gap-1">
+            <Check className="w-3.5 h-3.5 inline text-emerald-700 shrink-0" />
+            <span>Ranked by your resume tech overlap</span>
           </span>
         )}
       </div>

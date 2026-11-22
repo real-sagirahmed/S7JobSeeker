@@ -1,10 +1,10 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Embeddings;
 using S7JobSeeker.AI.Security;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
@@ -16,19 +16,19 @@ namespace S7JobSeeker.AI.Services;
 public class JobMatcherService : IJobMatcherService
 {
     private readonly IChatCompletionService _chatCompletionService;
-    private readonly ITextEmbeddingGenerationService _embeddingService;
+    private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly ILogger<JobMatcherService> _logger;
     private readonly string _apiKey;
     private bool _isEmbeddingAvailable = true;
 
     public JobMatcherService(
         IChatCompletionService chatCompletionService,
-        ITextEmbeddingGenerationService embeddingService,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IConfiguration configuration,
         ILogger<JobMatcherService> logger)
     {
         _chatCompletionService = chatCompletionService;
-        _embeddingService = embeddingService;
+        _embeddingGenerator = embeddingGenerator;
         _logger = logger;
         _apiKey = configuration["GeminiSettings:ApiKey"] ?? string.Empty;
     }
@@ -47,8 +47,9 @@ public class JobMatcherService : IJobMatcherService
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(3));
 
-            var embeddings = await _embeddingService.GenerateEmbeddingsAsync([truncated], cancellationToken: cts.Token);
-            return embeddings.FirstOrDefault();
+            var generatedEmbeddings = await _embeddingGenerator.GenerateAsync([truncated], cancellationToken: cts.Token);
+            var first = generatedEmbeddings.FirstOrDefault();
+            return first != null ? first.Vector : new float[768];
         }
         catch (Exception ex)
         {

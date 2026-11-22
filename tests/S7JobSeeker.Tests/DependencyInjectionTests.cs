@@ -62,7 +62,7 @@ public class DependencyInjectionTests
         services.AddScoped<IResumeParserService, ResumeParserService>();
 
         services.AddGoogleAIGeminiChatCompletion("gemini-2.0-flash", "DEMO_KEY");
-        services.AddGoogleAIEmbeddingGeneration("text-embedding-004", "DEMO_KEY");
+        services.AddGoogleAIEmbeddingGenerator("text-embedding-004", "DEMO_KEY");
 
         services.AddScoped<ISkillExtractorService, SkillExtractorService>();
         services.AddScoped<IJobMatcherService, JobMatcherService>();

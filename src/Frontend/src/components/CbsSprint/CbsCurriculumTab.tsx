@@ -167,7 +167,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
             {isCompleted ? (
               <>
                 <CheckCircle2 className="w-4 h-4" />
-                <span>সম্পন্ন হয়েছে ✓</span>
+                <span>সম্পন্ন হয়েছে</span>
               </>
             ) : (
               <>

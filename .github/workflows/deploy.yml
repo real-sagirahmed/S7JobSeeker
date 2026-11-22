@@ -55,6 +55,9 @@ jobs:
         server-dir: wwwroot/
         protocol: ftps
 
+    - name: Wait for IIS worker process to unload DLL locks (P3-4 Fail-Safe)
+      run: sleep 5
+
     - name: Deploy Published Files to MonsterASP wwwroot via FTPS
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:

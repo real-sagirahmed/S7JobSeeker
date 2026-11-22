@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Interfaces;
 
@@ -119,6 +120,7 @@ public class CbsSprintController : ControllerBase
     /// <summary>
     /// Public credential verification endpoint for employers and recruiters.
     /// </summary>
+    [EnableRateLimiting("PublicPolicy")]
     [HttpGet("verify/{certificateId}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(CbsCertificateVerificationDto), StatusCodes.Status200OK)]
@@ -143,6 +145,7 @@ public class CbsSprintController : ControllerBase
     /// Single-endpoint export of the complete 14-day master curriculum dossier in Markdown format.
     /// Eliminates 14 sequential HTTP client requests with a single in-memory compilation (<50ms).
     /// </summary>
+    [EnableRateLimiting("PublicPolicy")]
     [HttpGet("export-all")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(CbsFullExportDto), StatusCodes.Status200OK)]

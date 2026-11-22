@@ -10,7 +10,8 @@ import {
   CreditCard,
   History,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { CreditBundle, SaaSPlatformSettings, SubscriptionStatus } from '../types';
@@ -342,7 +343,8 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
               </div>
 
               <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
-                👉 Send exact <strong>৳ {selectedBundle?.priceBdt}</strong> as <em>Send Money</em> to the number above.
+                <ArrowRight className="w-3.5 h-3.5 inline mr-1 text-[#007070]" />
+                Send exact <strong>৳ {selectedBundle?.priceBdt}</strong> as <em>Send Money</em> to the number above.
                 After successful transfer, enter your sender number and TrxID below.
               </p>
             </div>

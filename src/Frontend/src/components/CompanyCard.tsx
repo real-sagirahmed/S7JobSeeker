@@ -1,6 +1,6 @@
 import React from 'react';
 import type { BdCompany } from '../types';
-import { ExternalLink, Sparkles, ShieldCheck, MapPin, Briefcase, Globe, Users } from 'lucide-react';
+import { ExternalLink, Sparkles, ShieldCheck, MapPin, Briefcase, Globe, Users, Layers, Check } from 'lucide-react';
 
 interface CompanyCardProps {
   company: BdCompany;
@@ -83,8 +83,9 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
 
         {/* Global Products / Solutions */}
         {company.globalProducts && (
-          <div className="text-xs font-semibold text-[#007070] mb-2 line-clamp-1">
-            🚀 {company.globalProducts}
+          <div className="text-xs font-semibold text-[#007070] mb-2 line-clamp-1 flex items-center">
+            <Layers className="w-3.5 h-3.5 inline mr-1 text-[#007070] shrink-0" />
+            <span>{company.globalProducts}</span>
           </div>
         )}
 
@@ -110,7 +111,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
                   type="button"
                   onClick={() => onSelectTech?.(tech)}
                   title={`Click to filter companies using ${tech}`}
-                  className={`text-[11px] font-medium px-2 py-0.5 rounded-md border transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+                  className={`text-[11px] font-medium px-2 py-0.5 rounded-md border transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center ${
                     isMatch
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold hover:bg-emerald-100'
                       : isDotNetTech
@@ -118,8 +119,8 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
                       : 'bg-[#F8FAFC] text-[#444444] border-black/5 hover:border-[#007070] hover:text-[#007070]'
                   }`}
                 >
-                  {isMatch && '✓ '}
-                  {tech}
+                  {isMatch && <Check className="w-3 h-3 inline mr-1 text-emerald-700 shrink-0" />}
+                  <span>{tech}</span>
                 </button>
               );
             })}

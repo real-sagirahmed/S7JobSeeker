@@ -492,14 +492,14 @@ public class JobPreparationService : IJobPreparationService
         sb.AppendLine();
         foreach (var topic in dto.DomainFundamentals.CoreTopics)
         {
-            sb.AppendLine($"### 🔹 {topic.Title}");
+            sb.AppendLine($"### {topic.Title}");
             sb.AppendLine(topic.Description);
             sb.AppendLine($"*Why It Matters in this Role:* {topic.WhyItMattersInRole}\n");
         }
 
         if (dto.DomainFundamentals.CandidateGapHighlights?.Any() == true)
         {
-            sb.AppendLine("#### ⚠️ Candidate Skill Gap Priorities:");
+            sb.AppendLine("#### Candidate Skill Gap Priorities:");
             foreach (var gap in dto.DomainFundamentals.CandidateGapHighlights)
             {
                 sb.AppendLine($"- {gap}");
@@ -510,7 +510,7 @@ public class JobPreparationService : IJobPreparationService
         sb.AppendLine("---");
         sb.AppendLine("## 2. Technical Diagnostic Labs & Command Recipes");
         
-        sb.AppendLine("### 📊 SQL Diagnostics & Integrity Queries");
+        sb.AppendLine("### SQL Diagnostics & Integrity Queries");
         foreach (var sql in dto.DiagnosticLabs.SqlQueries)
         {
             sb.AppendLine($"**Scenario: {sql.Scenario}**");
@@ -521,7 +521,7 @@ public class JobPreparationService : IJobPreparationService
             sb.AppendLine($"*Actionable Output:* {sql.ExpectedOutputOrAction}\n");
         }
 
-        sb.AppendLine("### 🐧 Linux Operational & Log Triage Commands");
+        sb.AppendLine("### Linux Operational & Log Triage Commands");
         foreach (var lnx in dto.DiagnosticLabs.LinuxCommands)
         {
             sb.AppendLine($"**Scenario: {lnx.Scenario}**");
@@ -532,7 +532,7 @@ public class JobPreparationService : IJobPreparationService
             sb.AppendLine($"*Actionable Output:* {lnx.ExpectedOutputOrAction}\n");
         }
 
-        sb.AppendLine("### 🐳 Docker & Container Diagnostics");
+        sb.AppendLine("### Docker & Container Diagnostics");
         foreach (var dck in dto.DiagnosticLabs.DockerOps)
         {
             sb.AppendLine($"**Scenario: {dck.Scenario}**");
@@ -546,7 +546,7 @@ public class JobPreparationService : IJobPreparationService
         sb.AppendLine("---");
         sb.AppendLine("## 3. Mock Assessment & Production Scenarios");
         
-        sb.AppendLine("### 🎙️ Technical Interview Questions");
+        sb.AppendLine("### Technical Interview Questions");
         foreach (var q in dto.MockAssessment.TechnicalQuestions)
         {
             sb.AppendLine($"**Q: {q.Question}**");
@@ -554,7 +554,7 @@ public class JobPreparationService : IJobPreparationService
             sb.AppendLine($"*Avoid:* {q.CommonPitfallsToAvoid}\n");
         }
 
-        sb.AppendLine("### 🚨 Production Incident Scenarios");
+        sb.AppendLine("### Production Incident Scenarios");
         foreach (var s in dto.MockAssessment.ScenarioTroubleshooting)
         {
             sb.AppendLine($"**Incident: {s.Question}**");
@@ -564,17 +564,17 @@ public class JobPreparationService : IJobPreparationService
 
         sb.AppendLine("---");
         sb.AppendLine("## 4. Final Readiness & Revision Checklist");
-        sb.AppendLine("### 📋 Pre-Test Actions");
+        sb.AppendLine("### Pre-Test Actions");
         foreach (var a in dto.ReadinessChecklist.PreTestActions)
         {
             sb.AppendLine($"- [ ] {a}");
         }
-        sb.AppendLine("\n### 🛠️ Practical Drills");
+        sb.AppendLine("\n### Practical Drills");
         foreach (var d in dto.ReadinessChecklist.PracticalDrills)
         {
             sb.AppendLine($"- [ ] {d}");
         }
-        sb.AppendLine("\n### 🎯 Resume Keywords to Highlight");
+        sb.AppendLine("\n### Resume Keywords to Highlight");
         foreach (var k in dto.ReadinessChecklist.ResumeKeywordsToHighlight)
         {
             sb.AppendLine($"- **{k}**");

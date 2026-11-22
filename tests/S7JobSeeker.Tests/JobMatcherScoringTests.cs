@@ -1,8 +1,8 @@
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Embeddings;
 using S7JobSeeker.AI.Services;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
@@ -51,14 +51,25 @@ public class ThrowingChatCompletionService : IChatCompletionService
     }
 }
 
-public class DummyEmbeddingService : ITextEmbeddingGenerationService
+public class DummyEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
-    public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
-    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
-        IList<string> data,
-        Kernel? kernel = null,
+    public EmbeddingGeneratorMetadata Metadata => new("Dummy");
+
+    public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
+        IEnumerable<string> values,
+        EmbeddingGenerationOptions? options = null,
         CancellationToken cancellationToken = default)
-        => Task.FromResult<IList<ReadOnlyMemory<float>>>([new float[768]]);
+    {
+        var list = values.Select(_ => new Embedding<float>(new float[768])).ToList();
+        return Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(list));
+    }
+
+    public object? GetService(Type serviceType, object? serviceKey = null) => null;
+    public void Dispose() { }
+}
+
+public class DummyEmbeddingService : DummyEmbeddingGenerator
+{
 }
 
 public class JobMatcherScoringTests
@@ -76,7 +87,7 @@ public class JobMatcherScoringTests
 
         _matcherService = new JobMatcherService(
             new DummyChatCompletionService(),
-            new DummyEmbeddingService(),
+            new DummyEmbeddingGenerator(),
             config,
             NullLogger<JobMatcherService>.Instance
         );
