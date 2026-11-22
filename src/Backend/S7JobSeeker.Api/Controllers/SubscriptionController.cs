@@ -7,6 +7,7 @@ using S7JobSeeker.Api.DTOs;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace S7JobSeeker.Api.Controllers;
 
@@ -113,6 +114,7 @@ public class SubscriptionController : ControllerBase
     }
 
     [Authorize]
+    [EnableRateLimiting("PublicPolicy")]
     [HttpPost("submit-payment")]
     public async Task<IActionResult> SubmitPayment(
         [FromBody] SubmitPaymentRequestDto dto,
@@ -130,8 +132,14 @@ public class SubscriptionController : ControllerBase
             return BadRequest(new { message = "Invalid credit bundle selected." });
         }
 
-        var cleanTrxId = dto.TransactionId.Trim().ToUpperInvariant();
-        var cleanSender = dto.SenderNumber.Trim();
+        var cleanTrxId = dto.TransactionId?.Trim().ToUpperInvariant() ?? string.Empty;
+        var cleanSender = dto.SenderNumber?.Trim() ?? string.Empty;
+
+        // ARCHITECTURAL INTENT: Transaction ID length & format guard to prevent buffer/spam abuse
+        if (cleanTrxId.Length < 8 || cleanTrxId.Length > 30)
+        {
+            return BadRequest(new { message = "Transaction ID must be between 8 and 30 alphanumeric characters." });
+        }
 
         // ARCHITECTURAL INTENT (LOCK 4): Fail-safe duplicate TrxID guard
         var exists = await _dbContext.CreditTransactions

@@ -10,7 +10,7 @@
 [![Semantic Kernel](https://img.shields.io/badge/Semantic%20Kernel-Microsoft%20AI-0078D4?style=for-the-badge&logo=microsoft&logoColor=white)](https://github.com/microsoft/semantic-kernel)
 [![Qdrant](https://img.shields.io/badge/Qdrant-Vector%20Search-DC382D?style=for-the-badge&logo=qdrant&logoColor=white)](https://qdrant.tech/)
 [![Google Gemini](https://img.shields.io/badge/Gemini%202.0%20Flash-Google%20AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
-[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-77%20Passing-success?style=for-the-badge&logo=checkmarx&logoColor=white)]()
+[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-122%20Passing-success?style=for-the-badge&logo=checkmarx&logoColor=white)]()
 [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ---
@@ -111,7 +111,7 @@ flowchart TD
 - **Stage 4 (Readiness Dossier)**: অফলাইন স্টাডির জন্য সম্পূর্ণ গাইডটি এক ক্লিকে ফরম্যাটেড `.md` ডসিয়ার হিসেবে ডাউনলোড সুবিধা।
 
 ### ৫. SaaS Monetization & Director Admin Console
-- **Credit Engine**: সাইন-আপের সাথে ৩০ দিনের ফ্রি ট্রায়াল ও ৫০টি এআই ক্রেডিট।
+- **Credit Engine**: সাইন-আপের সাথে ৩০ দিনের ফ্রি ট্রায়াল ও ২০টি এআই ক্রেডিট।
 - **Bangladeshi Payment Gateways**: বিকাশ (bKash), নগদ (Nagad), এবং রকেট (Rocket) ম্যানুয়াল ট্রানজ্যাকশন আইডি ও স্ক্রিনশট ভেরিফিকেশন।
 - **Director Console**: অ্যাডমিন ডিরেক্টর (`formal.teams7@gmail.com`) যেকোনো ইউজারের ক্রেডিট ব্যালেন্স সরাসরি টপ-আপ, সাবস্ক্রিপশন মেয়াদ বৃদ্ধি ও ভেরিফাই করতে পারেন।
 

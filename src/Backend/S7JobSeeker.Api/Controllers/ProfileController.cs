@@ -21,6 +21,11 @@ public class ProfileController : ControllerBase
     private readonly ISkillExtractorService _skillExtractor;
     private readonly ILogger<ProfileController> _logger;
 
+    private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".pdf", ".docx", ".txt", ".md"
+    };
+
     public ProfileController(
         IApplicationDbContext dbContext,
         IResumeParserService resumeParser,
@@ -54,6 +59,23 @@ public class ProfileController : ControllerBase
                 return BadRequest(new { message = "Resume file exceeds 10MB limit." });
             }
 
+            var extension = Path.GetExtension(file.FileName);
+            if (string.IsNullOrWhiteSpace(extension) || !AllowedExtensions.Contains(extension))
+            {
+                return BadRequest(new { message = "Unsupported file type. Please upload a PDF, DOCX, TXT, or MD resume." });
+            }
+
+            if (extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                using var checkStream = file.OpenReadStream();
+                var header = new byte[4];
+                var bytesRead = await checkStream.ReadAsync(header.AsMemory(0, 4), cancellationToken);
+                if (bytesRead < 4 || header[0] != 0x25 || header[1] != 0x50 || header[2] != 0x44 || header[3] != 0x46)
+                {
+                    return BadRequest(new { message = "Invalid PDF file structure or corrupted document." });
+                }
+            }
+
             _logger.LogInformation("Processing resume upload for user: {UserId}, file: {FileName}", userId, file.FileName);
 
             string rawText;
@@ -65,6 +87,12 @@ public class ProfileController : ControllerBase
             if (string.IsNullOrWhiteSpace(rawText))
             {
                 return BadRequest(new { message = "Failed to extract text from the document. Ensure it is not an encrypted or scanned image PDF." });
+            }
+
+            // ARCHITECTURAL INTENT: Token bombing / Denial-of-Wallet guard. Clamping raw text to 50,000 characters prevents LLM context explosion.
+            if (rawText.Length > 50000)
+            {
+                rawText = rawText[..50000];
             }
 
             var parsedProfile = await _skillExtractor.ExtractStructuredProfileAsync(rawText, cancellationToken);
