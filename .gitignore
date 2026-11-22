@@ -38,6 +38,8 @@ id_ed25519*
 **/obj/
 publish/
 **/publish/
+__pycache__/
+*.pyc
 dist/
 **/dist/
 **/wwwroot/
