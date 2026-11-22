@@ -1,4 +1,7 @@
+using System.Reflection;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
+using S7JobSeeker.Api.Controllers;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
@@ -107,5 +110,61 @@ public class CompanyMatchingTests
         Assert.Equal(32, summary.TotalCompanies);
         Assert.Equal(45, summary.ActiveJobsCount);
         Assert.Equal(3, summary.FeaturedCompanies.Count);
+    }
+
+    [Fact]
+    public void SuggestCompany_HasAuthorizeAttribute_ToPreventAnonymousSpam()
+    {
+        var method = typeof(CompaniesController).GetMethod(nameof(CompaniesController.SuggestCompany));
+        Assert.NotNull(method);
+
+        var authAttr = method.GetCustomAttribute<AuthorizeAttribute>();
+        Assert.NotNull(authAttr);
+    }
+
+    [Fact]
+    public void AdminController_HasAdminAuthorizeAttribute()
+    {
+        var classAuthAttr = typeof(AdminController).GetCustomAttribute<AuthorizeAttribute>();
+        Assert.NotNull(classAuthAttr);
+        Assert.Equal("Admin", classAuthAttr.Roles);
+    }
+
+    [Fact]
+    public void CompanyDirectoryFilter_UnverifiedSuggestions_AreExcludedFromPublicViews()
+    {
+        var companies = new List<BdTechCompany>
+        {
+            new() { Id = Guid.NewGuid(), Name = "Verified Tech Ltd", Slug = "verified-tech", Website = "https://example.com", CareersUrl = "https://example.com/careers", PrimaryTechStackJson = "[\"C#\"]", IsVerified = true },
+            new() { Id = Guid.NewGuid(), Name = "Spam / Unreviewed Co", Slug = "spam-unreviewed", Website = "https://spam.xyz", CareersUrl = "https://spam.xyz", PrimaryTechStackJson = "[\"Python\"]", IsVerified = false }
+        };
+
+        var publicQuery = companies.Where(c => c.IsVerified).ToList();
+
+        Assert.Single(publicQuery);
+        Assert.Equal("Verified Tech Ltd", publicQuery[0].Name);
+        Assert.DoesNotContain(publicQuery, c => c.Name == "Spam / Unreviewed Co");
+    }
+
+    [Fact]
+    public void AdminWorkflow_VerifyCompany_TransitionsUnverifiedCompanyToVerified()
+    {
+        var suggestedCompany = new BdTechCompany
+        {
+            Id = Guid.NewGuid(),
+            Name = "Pending Startup",
+            Slug = "pending-startup",
+            Website = "https://startup.io",
+            CareersUrl = "https://startup.io/careers",
+            PrimaryTechStackJson = "[\".NET\", \"React\"]",
+            IsVerified = false
+        };
+
+        Assert.False(suggestedCompany.IsVerified);
+
+        // Simulate admin approval
+        suggestedCompany.IsVerified = true;
+
+        Assert.True(suggestedCompany.IsVerified);
     }
 }

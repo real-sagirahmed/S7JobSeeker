@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -65,19 +67,21 @@ public class JobsController : ControllerBase
         return !NonTechExclusions.Any(ex => title.Contains(ex, StringComparison.OrdinalIgnoreCase));
     }
 
-    // ARCHITECTURAL INTENT: Multi-transport authentication for automated background cron jobs.
-    // Supports RFC Bearer token, legacy X-Cron-Key, and fail-safe query parameter ?cronKey=
-    // to guarantee execution across Cloudflare, IIS ARR, and shared host proxies.
+    // ARCHITECTURAL INTENT (LOCK: Constant-Time Token Comparison & Zero-Backdoor Defense):
+    // CryptographicOperations.FixedTimeEquals prevents side-channel timing attacks.
+    // Hardcoded secret bypasses are strictly prohibited in production.
     public static bool IsValidCronKey(string? providedKey, string? expectedKey)
     {
-        var cleanProvided = providedKey?.Trim().Trim('"', '\'', ' ') ?? string.Empty;
-        var cleanExpected = expectedKey?.Trim().Trim('"', '\'', ' ') ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(providedKey) || string.IsNullOrWhiteSpace(expectedKey))
+            return false;
 
-        if (string.IsNullOrEmpty(cleanProvided)) return false;
+        var cleanProvided = providedKey.Trim().Trim('"', '\'', ' ');
+        var cleanExpected = expectedKey.Trim().Trim('"', '\'', ' ');
 
-        return string.Equals(cleanProvided, cleanExpected, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(cleanProvided, "s7-cron-secret-key-change-in-production-2026", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(cleanProvided, "default-cron-secret", StringComparison.OrdinalIgnoreCase);
+        var providedBytes = Encoding.UTF8.GetBytes(cleanProvided);
+        var expectedBytes = Encoding.UTF8.GetBytes(cleanExpected);
+
+        return CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes);
     }
 
     [HttpPost("sync")]
@@ -88,7 +92,7 @@ public class JobsController : ControllerBase
             ?? _configuration["CronSettings__SecretKey"]
             ?? _configuration["APP_CRON_KEY"]
             ?? _configuration["CRON_KEY"]
-            ?? "s7-cron-secret-key-change-in-production-2026";
+            ?? (isDev ? "dev-cron-secret" : null);
 
         // In production, allow either valid CronKey OR authenticated user
         if (!isDev)
@@ -112,14 +116,14 @@ public class JobsController : ControllerBase
                 providedKey = cronKey.Trim();
             }
 
-            var hasValidCron = IsValidCronKey(providedKey, expectedKey);
+            var hasValidCron = !string.IsNullOrWhiteSpace(expectedKey) && IsValidCronKey(providedKey, expectedKey);
             var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 
             if (!hasValidCron && !isAuthenticated)
             {
                 _logger.LogWarning("Unauthorized job sync trigger attempt from IP {Ip}. KeyProvided: {HasKey}",
                     HttpContext.Connection.RemoteIpAddress, !string.IsNullOrWhiteSpace(providedKey));
-                return Unauthorized(new { message = "Invalid or missing X-Cron-Key header or authentication token." });
+                return Unauthorized(new { message = "Invalid or missing cron secret key or authentication token." });
             }
         }
 

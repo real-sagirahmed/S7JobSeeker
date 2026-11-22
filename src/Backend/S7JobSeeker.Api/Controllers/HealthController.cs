@@ -10,15 +10,18 @@ public class HealthController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
     private readonly ILogger<HealthController> _logger;
 
     public HealthController(
         ApplicationDbContext dbContext,
         IConfiguration configuration,
+        IWebHostEnvironment environment,
         ILogger<HealthController> logger)
     {
         _dbContext = dbContext;
         _configuration = configuration;
+        _environment = environment;
         _logger = logger;
     }
 
@@ -70,19 +73,40 @@ public class HealthController : ControllerBase
     [HttpPost("migrate")]
     public async Task<IActionResult> ApplyMigrations(
         [FromHeader(Name = "X-Cron-Key")] string? cronKey,
+        [FromQuery] string? key,
         CancellationToken cancellationToken)
     {
-        var expectedKey = _configuration["CronSettings:SecretKey"] ?? "default-cron-secret";
-        var cleanProvided = cronKey?.Trim().Trim('"', '\'', ' ') ?? string.Empty;
-        var cleanExpected = expectedKey.Trim().Trim('"', '\'', ' ');
+        var isDev = _environment.IsDevelopment();
+        var expectedKey = _configuration["CronSettings:SecretKey"]
+            ?? _configuration["CronSettings__SecretKey"]
+            ?? _configuration["APP_CRON_KEY"]
+            ?? _configuration["CRON_KEY"]
+            ?? (isDev ? "dev-cron-secret" : null);
 
-        var isValid = string.Equals(cleanProvided, cleanExpected, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(cleanProvided, "s7-cron-secret-key-change-in-production-2026", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(cleanProvided, "default-cron-secret", StringComparison.OrdinalIgnoreCase);
-
-        if (!isValid)
+        if (string.IsNullOrWhiteSpace(expectedKey))
         {
-            return Unauthorized(new { error = "Invalid or missing X-Cron-Key header" });
+            _logger.LogError("Database migration endpoint called but CronSettings:SecretKey is not configured.");
+            return StatusCode(500, new { error = "Migration key is not configured on the server." });
+        }
+
+        var providedKey = cronKey;
+
+        // Support RFC standard Authorization: Bearer <key>
+        if (string.IsNullOrWhiteSpace(providedKey) &&
+            Request.Headers.TryGetValue("Authorization", out var authHeader) &&
+            authHeader.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            providedKey = authHeader.ToString()["Bearer ".Length..].Trim();
+        }
+        // Support query parameter fallback
+        else if (string.IsNullOrWhiteSpace(providedKey) && !string.IsNullOrWhiteSpace(key))
+        {
+            providedKey = key.Trim();
+        }
+
+        if (!JobsController.IsValidCronKey(providedKey, expectedKey))
+        {
+            return Unauthorized(new { error = "Invalid or missing migration secret key." });
         }
 
         try

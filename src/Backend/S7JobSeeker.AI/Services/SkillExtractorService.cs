@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using S7JobSeeker.AI.Security;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
@@ -39,14 +40,14 @@ public class SkillExtractorService : ISkillExtractorService
             return ExtractDeterministicProfile(resumeText);
         }
 
+        var wrappedResume = PromptSecuritySanitizer.WrapUntrusted("candidate_resume", resumeText, maxLength: 12000);
+
         var prompt = $$"""
         You are an elite Senior Technical Recruiter and Career Architect AI.
         Analyze the following candidate resume text and extract the candidate's structured profile, professional summary, skills, and work experience.
 
         RESUME TEXT:
-        \"\"\"
-        {{resumeText}}
-        \"\"\"
+        {{wrappedResume}}
 
         Skill Categories (use integer values):
         1 = Backend
@@ -89,7 +90,7 @@ public class SkillExtractorService : ISkillExtractorService
         """;
 
         var chatHistory = new ChatHistory();
-        chatHistory.AddSystemMessage("You extract structured JSON profiles from resumes. Output only valid JSON without explanation or formatting tags.");
+        chatHistory.AddSystemMessage($"You extract structured JSON profiles from resumes. Output only valid JSON without explanation or formatting tags.\n\n{PromptSecuritySanitizer.SystemDefenseClause}");
         chatHistory.AddUserMessage(prompt);
 
         try

@@ -12,14 +12,17 @@ import {
   Settings,
   CreditCard,
   Copy,
-  Check
+  Check,
+  Building2,
+  ExternalLink
 } from 'lucide-react';
 import { api } from '../services/api';
 import type {
   AdminMetrics,
   CreditTransaction,
   AdminUserItem,
-  SaaSPlatformSettings
+  SaaSPlatformSettings,
+  BdCompany
 } from '../types';
 
 interface AdminDashboardProps {
@@ -27,10 +30,12 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
-  const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'settings' | 'sync'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'companies' | 'settings' | 'sync'>('pending');
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [pendingPayments, setPendingPayments] = useState<CreditTransaction[]>([]);
   const [users, setUsers] = useState<AdminUserItem[]>([]);
+  const [pendingCompanies, setPendingCompanies] = useState<BdCompany[]>([]);
+  const [isVerifyingCompanyId, setIsVerifyingCompanyId] = useState<string | null>(null);
   const [userSearch, setUserSearch] = useState('');
   const [settings, setSettings] = useState<SaaSPlatformSettings | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,16 +67,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
   const loadAllAdminData = async () => {
     setIsLoading(true);
     try {
-      const [m, p, u, s] = await Promise.all([
+      const [m, p, u, s, c] = await Promise.all([
         api.admin.getMetrics().catch(() => null),
         api.admin.getPendingPayments().catch(() => []),
         api.admin.getUsers().catch(() => []),
-        api.admin.getSettings().catch(() => null)
+        api.admin.getSettings().catch(() => null),
+        api.admin.getPendingCompanies().catch(() => [])
       ]);
 
       if (m) setMetrics(m);
       setPendingPayments(p);
       setUsers(u);
+      setPendingCompanies(c);
       if (s) {
         setSettings(s);
         setBkashNumber(s.bkashNumber);
@@ -191,6 +198,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
       onNotify(err instanceof Error ? err.message : 'Sync failed', 'error');
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleVerifyCompany = async (id: string, name: string) => {
+    setIsVerifyingCompanyId(id);
+    try {
+      await api.admin.verifyCompany(id);
+      onNotify(`Company "${name}" approved and published to Directory!`, 'success');
+      setPendingCompanies((prev) => prev.filter((item) => item.id !== id));
+      const m = await api.admin.getMetrics();
+      if (m) setMetrics(m);
+    } catch (err: unknown) {
+      onNotify(err instanceof Error ? err.message : 'Failed to approve company', 'error');
+    } finally {
+      setIsVerifyingCompanyId(null);
+    }
+  };
+
+  const handleRejectCompany = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to reject and delete suggestion for "${name}"?`)) {
+      return;
+    }
+    setIsVerifyingCompanyId(id);
+    try {
+      await api.admin.rejectCompany(id);
+      onNotify(`Company "${name}" rejected and removed.`, 'info');
+      setPendingCompanies((prev) => prev.filter((item) => item.id !== id));
+    } catch (err: unknown) {
+      onNotify(err instanceof Error ? err.message : 'Failed to reject company', 'error');
+    } finally {
+      setIsVerifyingCompanyId(null);
     }
   };
 
@@ -330,6 +368,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
         >
           <Users className="w-4 h-4" />
           <span>Candidates Directory ({users.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('companies')}
+          className={`pb-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+            activeTab === 'companies'
+              ? 'border-[#007070] text-[#007070]'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>Pending Companies ({pendingCompanies.length})</span>
+          {pendingCompanies.length > 0 && (
+            <span className="px-1.5 py-0.5 text-[10px] bg-teal-600 text-white rounded-full font-black">
+              {pendingCompanies.length}
+            </span>
+          )}
         </button>
 
         <button
@@ -525,6 +580,115 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Tab: Pending Company Submissions */}
+      {activeTab === 'companies' && (
+        <div className="space-y-4">
+          {pendingCompanies.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center border border-slate-200">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+              <h3 className="text-base font-bold text-slate-800">No Pending Company Suggestions</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                All user-submitted companies have been reviewed and verified.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+              <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-[#007070]" />
+                  <span>Candidate-Suggested Companies Requiring Verification ({pendingCompanies.length})</span>
+                </h3>
+                <span className="text-xs text-slate-500">Unverified companies remain hidden from public search until approved.</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-slate-100/60 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold">
+                      <th className="py-3 px-4">Company</th>
+                      <th className="py-3 px-4">Website & Links</th>
+                      <th className="py-3 px-4">Tech Stack</th>
+                      <th className="py-3 px-4">Location</th>
+                      <th className="py-3 px-4 text-right">Review Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {pendingCompanies.map((c) => (
+                      <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="font-bold text-slate-900 text-sm">{c.name}</div>
+                          <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">{c.description || 'No description provided.'}</div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex flex-col gap-1">
+                            <a
+                              href={c.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#007070] hover:underline flex items-center gap-1 font-semibold"
+                            >
+                              <span>Website</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                            {c.careersUrl && (
+                              <a
+                                href={c.careersUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-500 hover:text-slate-700 flex items-center gap-1"
+                              >
+                                <span>Careers</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex flex-wrap gap-1 max-w-xs">
+                            {(c.primaryTechStack || []).slice(0, 4).map((tech, i) => (
+                              <span key={i} className="px-2 py-0.5 rounded-md bg-teal-50 border border-teal-200/60 text-[#007070] text-[10px] font-semibold">
+                                {tech}
+                              </span>
+                            ))}
+                            {(c.primaryTechStack || []).length > 4 && (
+                              <span className="text-[10px] text-slate-400 font-semibold">
+                                +{c.primaryTechStack.length - 4} more
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 font-medium">
+                          {c.headquarters || 'Dhaka, Bangladesh'}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleVerifyCompany(c.id, c.name)}
+                              disabled={isVerifyingCompanyId === c.id}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-50"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Approve</span>
+                            </button>
+                            <button
+                              onClick={() => handleRejectCompany(c.id, c.name)}
+                              disabled={isVerifyingCompanyId === c.id}
+                              className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs flex items-center gap-1.5 transition-all disabled:opacity-50"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              <span>Reject</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

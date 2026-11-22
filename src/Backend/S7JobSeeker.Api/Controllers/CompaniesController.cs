@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using S7JobSeeker.AI.Security;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
@@ -45,7 +46,7 @@ public class CompaniesController : ControllerBase
         [FromQuery] int pageSize = 24,
         CancellationToken cancellationToken = default)
     {
-        var query = _dbContext.BdTechCompanies.AsNoTracking().AsQueryable();
+        var query = _dbContext.BdTechCompanies.AsNoTracking().Where(c => c.IsVerified).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -142,6 +143,7 @@ public class CompaniesController : ControllerBase
     {
         var companies = await _dbContext.BdTechCompanies
             .AsNoTracking()
+            .Where(c => c.IsVerified)
             .ToListAsync(cancellationToken);
 
         // Pre-fetch active jobs count by company name
@@ -240,6 +242,7 @@ public class CompaniesController : ControllerBase
 
         var companies = await _dbContext.BdTechCompanies
             .AsNoTracking()
+            .Where(c => c.IsVerified)
             .ToListAsync(cancellationToken);
 
         var companyNames = companies.Select(c => c.Name).ToList();
@@ -414,9 +417,15 @@ public class CompaniesController : ControllerBase
         }
 
         // Live LLM Pitch Generation
+        var safeCandidateName = PromptSecuritySanitizer.Sanitize(candidateName, 100);
+        var wrappedCandidateContext = PromptSecuritySanitizer.WrapUntrusted(
+            "candidate_profile",
+            $"Target Role: {parsedProfile?.TargetRole}\nExperience Years: {parsedProfile?.TotalYearsOfExperience}\nOverlapping Tech Skills: {string.Join(", ", matchingSkills)}\nProfessional Summary: {parsedProfile?.Summary}",
+            maxLength: 2000);
+
         var prompt = $$"""
         You are an elite Senior Tech Career Architect.
-        Write a high-converting, professional, human-sounding {{request.PitchType}} for candidate '{{candidateName}}' targeting '{{company.Name}}'.
+        Write a high-converting, professional, human-sounding {{request.PitchType}} for candidate '{{safeCandidateName}}' targeting '{{company.Name}}'.
 
         COMPANY CONTEXT:
         - Name: {{company.Name}}
@@ -426,10 +435,7 @@ public class CompaniesController : ControllerBase
         - Tech Stack: {{string.Join(", ", companyStack)}}
 
         CANDIDATE CONTEXT:
-        - Target Role: {{parsedProfile?.TargetRole}}
-        - Experience Years: {{parsedProfile?.TotalYearsOfExperience}}
-        - Overlapping Tech Skills: {{string.Join(", ", matchingSkills)}}
-        - Professional Summary: {{parsedProfile?.Summary}}
+        {{wrappedCandidateContext}}
 
         INSTRUCTIONS:
         - Keep the tone confident, humble, direct, and technically credible.
@@ -439,7 +445,7 @@ public class CompaniesController : ControllerBase
         """;
 
         var chat = new ChatHistory();
-        chat.AddSystemMessage("You write compelling, bespoke tech pitches and outreach letters for software professionals.");
+        chat.AddSystemMessage($"You write compelling, bespoke tech pitches and outreach letters for software professionals.\n\n{PromptSecuritySanitizer.SystemDefenseClause}");
         chat.AddUserMessage(prompt);
 
         try
@@ -472,6 +478,7 @@ public class CompaniesController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPost("suggest")]
     public async Task<IActionResult> SuggestCompany(
         [FromBody] SuggestCompanyRequestDto request,
@@ -493,6 +500,7 @@ public class CompaniesController : ControllerBase
             return BadRequest(new { message = $"Company '{trimmedName}' is already listed in the directory." });
         }
 
+        // ARCHITECTURAL INTENT: Default to unverified (IsVerified = false) pending Director admin approval
         var newCompany = new BdTechCompany
         {
             Name = trimmedName,
@@ -505,18 +513,18 @@ public class CompaniesController : ControllerBase
             PrimaryTechStackJson = JsonSerializer.Serialize(request.PrimaryTechStack ?? []),
             Headquarters = !string.IsNullOrWhiteSpace(request.Headquarters) ? request.Headquarters.Trim() : "Dhaka, Bangladesh",
             WorkModel = !string.IsNullOrWhiteSpace(request.WorkModel) ? request.WorkModel.Trim() : "Hybrid",
-            IsVerified = true,
+            IsVerified = false,
             CreatedAt = DateTime.UtcNow
         };
 
         _dbContext.BdTechCompanies.Add(newCompany);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("New company suggestion added to directory: {CompanyName} ({Website})", newCompany.Name, newCompany.Website);
+        _logger.LogInformation("New company suggestion submitted for review: {CompanyName} ({Website})", newCompany.Name, newCompany.Website);
 
         return Ok(new
         {
-            message = $"'{trimmedName}' has been successfully added to the BD Tech Directory!",
+            message = $"'{trimmedName}' has been submitted for review. It will appear in the directory after administrator verification.",
             companyId = newCompany.Id
         });
     }

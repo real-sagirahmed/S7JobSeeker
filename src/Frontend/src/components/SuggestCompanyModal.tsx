@@ -83,7 +83,7 @@ export const SuggestCompanyModal: React.FC<SuggestCompanyModalProps> = ({ isOpen
           </div>
           <div>
             <h2 className="text-lg font-bold text-slate-900 leading-tight">Suggest a Company</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Contribute to the Bangladesh Global Tech Ecosystem directory</p>
+            <p className="text-xs text-slate-500 mt-0.5">Contribute to the BD Tech Directory. Submissions are reviewed by admin before publishing.</p>
           </div>
         </div>
 

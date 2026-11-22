@@ -1,9 +1,11 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
+using S7JobSeeker.AI.Security;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
@@ -71,32 +73,68 @@ public class JobMatcherService : IJobMatcherService
         return Task.FromResult(result);
     }
 
-    // ARCHITECTURAL INTENT: Normalized Tech Skill Catalog for Deterministic Extraction
-    // Used for mathematical set-difference (A \ B) to identify true missing skills without LLM hallucinations.
-    private static readonly (string Name, string Pattern)[] KnownTechCatalog =
+    private static Regex CreateCompiledRegex(string pattern) =>
+        new(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+
+    // ARCHITECTURAL INTENT: Pre-Compiled Tech Skill Catalog for High-Throughput Deterministic Matching
+    // Storing pre-compiled Regex instances prevents runtime regex compilation latency and protects against ReDoS.
+    private static readonly (string Name, Regex Regex)[] KnownTechCatalog =
     [
-        ("C#", @"(?<=^|\W)c#(?=\W|$)|csharp\b"),
-        (".NET", @"(?<=^|\W)\.net(?=\W|$)|dotnet\b|asp\.net\b"),
-        ("SQL Server", @"\b(sql\s*server|mssql|t-sql)\b"),
-        ("PostgreSQL", @"\b(postgres|postgresql)\b"),
-        ("React", @"\b(react|reactjs)\b"),
-        ("Angular", @"\b(angular)\b"),
-        ("TypeScript", @"\b(typescript|ts)\b"),
-        ("JavaScript", @"\b(javascript|js|es6)\b"),
-        ("Node.js", @"\b(node|nodejs)\b"),
-        ("Docker", @"\b(docker|container)\b"),
-        ("Kubernetes", @"\b(kubernetes|k8s)\b"),
-        ("Azure", @"\b(azure)\b"),
-        ("AWS", @"\b(aws|amazon\s*web\s*services)\b"),
-        ("GCP", @"\b(gcp|google\s*cloud)\b"),
-        ("Git", @"\b(git|github|gitlab)\b"),
-        ("Python", @"\b(python)\b"),
-        ("Clean Architecture", @"\b(clean\s*architecture|solid|cqrs)\b"),
-        ("REST API", @"\b(rest|web\s*api|restful)\b"),
-        ("GraphQL", @"\b(graphql)\b"),
-        ("Redis", @"\b(redis)\b"),
-        ("MongoDB", @"\b(mongodb|mongo)\b"),
-        ("Tailwind CSS", @"\b(tailwind)\b")
+        // .NET Ecosystem & Languages
+        ("C#", CreateCompiledRegex(@"(?<=^|\W)c#(?=\W|$)|csharp\b")),
+        (".NET", CreateCompiledRegex(@"(?<=^|\W)\.net(?=\W|$)|dotnet\b|asp\.net\b")),
+        ("ASP.NET Core", CreateCompiledRegex(@"\b(asp\.net\s*core|aspnetcore)\b")),
+        ("EF Core", CreateCompiledRegex(@"\b(ef\s*core|entity\s*framework(\s*core)?)\b")),
+        ("Dapper", CreateCompiledRegex(@"\b(dapper)\b")),
+        ("Blazor", CreateCompiledRegex(@"\b(blazor)\b")),
+        ("MediatR", CreateCompiledRegex(@"\b(mediatr)\b")),
+        ("SignalR", CreateCompiledRegex(@"\b(signalr)\b")),
+        ("Python", CreateCompiledRegex(@"\b(python)\b")),
+        ("TypeScript", CreateCompiledRegex(@"\b(typescript|ts)\b")),
+        ("JavaScript", CreateCompiledRegex(@"\b(javascript|js|es6)\b")),
+        ("Node.js", CreateCompiledRegex(@"\b(node|nodejs)\b")),
+
+        // Databases & Caching
+        ("SQL Server", CreateCompiledRegex(@"\b(sql\s*server|mssql|t-sql)\b")),
+        ("PostgreSQL", CreateCompiledRegex(@"\b(postgres|postgresql)\b")),
+        ("MySQL", CreateCompiledRegex(@"\b(mysql)\b")),
+        ("Oracle", CreateCompiledRegex(@"\b(oracle|pl/sql)\b")),
+        ("Redis", CreateCompiledRegex(@"\b(redis)\b")),
+        ("MongoDB", CreateCompiledRegex(@"\b(mongodb|mongo)\b")),
+        ("Elasticsearch", CreateCompiledRegex(@"\b(elastic\s*search|elasticsearch)\b")),
+
+        // Frontend & UI
+        ("React", CreateCompiledRegex(@"\b(react|reactjs)\b")),
+        ("Next.js", CreateCompiledRegex(@"\b(next\.?js)\b")),
+        ("Angular", CreateCompiledRegex(@"\b(angular)\b")),
+        ("Vue.js", CreateCompiledRegex(@"\b(vue|vue\.?js)\b")),
+        ("Tailwind CSS", CreateCompiledRegex(@"\b(tailwind(\s*css)?)\b")),
+
+        // Backend Architecture, APIs & Messaging
+        ("Clean Architecture", CreateCompiledRegex(@"\b(clean\s*architecture|solid|cqrs)\b")),
+        ("REST API", CreateCompiledRegex(@"\b(rest|web\s*api|restful)\b")),
+        ("GraphQL", CreateCompiledRegex(@"\b(graphql)\b")),
+        ("gRPC", CreateCompiledRegex(@"\b(grpc)\b")),
+        ("RabbitMQ", CreateCompiledRegex(@"\b(rabbitmq|rabbit\s*mq)\b")),
+        ("Kafka", CreateCompiledRegex(@"\b(kafka|apache\s*kafka)\b")),
+        ("Microservices", CreateCompiledRegex(@"\b(microservices?)\b")),
+        ("Design Patterns", CreateCompiledRegex(@"\b(design\s*patterns?)\b")),
+        ("System Design", CreateCompiledRegex(@"\b(system\s*design|distributed\s*systems?)\b")),
+
+        // Cloud, Containers & DevOps
+        ("Docker", CreateCompiledRegex(@"\b(docker|containers?)\b")),
+        ("Kubernetes", CreateCompiledRegex(@"\b(kubernetes|k8s)\b")),
+        ("Azure", CreateCompiledRegex(@"\b(azure)\b")),
+        ("AWS", CreateCompiledRegex(@"\b(aws|amazon\s*web\s*services)\b")),
+        ("GCP", CreateCompiledRegex(@"\b(gcp|google\s*cloud)\b")),
+        ("Linux", CreateCompiledRegex(@"\b(linux|ubuntu|debian|centos|rhel)\b")),
+        ("Git", CreateCompiledRegex(@"\b(git|github|gitlab)\b")),
+        ("CI/CD", CreateCompiledRegex(@"\b(ci[\s/-]?cd|github\s*actions|gitlab\s*ci)\b")),
+        ("Terraform", CreateCompiledRegex(@"\b(terraform)\b")),
+
+        // Banking & CBS Domain
+        ("Core Banking (CBS)", CreateCompiledRegex(@"\b(cbs|core\s*banking|finacle|t24|flora\s*bank)\b")),
+        ("Fintech Clearing", CreateCompiledRegex(@"\b(npsb|beftn|rtgs|bach)\b"))
     ];
 
     private JobMatchResultDto EvaluateMatchDeterministic(
@@ -119,9 +157,14 @@ public class JobMatcherService : IJobMatcherService
         // 1. Detect required tech skills from job circular
         foreach (var tech in KnownTechCatalog)
         {
-            if (System.Text.RegularExpressions.Regex.IsMatch(jobText, tech.Pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            if (tech.Regex.IsMatch(jobText))
             {
-                if (candidateSkillsSet.Contains(tech.Name) || candidateSkillsSet.Any(c => c.Contains(tech.Name, StringComparison.OrdinalIgnoreCase)))
+                // Strict matching: candidate has the exact skill name OR candidate's skill token satisfies the pre-compiled regex.
+                // Prevents false positive substring matches (e.g., 'Digital Marketing' accidentally matching 'Git').
+                bool candidateHasSkill = candidateSkillsSet.Contains(tech.Name) ||
+                                         candidateSkillsSet.Any(c => tech.Regex.IsMatch(c));
+
+                if (candidateHasSkill)
                 {
                     if (!matched.Contains(tech.Name)) matched.Add(tech.Name);
                 }
@@ -135,10 +178,14 @@ public class JobMatcherService : IJobMatcherService
         // 2. Also check if candidate has any unique profile skills directly mentioned in the job description
         foreach (var skill in profile.Skills)
         {
-            if (!matched.Contains(skill.Name, StringComparer.OrdinalIgnoreCase) &&
-                jobText.Contains(skill.Name, StringComparison.OrdinalIgnoreCase))
+            if (!matched.Contains(skill.Name, StringComparer.OrdinalIgnoreCase))
             {
-                matched.Add(skill.Name);
+                // Word boundary check for custom candidate skills to prevent partial word hits
+                var escapedSkill = Regex.Escape(skill.Name);
+                if (Regex.IsMatch(jobText, $@"(?<=^|\W){escapedSkill}(?=\W|$)", RegexOptions.IgnoreCase))
+                {
+                    matched.Add(skill.Name);
+                }
             }
         }
 
@@ -214,24 +261,26 @@ public class JobMatcherService : IJobMatcherService
 
         var candidateSkills = string.Join(", ", profile.Skills.Select(s => s.Name));
 
+        var safeJobTitle = PromptSecuritySanitizer.Sanitize(job.Title, 150);
+        var safeCompany = PromptSecuritySanitizer.Sanitize(job.Company, 150);
+        var wrappedJobDesc = PromptSecuritySanitizer.WrapUntrusted("job_description", job.Description, maxLength: 3000);
+        var wrappedCandidate = PromptSecuritySanitizer.WrapUntrusted(
+            "candidate_profile",
+            $"Name: {profile.FullName}\nRole: {profile.TargetRole}\nExperience: {profile.TotalYearsOfExperience ?? 0} years\nTop Skills: {candidateSkills}\nSummary: {profile.Summary}",
+            maxLength: 2000);
+
         var prompt = $$"""
         You are a Senior Executive Career Coach and Technical Writing Consultant.
         Draft a high-impact, professional, and personalized Cover Letter and 3 targeted Resume Enhancement Tips for the candidate applying for this job.
 
         CANDIDATE:
-        - Name: {{profile.FullName}}
-        - Role: {{profile.TargetRole}}
-        - Experience: {{profile.TotalYearsOfExperience}} years
-        - Top Skills: {{candidateSkills}}
-        - Summary: {{profile.Summary}}
+        {{wrappedCandidate}}
 
         TARGET JOB:
-        - Title: {{job.Title}}
-        - Company: {{job.Company}}
+        - Title: {{safeJobTitle}}
+        - Company: {{safeCompany}}
         - Description:
-        \"\"\"
-        {{(job.Description.Length > 2000 ? job.Description[..2000] : job.Description)}}
-        \"\"\"
+        {{wrappedJobDesc}}
 
         Respond strictly in valid JSON matching this structure:
         {
@@ -243,7 +292,7 @@ public class JobMatcherService : IJobMatcherService
         """;
 
         var chatHistory = new ChatHistory();
-        chatHistory.AddSystemMessage("You draft high-converting job application materials. Return strictly raw JSON.");
+        chatHistory.AddSystemMessage($"You draft high-converting job application materials. Return strictly raw JSON.\n\n{PromptSecuritySanitizer.SystemDefenseClause}");
         chatHistory.AddUserMessage(prompt);
 
         try

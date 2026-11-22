@@ -78,7 +78,7 @@ public class SaaSCreditWorkflowTests
     }
 
     [Fact]
-    public async Task Registration_MasterEmail_ReceivesAdminPrivilegesAndUnlimitedCredits()
+    public async Task Registration_MasterEmail_IsRejectedFromPublicRegistration_ToPreventPrivilegeEscalation()
     {
         var (db, userManager) = CreateServices();
         var inMemorySettings = new Dictionary<string, string?>
@@ -99,16 +99,45 @@ public class SaaSCreditWorkflowTests
             "Director & Architect"
         ));
 
-        var actionResult = Assert.IsType<ActionResult<AuthResponseDto>>(response);
-        var authResponse = actionResult.Value;
-        Assert.NotNull(authResponse);
+        // ARCHITECTURAL INTENT: Public registration with reserved master email must be rejected
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(response.Result);
+        Assert.NotNull(badRequestResult.Value);
+    }
 
-        Assert.True(authResponse.IsAdmin);
-        Assert.Equal(999999, authResponse.AiCredits);
+    [Fact]
+    public async Task AdminSeeder_MasterEmail_ProvisionsAdminPrivilegesAndUnlimitedCredits()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDbContext<ApplicationDbContext>(opt =>
+            opt.UseInMemoryDatabase($"SaaS_Seeder_Test_{Guid.NewGuid()}"));
+
+        services.AddIdentityCore<ApplicationUser>(options =>
+        {
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequiredLength = 6;
+        })
+        .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        var provider = services.BuildServiceProvider();
+        var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            ["AdminSettings:MasterEmail"] = "director@teams7.com",
+            ["AdminSettings:InitialPassword"] = "AdminPass123!"
+        };
+        var config = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings).Build();
+
+        await S7JobSeeker.Infrastructure.Data.Seed.AdminSeeder.SeedMasterAdminAsync(provider, config);
 
         var adminInDb = await userManager.FindByEmailAsync("director@teams7.com");
         Assert.NotNull(adminInDb);
         Assert.True(adminInDb.IsAdmin);
+        Assert.True(adminInDb.EmailConfirmed);
         Assert.Equal(999999, adminInDb.AiCredits);
     }
 

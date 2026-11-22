@@ -15,6 +15,7 @@ public interface IApplicationDbContext
     DbSet<SaaSPlatformSetting> PlatformSettings { get; }
     DbSet<JobPreparationGuide> JobPreparationGuides { get; }
     DbSet<UserCbsProgress> UserCbsProgresses { get; }
+    DbSet<BdTechCompany> BdTechCompanies { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using S7JobSeeker.AI.Security;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Interfaces;
 
@@ -39,7 +40,6 @@ public class JobPreparationService : IJobPreparationService
         List<string>? missingSkills,
         CancellationToken cancellationToken = default)
     {
-        var truncatedDesc = jobDescription.Length > 3000 ? jobDescription[..3000] : jobDescription;
         var candidateSkills = candidateProfile?.Skills?.Any() == true
             ? string.Join(", ", candidateProfile.Skills.Select(s => s.Name))
             : "General Computer Science fundamentals";
@@ -48,22 +48,25 @@ public class JobPreparationService : IJobPreparationService
             ? string.Join(", ", missingSkills)
             : "Domain-specific tooling, production diagnostics & assessment tests";
 
+        var safeTargetRole = PromptSecuritySanitizer.Sanitize(targetRole, 150);
+        var safeCompany = PromptSecuritySanitizer.Sanitize(companyName, 150);
+        var wrappedJobDesc = PromptSecuritySanitizer.WrapUntrusted("job_description", jobDescription, maxLength: 4000);
+        var wrappedCandidateProfile = PromptSecuritySanitizer.WrapUntrusted(
+            "candidate_profile",
+            $"Target Role: {candidateProfile?.TargetRole ?? targetRole}\nExperience Level: {candidateProfile?.TotalYearsOfExperience ?? 0} years\nKnown Skills: {candidateSkills}\nIdentified Skill Gaps to Bridge: {gaps}",
+            maxLength: 2000);
+
         var prompt = $$"""
         You are a Principal Enterprise Systems Architect and Senior Technical Interview Director.
         Generate a comprehensive, production-grade 4-Stage Interview & Assessment Preparation Master Guide for a candidate targeting the following job.
 
-        TARGET ROLE: {{targetRole}}
-        COMPANY: {{companyName}}
+        TARGET ROLE: {{safeTargetRole}}
+        COMPANY: {{safeCompany}}
         CANDIDATE PROFILE:
-        - Target Role: {{candidateProfile?.TargetRole ?? targetRole}}
-        - Experience Level: {{candidateProfile?.TotalYearsOfExperience ?? 0}} years (Fresh Graduate / Junior)
-        - Known Skills: {{candidateSkills}}
-        - Identified Skill Gaps to Bridge: {{gaps}}
+        {{wrappedCandidateProfile}}
 
         JOB REQUIREMENTS & CIRCULAR DETAILS:
-        \"\"\"
-        {{truncatedDesc}}
-        \"\"\"
+        {{wrappedJobDesc}}
 
         Provide an in-depth, hands-on, and role-specific preparation blueprint.
         Ensure you generate:
@@ -156,7 +159,7 @@ public class JobPreparationService : IJobPreparationService
         """;
 
         var chatHistory = new ChatHistory();
-        chatHistory.AddSystemMessage("You are an enterprise technical coach and systems architect. Return only strict, valid JSON.");
+        chatHistory.AddSystemMessage($"You are an enterprise technical coach and systems architect. Return only strict, valid JSON.\n\n{PromptSecuritySanitizer.SystemDefenseClause}");
         chatHistory.AddUserMessage(prompt);
 
         try

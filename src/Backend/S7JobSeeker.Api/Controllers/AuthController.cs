@@ -28,37 +28,41 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    private bool IsMasterAdminEmail(string? email)
+    private bool IsReservedAdminEmail(string? email)
     {
         if (string.IsNullOrWhiteSpace(email)) return false;
         var cleanEmail = email.Trim();
-        var masterEmail = _configuration["AdminSettings:MasterEmail"] ?? "formal.teams7@gmail.com";
-        return string.Equals(cleanEmail, masterEmail.Trim(), StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(cleanEmail, "formal.teams7@gmail.com", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(cleanEmail, "sagir@teams7.com", StringComparison.OrdinalIgnoreCase);
+        var masterEmail = _configuration["AdminSettings:MasterEmail"] ?? "admin@s7jobseeker.com";
+        return string.Equals(cleanEmail, masterEmail.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequestDto dto)
     {
+        // ARCHITECTURAL INTENT (LOCK: Zero Privilege Escalation in Public Registration):
+        // Public registration MUST NEVER grant administrator rights under any circumstances.
+        // Reserved administrator emails cannot be claimed via the public registration form.
+        if (IsReservedAdminEmail(dto.Email))
+        {
+            return BadRequest(new { message = "This email address is reserved for system administration. Please sign in directly." });
+        }
+
         var existingUser = await _userManager.FindByEmailAsync(dto.Email);
         if (existingUser != null)
         {
             return BadRequest(new { message = "Email already registered." });
         }
 
-        var isMaster = IsMasterAdminEmail(dto.Email);
-
         var user = new ApplicationUser
         {
-            UserName = dto.Email,
-            Email = dto.Email,
-            FullName = dto.FullName,
-            TargetRole = dto.TargetRole,
+            UserName = dto.Email.Trim(),
+            Email = dto.Email.Trim(),
+            FullName = dto.FullName.Trim(),
+            TargetRole = dto.TargetRole?.Trim(),
             CreatedAt = DateTime.UtcNow,
-            IsAdmin = isMaster,
-            AiCredits = isMaster ? 999999 : 20,
-            TrialEndsAt = isMaster ? DateTime.UtcNow.AddYears(50) : DateTime.UtcNow.AddDays(30)
+            IsAdmin = false,
+            AiCredits = 20,
+            TrialEndsAt = DateTime.UtcNow.AddDays(30)
         };
 
         var result = await _userManager.CreateAsync(user, dto.Password);
@@ -80,16 +84,6 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid email or password." });
         }
 
-        var isMaster = IsMasterAdminEmail(user.Email);
-
-        if (isMaster && (!user.IsAdmin || user.AiCredits < 999999))
-        {
-            user.IsAdmin = true;
-            user.AiCredits = 999999;
-            user.TrialEndsAt = DateTime.UtcNow.AddYears(50);
-            await _userManager.UpdateAsync(user);
-        }
-
         return GenerateAuthResponse(user);
     }
 
@@ -102,14 +96,6 @@ public class AuthController : ControllerBase
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return NotFound();
-
-        if (IsMasterAdminEmail(user.Email) && (!user.IsAdmin || user.AiCredits < 999999))
-        {
-            user.IsAdmin = true;
-            user.AiCredits = 999999;
-            user.TrialEndsAt = DateTime.UtcNow.AddYears(50);
-            await _userManager.UpdateAsync(user);
-        }
 
         return new UserDto(
             user.Id,

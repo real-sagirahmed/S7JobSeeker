@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using S7JobSeeker.AI.Security;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Interfaces;
@@ -238,13 +239,19 @@ public class CbsSprintService : ICbsSprintService
             ? $"Topic Context: Day {lesson.DayNumber} ({lesson.Title}). Objectives: {string.Join(", ", lesson.Objectives.Take(3))}."
             : $"Day {request.DayNumber} Topic: {request.Topic}";
 
+        var wrappedQuestion = PromptSecuritySanitizer.WrapUntrusted("student_question", request.Question, maxLength: 1000);
+        var wrappedSnippet = PromptSecuritySanitizer.WrapUntrusted("code_snippet", request.ContextSnippet ?? "None", maxLength: 2000);
+
         var prompt = $$"""
         You are a Senior Core Banking Solution (CBS) Systems Architect and Technical Support Lead.
         A student preparing for the role of Junior Software Engineer (Service) - CBS Support has a technical question on the following topic.
 
         {{dayContext}}
-        USER QUESTION: "{{request.Question}}"
-        ADDITIONAL CONTEXT / SNIPPET: "{{request.ContextSnippet ?? "None"}}"
+        USER QUESTION:
+        {{wrappedQuestion}}
+
+        ADDITIONAL CONTEXT / SNIPPET:
+        {{wrappedSnippet}}
 
         Instructions:
         1. Answer clearly, accurately, and practically in Bengali (use English for all technical terms, code, SQL, Linux commands, and error codes).
@@ -265,7 +272,7 @@ public class CbsSprintService : ICbsSprintService
         try
         {
             var chatHistory = new ChatHistory();
-            chatHistory.AddSystemMessage("You are a Senior CBS Systems Architect. Respond strictly in valid JSON.");
+            chatHistory.AddSystemMessage($"You are a Senior CBS Systems Architect. Respond strictly in valid JSON.\n\n{PromptSecuritySanitizer.SystemDefenseClause}");
             chatHistory.AddUserMessage(prompt);
 
             var result = await _chatCompletionService.GetChatMessageContentAsync(chatHistory, cancellationToken: cancellationToken);

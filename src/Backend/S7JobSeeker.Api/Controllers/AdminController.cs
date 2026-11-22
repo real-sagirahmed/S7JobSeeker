@@ -1,9 +1,11 @@
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S7JobSeeker.Api.DTOs;
+using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
@@ -283,5 +285,70 @@ public class AdminController : ControllerBase
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Ok(new { message = "Platform settings updated successfully." });
+    }
+
+    [HttpGet("companies/pending")]
+    public async Task<ActionResult<List<BdCompanyDto>>> GetPendingCompanies(CancellationToken cancellationToken)
+    {
+        var pending = await _dbContext.BdTechCompanies
+            .AsNoTracking()
+            .Where(c => !c.IsVerified)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        var result = pending.Select(c => new BdCompanyDto(
+            c.Id,
+            c.Name,
+            c.Slug,
+            c.Website,
+            c.CareersUrl,
+            c.LinkedInUrl,
+            c.Category,
+            c.GlobalProducts,
+            c.Description,
+            JsonSerializer.Deserialize<List<string>>(c.PrimaryTechStackJson) ?? new List<string>(),
+            c.Headquarters,
+            c.GlobalOffices,
+            c.WorkModel,
+            c.EmployeeCountRange,
+            c.IsVerified,
+            0
+        )).ToList();
+
+        return Ok(result);
+    }
+
+    [HttpPost("companies/{id:guid}/verify")]
+    public async Task<IActionResult> VerifyCompany(Guid id, CancellationToken cancellationToken)
+    {
+        var company = await _dbContext.BdTechCompanies.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        if (company == null)
+        {
+            return NotFound(new { message = "Company not found." });
+        }
+
+        company.IsVerified = true;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Company {CompanyName} ({Id}) verified by Director.", company.Name, company.Id);
+
+        return Ok(new { message = $"Company '{company.Name}' has been verified and published to the directory." });
+    }
+
+    [HttpDelete("companies/{id:guid}")]
+    public async Task<IActionResult> RejectCompany(Guid id, CancellationToken cancellationToken)
+    {
+        var company = await _dbContext.BdTechCompanies.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        if (company == null)
+        {
+            return NotFound(new { message = "Company not found." });
+        }
+
+        _dbContext.BdTechCompanies.Remove(company);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Company suggestion {CompanyName} ({Id}) rejected and deleted by Director.", company.Name, company.Id);
+
+        return Ok(new { message = $"Company suggestion '{company.Name}' has been rejected and removed." });
     }
 }

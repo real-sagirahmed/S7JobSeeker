@@ -29,6 +29,28 @@ public class DummyChatCompletionService : IChatCompletionService
         => AsyncEnumerable.Empty<StreamingChatMessageContent>();
 }
 
+public class ThrowingChatCompletionService : IChatCompletionService
+{
+    public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        throw new InvalidOperationException("CRITICAL ARCHITECTURAL REGRESSION: IChatCompletionService was invoked during bulk job matching!");
+    }
+
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        throw new InvalidOperationException("CRITICAL ARCHITECTURAL REGRESSION: Streaming chat completion was invoked during bulk job matching!");
+    }
+}
+
 public class DummyEmbeddingService : ITextEmbeddingGenerationService
 {
     public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
@@ -228,5 +250,128 @@ public class JobMatcherScoringTests
         Assert.NotNull(result);
         Assert.Equal(source, result.Source);
         Assert.Equal(expectedSourceName, result.SourceName);
+    }
+
+    [Fact]
+    public async Task EvaluateMatchAsync_NeverInvokesChatCompletionService_EvenWithActiveApiKey()
+    {
+        // ARCHITECTURAL INTENT: Zero-LLM Anti-Regression Lock for P0-1
+        // Even when an active production Gemini API key is configured, bulk matching MUST NEVER invoke
+        // IChatCompletionService. Any invocation throws ThrowingChatCompletionService exception.
+        var liveConfig = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["GeminiSettings:ApiKey"] = "AIzaSyFakeActiveProductionGeminiApiKeyForTesting12345"
+            })
+            .Build();
+
+        var zeroLlmMatcher = new JobMatcherService(
+            new ThrowingChatCompletionService(),
+            new DummyEmbeddingService(),
+            liveConfig,
+            NullLogger<JobMatcherService>.Instance
+        );
+
+        var profile = new ResumeParsedProfileDto(
+            FullName: "Performance Test Candidate",
+            Email: "perf@teams7.com",
+            Phone: "+8801700000000",
+            TargetRole: "Senior .NET Engineer",
+            TotalYearsOfExperience: 5,
+            Summary: "High throughput candidate.",
+            Skills:
+            [
+                new ExtractedSkillDto("C#", SkillCategory.Backend, 5, true),
+                new ExtractedSkillDto(".NET", SkillCategory.Backend, 5, true),
+                new ExtractedSkillDto("EF Core", SkillCategory.Backend, 5, true),
+                new ExtractedSkillDto("RabbitMQ", SkillCategory.Backend, 3, true)
+            ],
+            Experiences: []
+        );
+
+        // Simulate 20 bulk jobs retrieved from catalog
+        var bulkJobs = Enumerable.Range(1, 20).Select(i => new JobPosting
+        {
+            Id = Guid.NewGuid(),
+            ExternalId = $"bulk-job-{i}",
+            Source = JobSource.LinkedIn,
+            Title = $"Senior Engineer {i}",
+            Company = $"Enterprise Corp {i}",
+            Location = "Remote",
+            IsRemote = true,
+            Description = "We are seeking a developer with C#, .NET, EF Core, RabbitMQ, and Kubernetes experience.",
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
+
+        // Warmup iteration to eliminate JIT compilation latency
+        await zeroLlmMatcher.EvaluateMatchAsync(profile, bulkJobs[0]);
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
+        foreach (var job in bulkJobs)
+        {
+            var match = await zeroLlmMatcher.EvaluateMatchAsync(profile, job);
+            Assert.NotNull(match);
+            Assert.Contains("C#", match.MatchingSkills);
+            Assert.Contains("EF Core", match.MatchingSkills);
+            Assert.Contains("Kubernetes", match.MissingSkills);
+            Assert.True(match.OverallScore > 0);
+        }
+
+        sw.Stop();
+
+        // 20 jobs must evaluate in under 200 milliseconds without calling LLM
+        Assert.True(sw.ElapsedMilliseconds < 200, $"Bulk evaluation took {sw.ElapsedMilliseconds}ms (must be < 200ms).");
+    }
+
+    [Fact]
+    public async Task EvaluateMatchAsync_AccuratelyMatchesExpandedEnterpriseSkills_WithoutFalsePositives()
+    {
+        var profile = new ResumeParsedProfileDto(
+            FullName: "Enterprise Architect",
+            Email: "architect@teams7.com",
+            Phone: "+8801700000000",
+            TargetRole: "Lead Architect",
+            TotalYearsOfExperience: 8,
+            Summary: "Specialized in distributed systems and banking clearance.",
+            Skills:
+            [
+                new ExtractedSkillDto("C#", SkillCategory.Backend, 8, true),
+                new ExtractedSkillDto("EF Core", SkillCategory.Backend, 6, true),
+                new ExtractedSkillDto("RabbitMQ", SkillCategory.Backend, 5, true),
+                new ExtractedSkillDto("Kafka", SkillCategory.Backend, 4, true),
+                new ExtractedSkillDto("Linux", SkillCategory.CloudAndDevOps, 6, true),
+                new ExtractedSkillDto("CI/CD", SkillCategory.CloudAndDevOps, 5, true),
+                new ExtractedSkillDto("Digital Marketing", SkillCategory.Other, 2, false) // Should NOT match 'Git'
+            ],
+            Experiences: []
+        );
+
+        var job = new JobPosting
+        {
+            Id = Guid.NewGuid(),
+            ExternalId = "job-ent-1",
+            Source = JobSource.Bdjobs,
+            Title = "Senior Distributed Systems Engineer",
+            Company = "Fintech Innovations Ltd",
+            Location = "Dhaka",
+            IsRemote = false,
+            Description = "Must have deep expertise in C#, EF Core, RabbitMQ, Kafka, Linux, CI/CD, and Git for core clearing.",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var result = await _matcherService.EvaluateMatchAsync(profile, job);
+
+        Assert.NotNull(result);
+        Assert.Contains("C#", result.MatchingSkills);
+        Assert.Contains("EF Core", result.MatchingSkills);
+        Assert.Contains("RabbitMQ", result.MatchingSkills);
+        Assert.Contains("Kafka", result.MatchingSkills);
+        Assert.Contains("Linux", result.MatchingSkills);
+        Assert.Contains("CI/CD", result.MatchingSkills);
+
+        // Boundary assertion: 'Digital Marketing' MUST NOT match 'Git'
+        Assert.DoesNotContain("Git", result.MatchingSkills);
+        Assert.Contains("Git", result.MissingSkills);
     }
 }

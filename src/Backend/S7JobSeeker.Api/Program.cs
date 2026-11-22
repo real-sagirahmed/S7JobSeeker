@@ -234,6 +234,16 @@ using (var scope = app.Services.CreateScope())
             logger.LogInformation("Seeded {Count} new verified BD Tech Companies successfully.", missingCompanies.Count);
         }
 
+        // Auto-seed and synchronize Master Administrator account
+        try
+        {
+            await S7JobSeeker.Infrastructure.Data.Seed.AdminSeeder.SeedMasterAdminAsync(scope.ServiceProvider, app.Configuration);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to auto-seed or sync master admin account on startup.");
+        }
+
         // Auto-heal legacy BDJobs URLs in JobPostings table to modern Angular SPA details route
         if (dbContext.Database.IsRelational())
         {

@@ -723,7 +723,7 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
         isOpen={isSuggestModalOpen}
         onClose={() => setIsSuggestModalOpen(false)}
         onSuccess={() => {
-          showToast('Company submitted successfully! Added to BD Tech Directory.', 'success');
+          showToast('Company submitted successfully! It is pending admin review and will appear once verified.', 'success');
           fetchCompanies();
           fetchClustersSummary();
         }}

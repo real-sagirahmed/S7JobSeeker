@@ -468,6 +468,38 @@ export const api = {
         throw new Error(err.message || 'Failed to update settings');
       }
       return res.json();
+    },
+
+    async getPendingCompanies(): Promise<import('../types').BdCompany[]> {
+      const res = await fetch(`${API_BASE}/admin/companies/pending`, {
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) throw new Error('Failed to load pending companies');
+      return res.json();
+    },
+
+    async verifyCompany(id: string): Promise<{ message: string }> {
+      const res = await fetch(`${API_BASE}/admin/companies/${id}/verify`, {
+        method: 'POST',
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to verify company' }));
+        throw new Error(err.message || 'Failed to verify company');
+      }
+      return res.json();
+    },
+
+    async rejectCompany(id: string): Promise<{ message: string }> {
+      const res = await fetch(`${API_BASE}/admin/companies/${id}`, {
+        method: 'DELETE',
+        headers: { ...getAuthHeader() }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to reject company' }));
+        throw new Error(err.message || 'Failed to reject company');
+      }
+      return res.json();
     }
   },
 
