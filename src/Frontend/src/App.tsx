@@ -151,9 +151,10 @@ export const App: React.FC = () => {
       setCurrentPage(res.page);
       setTotalMatchesCount(res.totalCount);
       setHasMoreMatches(res.hasMore);
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(e);
-      showToast(t.toasts.loadMatchesError, 'error');
+      const msg = e instanceof Error ? e.message : t.toasts.loadMatchesError;
+      showToast(msg, 'error');
     } finally {
       setIsLoadingMatches(false);
       setIsLoadingMore(false);

@@ -274,119 +274,130 @@ public class JobsController : ControllerBase
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 50);
 
-        var profile = await _dbContext.UserProfiles
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
-
-        if (profile == null || string.IsNullOrEmpty(profile.ParsedProfileJson))
+        try
         {
-            return BadRequest(new { message = "Please upload your resume first to view job matches." });
-        }
+            var profile = await _dbContext.UserProfiles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
 
-        var parsedProfile = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson);
-        if (parsedProfile == null)
-        {
-            return BadRequest(new { message = "Invalid profile data." });
-        }
+            if (profile == null || string.IsNullOrEmpty(profile.ParsedProfileJson))
+            {
+                return BadRequest(new { message = "Please upload your resume first to view job matches." });
+            }
 
-        var query = _dbContext.JobPostings.AsNoTracking();
-        if (source.HasValue && source.Value != 0)
-        {
-            query = query.Where(j => j.Source == source.Value);
-        }
-        if (remoteOnly.HasValue && remoteOnly.Value)
-        {
-            query = query.Where(j => j.IsRemote);
-        }
+            var parsedProfile = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson);
+            if (parsedProfile == null)
+            {
+                return BadRequest(new { message = "Invalid profile data." });
+            }
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var skip = (page - 1) * pageSize;
+            var query = _dbContext.JobPostings.AsNoTracking();
+            if (source.HasValue && source.Value != 0)
+            {
+                query = query.Where(j => j.Source == source.Value);
+            }
+            if (remoteOnly.HasValue && remoteOnly.Value)
+            {
+                query = query.Where(j => j.IsRemote);
+            }
 
-        if (totalCount == 0 || skip >= totalCount)
-        {
-            return Ok(new PagedJobMatchesDto([], totalCount, page, pageSize, false));
-        }
+            var totalCount = await query.CountAsync(cancellationToken);
+            var skip = (page - 1) * pageSize;
 
-        // Generate profile embedding
-        var profileSearchText = $"{parsedProfile.TargetRole}. {parsedProfile.Summary} Skills: {string.Join(", ", parsedProfile.Skills.Select(s => s.Name))}";
-        var profileEmbedding = await _matcherService.GenerateEmbeddingAsync(profileSearchText, cancellationToken);
+            if (totalCount == 0 || skip >= totalCount)
+            {
+                return Ok(new PagedJobMatchesDto([], totalCount, page, pageSize, false));
+            }
 
-        // Dynamic fetch limit from Qdrant to cover up to requested page
-        var vectorFetchLimit = Math.Min(totalCount, Math.Max(50, page * pageSize));
-        var vectorMatches = await _vectorService.SearchSimilarJobsAsync(profileEmbedding, vectorFetchLimit, cancellationToken);
+            // Generate profile embedding
+            var skillsStr = parsedProfile.Skills?.Any() == true
+                ? string.Join(", ", parsedProfile.Skills.Where(s => !string.IsNullOrWhiteSpace(s?.Name)).Select(s => s.Name))
+                : string.Empty;
+            var profileSearchText = $"{parsedProfile.TargetRole}. {parsedProfile.Summary} Skills: {skillsStr}";
+            var profileEmbedding = await _matcherService.GenerateEmbeddingAsync(profileSearchText, cancellationToken);
 
-        var matchedJobs = new List<JobMatchResultDto>();
+            // Dynamic fetch limit from Qdrant to cover up to requested page
+            var vectorFetchLimit = Math.Min(totalCount, Math.Max(50, page * pageSize));
+            var vectorMatches = await _vectorService.SearchSimilarJobsAsync(profileEmbedding, vectorFetchLimit, cancellationToken);
 
-        var bookmarkedIds = await _dbContext.JobMatchScores
-            .AsNoTracking()
-            .Where(m => m.UserId == userId && m.IsBookmarked)
-            .Select(m => m.JobPostingId)
-            .ToListAsync(cancellationToken);
+            var matchedJobs = new List<JobMatchResultDto>();
 
-        if (vectorMatches.Count > 0 && vectorMatches.Count > skip)
-        {
-            var pageVectorMatches = vectorMatches.Skip(skip).Take(pageSize).ToList();
-            var jobGuids = pageVectorMatches
-                .Select(v => Guid.TryParse(v.Payload.GetValueOrDefault("JobId"), out var gid) ? gid : Guid.Empty)
-                .Where(g => g != Guid.Empty)
-                .ToList();
-
-            var jobs = await query
-                .Where(j => jobGuids.Contains(j.Id))
+            var bookmarkedIds = await _dbContext.JobMatchScores
+                .AsNoTracking()
+                .Where(m => m.UserId == userId && m.IsBookmarked)
+                .Select(m => m.JobPostingId)
                 .ToListAsync(cancellationToken);
 
-            // ARCHITECTURAL INTENT: Multi-source augmentation.
-            // If vector search yielded fewer jobs than pageSize for this page, supplement from MSSQL
-            if (jobs.Count < pageSize)
+            if (vectorMatches.Count > 0 && vectorMatches.Count > skip)
             {
-                var existingJobIds = jobs.Select(j => j.Id).ToList();
-                var needed = pageSize - jobs.Count;
-                var extraJobs = await query
-                    .Where(j => !existingJobIds.Contains(j.Id))
-                    .OrderByDescending(j => j.CreatedAt)
-                    .Skip(Math.Max(0, skip - vectorMatches.Count))
-                    .Take(needed)
+                var pageVectorMatches = vectorMatches.Skip(skip).Take(pageSize).ToList();
+                var jobGuids = pageVectorMatches
+                    .Select(v => Guid.TryParse(v.Payload.GetValueOrDefault("JobId"), out var gid) ? gid : Guid.Empty)
+                    .Where(g => g != Guid.Empty)
+                    .ToList();
+
+                var jobs = await query
+                    .Where(j => jobGuids.Contains(j.Id))
                     .ToListAsync(cancellationToken);
 
-                jobs.AddRange(extraJobs);
-            }
+                // ARCHITECTURAL INTENT: Multi-source augmentation.
+                // If vector search yielded fewer jobs than pageSize for this page, supplement from MSSQL
+                if (jobs.Count < pageSize)
+                {
+                    var existingJobIds = jobs.Select(j => j.Id).ToList();
+                    var needed = pageSize - jobs.Count;
+                    var extraJobs = await query
+                        .Where(j => !existingJobIds.Contains(j.Id))
+                        .OrderByDescending(j => j.CreatedAt)
+                        .Skip(Math.Max(0, skip - vectorMatches.Count))
+                        .Take(needed)
+                        .ToListAsync(cancellationToken);
 
-            foreach (var job in jobs)
+                    jobs.AddRange(extraJobs);
+                }
+
+                foreach (var job in jobs)
+                {
+                    var vMatch = vectorMatches.FirstOrDefault(v => v.Payload.GetValueOrDefault("JobId") == job.Id.ToString());
+                    float? score = vMatch?.Score;
+
+                    var evaluation = await _matcherService.EvaluateMatchAsync(parsedProfile, job, score, cancellationToken);
+                    var isBookmarked = bookmarkedIds.Contains(job.Id);
+
+                    matchedJobs.Add(evaluation with { IsBookmarked = isBookmarked });
+                }
+            }
+            else
             {
-                var vMatch = vectorMatches.FirstOrDefault(v => v.Payload.GetValueOrDefault("JobId") == job.Id.ToString());
-                float? score = vMatch?.Score;
+                // Fallback: If Qdrant is empty, during local dev, or requested page exceeds vector cache
+                var pagedJobs = await query
+                    .OrderByDescending(j => j.CreatedAt)
+                    .Skip(skip)
+                    .Take(pageSize)
+                    .ToListAsync(cancellationToken);
 
-                var evaluation = await _matcherService.EvaluateMatchAsync(parsedProfile, job, score, cancellationToken);
-                var isBookmarked = bookmarkedIds.Contains(job.Id);
-
-                matchedJobs.Add(evaluation with { IsBookmarked = isBookmarked });
+                foreach (var job in pagedJobs)
+                {
+                    var evaluation = await _matcherService.EvaluateMatchAsync(parsedProfile, job, null, cancellationToken);
+                    var isBookmarked = bookmarkedIds.Contains(job.Id);
+                    matchedJobs.Add(evaluation with { IsBookmarked = isBookmarked });
+                }
             }
+
+            var hasMore = (skip + matchedJobs.Count) < totalCount;
+            return Ok(new PagedJobMatchesDto(
+                matchedJobs.OrderByDescending(m => m.OverallScore).ToList(),
+                totalCount,
+                page,
+                pageSize,
+                hasMore
+            ));
         }
-        else
+        catch (Exception ex)
         {
-            // Fallback: If Qdrant is empty, during local dev, or requested page exceeds vector cache
-            var pagedJobs = await query
-                .OrderByDescending(j => j.CreatedAt)
-                .Skip(skip)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            foreach (var job in pagedJobs)
-            {
-                var evaluation = await _matcherService.EvaluateMatchAsync(parsedProfile, job, null, cancellationToken);
-                var isBookmarked = bookmarkedIds.Contains(job.Id);
-                matchedJobs.Add(evaluation with { IsBookmarked = isBookmarked });
-            }
+            _logger.LogError(ex, "Failed to load job matches for user {UserId}", userId);
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Failed to load job matches. " + ex.Message });
         }
-
-        var hasMore = (skip + matchedJobs.Count) < totalCount;
-        return Ok(new PagedJobMatchesDto(
-            matchedJobs.OrderByDescending(m => m.OverallScore).ToList(),
-            totalCount,
-            page,
-            pageSize,
-            hasMore
-        ));
     }
 
     [Authorize]

@@ -459,7 +459,25 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("FlexHowScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FlexScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FlexWhenScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FlexWhereScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FlexibilityNotes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsRemote")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsWorkFromAnywhere")
                         .HasColumnType("bit");
 
                     b.Property<string>("JobType")
@@ -483,6 +501,9 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("TagsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TimezoneRequirements")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")

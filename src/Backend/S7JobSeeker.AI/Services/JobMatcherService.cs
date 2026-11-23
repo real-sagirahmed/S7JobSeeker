@@ -150,7 +150,7 @@ public class JobMatcherService : IJobMatcherService
         // ARCHITECTURAL INTENT: Deterministic Skill Gap Set-Difference
         // Missing skills = Skills required by the job which the candidate DOES NOT possess.
         var candidateSkillsSet = new HashSet<string>(
-            profile.Skills.Select(s => s.Name.ToLowerInvariant().Trim()),
+            (profile.Skills ?? []).Where(s => !string.IsNullOrWhiteSpace(s?.Name)).Select(s => s.Name.ToLowerInvariant().Trim()),
             StringComparer.OrdinalIgnoreCase
         );
 
@@ -181,9 +181,9 @@ public class JobMatcherService : IJobMatcherService
         }
 
         // 2. Also check if candidate has any unique profile skills directly mentioned in the job description
-        foreach (var skill in profile.Skills)
+        foreach (var skill in profile.Skills ?? [])
         {
-            if (!matched.Contains(skill.Name, StringComparer.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(skill?.Name) && !matched.Contains(skill.Name, StringComparer.OrdinalIgnoreCase))
             {
                 // Word boundary check for custom candidate skills to prevent partial word hits
                 var escapedSkill = Regex.Escape(skill.Name);
@@ -206,7 +206,7 @@ public class JobMatcherService : IJobMatcherService
         else
         {
             // If job description doesn't explicitly list standard keywords, default to baseline
-            skillScore = profile.Skills.Count > 0 ? 70.0 : 50.0;
+            skillScore = (profile.Skills?.Count ?? 0) > 0 ? 70.0 : 50.0;
         }
 
         double vectorScore = vectorSimilarity.HasValue ? Math.Clamp(vectorSimilarity.Value * 100.0, 0.0, 100.0) : skillScore;
@@ -287,10 +287,7 @@ public class JobMatcherService : IJobMatcherService
         {
             return new TailoredApplicationResult(
                 CoverLetter: $"Dear Hiring Team at {job.Company},\n\nI am writing to express my strong enthusiasm for the {job.Title} position. With my background as a {profile.TargetRole} and {profile.TotalYearsOfExperience ?? 0}+ years of experience in software development, I am confident in my ability to contribute effectively to your engineering team.\n\nMy primary skills include {string.Join(", ", profile.Skills.Take(5).Select(s => s.Name))}. I look forward to discussing how my experience aligns with your goals at {job.Company}.\n\nSincerely,\n{profile.FullName}",
-                ResumeTips: $"1. Tailor your headline to mirror '{job.Title}'.\n2. Highlight accomplishments involving {string.Join(", ", profile.Skills.Take(3).Select(s => s.Name))}.\n3. Quantify impact for projects similar to {job.Company}'s tech stack.",
-                JobId: job.Id,
-                Title: job.Title,
-                Company: job.Company
+                ResumeTips: $"1. Tailor your headline to mirror '{job.Title}'.\n2. Highlight accomplishments involving {string.Join(", ", profile.Skills.Take(3).Select(s => s.Name))}.\n3. Quantify impact for projects similar to {job.Company}'s tech stack."
             );
         }
 
@@ -346,23 +343,14 @@ public class JobMatcherService : IJobMatcherService
             var coverLetter = root.TryGetProperty("coverLetter", out var cProp) ? cProp.GetString() : "Dear Hiring Manager...";
             var resumeTips = root.TryGetProperty("resumeTips", out var rProp) ? rProp.GetString() : "Align your top projects with the company tech stack.";
 
-            return new TailoredApplicationResult(
-                CoverLetter: coverLetter ?? "",
-                ResumeTips: resumeTips ?? "",
-                JobId: job.Id,
-                Title: job.Title,
-                Company: job.Company
-            );
+            return new TailoredApplicationResult(coverLetter ?? "", resumeTips ?? "");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to generate tailored application materials.");
             return new TailoredApplicationResult(
                 CoverLetter: $"Dear Hiring Team at {job.Company},\n\nI am writing to express my strong interest in the {job.Title} role. With my background in {profile.TargetRole}, I look forward to bringing impact to your team.",
-                ResumeTips: "Ensure your primary skills and recent achievements are prominently displayed at the top of your resume.",
-                JobId: job.Id,
-                Title: job.Title,
-                Company: job.Company
+                ResumeTips: "Ensure your primary skills and recent achievements are prominently displayed at the top of your resume."
             );
         }
     }
