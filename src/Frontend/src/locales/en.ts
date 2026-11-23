@@ -2,7 +2,7 @@
 // All user-facing terminology across UI components, locales (en/bn), and metadata
 // MUST reflect teamS7 proprietary systems (e.g. S7 Semantic Match Radar, S7 Circular Scanner,
 // S7 Talent DNA, teamS7 CBS Engineering Immersion, S7 Production-Ready CBS Credential).
-// Third-party educational or aggregator names (e.g. "Coursera-Grade") MUST NOT be used to describe
+// Third-party educational or competitor platform names MUST NOT be used to describe
 // our features or certifications. External source names (BDJobs, LinkedIn, RemoteOK) are strictly
 // permitted ONLY as external data source filter tags.
 

@@ -57,7 +57,7 @@ public class ArchitecturalIntentLockTests
     // The system locks proprietary branding for all modules: S7 Match Radar, S7 Circular Scanner,
     // S7 Talent DNA, teamS7 CBS Engineering Immersion, S7 Production-Ready CBS Credential,
     // S7 Technical Readiness Dossier, and S7 Tailored Application Pack.
-    // Third-party educational or aggregator names (e.g. "Coursera-Grade") MUST NOT be used.
+    // Third-party educational or competitor platform names MUST NOT be used.
     [Fact]
     public void LocaleBranding_MustEnforceProprietaryS7NomenclatureAndExcludeCompetitorNames()
     {
@@ -87,11 +87,16 @@ public class ArchitecturalIntentLockTests
             Assert.Contains("'S7 টেকনিক্যাল রেডিনেস ডসিয়ার'", bnCode);
             Assert.Contains("'S7 টেইলরড অ্যাপ্লিকেশন প্যাক'", bnCode);
 
-            // Assert no active third-party educational competitor labels
-            Assert.DoesNotContain("'Coursera-Grade CBS Career Sprint'", enCode);
-            Assert.DoesNotContain("'Coursera-Grade Verified Certificate'", enCode);
-            Assert.DoesNotContain("'Coursera-মানের সিবিএস ক্যারিয়ার স্প্রিন্ট'", bnCode);
-            Assert.DoesNotContain("'Coursera-মানের ভেরিফায়েড সার্টিফিকেট'", bnCode);
+            // Assert zero occurrences of competitor branding (e.g. "coursera") across all non-comment translation lines
+            var enExecutableCode = string.Join("\n", enCode.Split('\n').Where(line => !line.TrimStart().StartsWith("//")));
+            var bnExecutableCode = string.Join("\n", bnCode.Split('\n').Where(line => !line.TrimStart().StartsWith("//")));
+
+            string[] bannedCompetitors = ["coursera", "udemy", "edx", "pluralsight"];
+            foreach (var competitor in bannedCompetitors)
+            {
+                Assert.DoesNotContain(competitor, enExecutableCode, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain(competitor, bnExecutableCode, StringComparison.OrdinalIgnoreCase);
+            }
         }
     }
 }
