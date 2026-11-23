@@ -20,7 +20,14 @@ public record JobMatchResultDto(
     string? Recommendations,
     bool IsBookmarked,
     JobSource Source = JobSource.CustomPaste,
-    string? SourceName = null
+    string? SourceName = null,
+    int? FlexScore = null,
+    int? FlexWhereScore = null,
+    int? FlexWhenScore = null,
+    int? FlexHowScore = null,
+    bool IsWorkFromAnywhere = false,
+    string? TimezoneRequirements = null,
+    string? FlexibilityNotes = null
 );
 
 public record PagedJobMatchesDto(

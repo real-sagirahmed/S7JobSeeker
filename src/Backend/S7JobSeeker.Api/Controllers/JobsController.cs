@@ -11,6 +11,7 @@ using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
+using S7JobSeeker.Core.Services;
 
 namespace S7JobSeeker.Api.Controllers;
 
@@ -26,6 +27,7 @@ public class JobsController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<JobsController> _logger;
+    private readonly IFlexScoreCalculator _flexCalculator;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -41,7 +43,8 @@ public class JobsController : ControllerBase
         IJobPreparationService prepService,
         IConfiguration configuration,
         IWebHostEnvironment environment,
-        ILogger<JobsController> logger)
+        ILogger<JobsController> logger,
+        IFlexScoreCalculator? flexCalculator = null)
     {
         _dbContext = dbContext;
         _jobFetchers = jobFetchers;
@@ -51,6 +54,7 @@ public class JobsController : ControllerBase
         _configuration = configuration;
         _environment = environment;
         _logger = logger;
+        _flexCalculator = flexCalculator ?? new FlexScoreCalculator();
     }
 
     // ARCHITECTURAL INTENT: Filter out non-technical roles to keep the candidate matching catalog strictly tech-focused
@@ -175,6 +179,16 @@ public class JobsController : ControllerBase
                     if (job.ExternalId?.Length > 200) job.ExternalId = job.ExternalId[..200];
                     if (job.JobType?.Length > 100) job.JobType = job.JobType[..100];
                     if (job.SalaryRange?.Length > 100) job.SalaryRange = job.SalaryRange[..100];
+
+                    // S7 Remote Autonomy Index (S7 Flex Radar: 0-100)
+                    var flex = _flexCalculator.CalculateFlexScore(job.Location, job.Description, job.IsRemote);
+                    job.FlexScore = flex.OverallFlexScore;
+                    job.FlexWhereScore = flex.WhereScore;
+                    job.FlexWhenScore = flex.WhenScore;
+                    job.FlexHowScore = flex.HowScore;
+                    job.IsWorkFromAnywhere = flex.IsWorkFromAnywhere;
+                    job.TimezoneRequirements = flex.TimezoneRequirements;
+                    job.FlexibilityNotes = flex.FlexibilityNotes;
                 }
 
                 // ARCHITECTURAL INTENT: Relational-first persistence. Add and save all new jobs to MSSQL
@@ -532,6 +546,15 @@ public class JobsController : ControllerBase
             JobType = "Full-time",
             CreatedAt = DateTime.UtcNow
         };
+
+        var customFlex = _flexCalculator.CalculateFlexScore(job.Location, job.Description, job.IsRemote);
+        job.FlexScore = customFlex.OverallFlexScore;
+        job.FlexWhereScore = customFlex.WhereScore;
+        job.FlexWhenScore = customFlex.WhenScore;
+        job.FlexHowScore = customFlex.HowScore;
+        job.IsWorkFromAnywhere = customFlex.IsWorkFromAnywhere;
+        job.TimezoneRequirements = customFlex.TimezoneRequirements;
+        job.FlexibilityNotes = customFlex.FlexibilityNotes;
 
         // ARCHITECTURAL INTENT: Persist pasted job to database to ensure Bookmark and
         // Tailored Application generation succeed without Foreign Key constraint violations.

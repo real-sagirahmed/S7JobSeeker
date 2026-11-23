@@ -10,6 +10,7 @@ using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
+using S7JobSeeker.Core.Services;
 
 namespace S7JobSeeker.AI.Services;
 
@@ -18,6 +19,7 @@ public class JobMatcherService : IJobMatcherService
     private readonly IChatCompletionService _chatCompletionService;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly ILogger<JobMatcherService> _logger;
+    private readonly IFlexScoreCalculator _flexScoreCalculator;
     private readonly string _apiKey;
     private bool _isEmbeddingAvailable = true;
 
@@ -25,11 +27,13 @@ public class JobMatcherService : IJobMatcherService
         IChatCompletionService chatCompletionService,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IConfiguration configuration,
-        ILogger<JobMatcherService> logger)
+        ILogger<JobMatcherService> logger,
+        IFlexScoreCalculator? flexScoreCalculator = null)
     {
         _chatCompletionService = chatCompletionService;
         _embeddingGenerator = embeddingGenerator;
         _logger = logger;
+        _flexScoreCalculator = flexScoreCalculator ?? new FlexScoreCalculator();
         _apiKey = configuration["GeminiSettings:ApiKey"] ?? string.Empty;
     }
 
@@ -212,6 +216,26 @@ public class JobMatcherService : IJobMatcherService
             ? $"Target employer requires expertise in {string.Join(", ", missing.Take(3))}. Consider showcasing hands-on projects or certifications in these areas."
             : $"Excellent match! Candidate satisfies all {matched.Count} identified requirements for {job.Title} at {job.Company}.";
 
+        var flexScore = job.FlexScore;
+        var flexWhere = job.FlexWhereScore;
+        var flexWhen = job.FlexWhenScore;
+        var flexHow = job.FlexHowScore;
+        var isWfa = job.IsWorkFromAnywhere;
+        var tzReq = job.TimezoneRequirements;
+        var flexNotes = job.FlexibilityNotes;
+
+        if (!flexScore.HasValue)
+        {
+            var res = _flexScoreCalculator.CalculateFlexScore(job.Location, job.Description, job.IsRemote);
+            flexScore = res.OverallFlexScore;
+            flexWhere = res.WhereScore;
+            flexWhen = res.WhenScore;
+            flexHow = res.HowScore;
+            isWfa = res.IsWorkFromAnywhere;
+            tzReq = res.TimezoneRequirements;
+            flexNotes = res.FlexibilityNotes;
+        }
+
         return new JobMatchResultDto(
             JobId: job.Id,
             Title: job.Title,
@@ -230,7 +254,14 @@ public class JobMatcherService : IJobMatcherService
             Recommendations: recommendations,
             IsBookmarked: false,
             Source: job.Source,
-            SourceName: GetSourceName(job.Source)
+            SourceName: GetSourceName(job.Source),
+            FlexScore: flexScore,
+            FlexWhereScore: flexWhere,
+            FlexWhenScore: flexWhen,
+            FlexHowScore: flexHow,
+            IsWorkFromAnywhere: isWfa,
+            TimezoneRequirements: tzReq,
+            FlexibilityNotes: flexNotes
         );
     }
 
@@ -256,7 +287,10 @@ public class JobMatcherService : IJobMatcherService
         {
             return new TailoredApplicationResult(
                 CoverLetter: $"Dear Hiring Team at {job.Company},\n\nI am writing to express my strong enthusiasm for the {job.Title} position. With my background as a {profile.TargetRole} and {profile.TotalYearsOfExperience ?? 0}+ years of experience in software development, I am confident in my ability to contribute effectively to your engineering team.\n\nMy primary skills include {string.Join(", ", profile.Skills.Take(5).Select(s => s.Name))}. I look forward to discussing how my experience aligns with your goals at {job.Company}.\n\nSincerely,\n{profile.FullName}",
-                ResumeTips: $"1. Tailor your headline to mirror '{job.Title}'.\n2. Highlight accomplishments involving {string.Join(", ", profile.Skills.Take(3).Select(s => s.Name))}.\n3. Quantify impact for projects similar to {job.Company}'s tech stack."
+                ResumeTips: $"1. Tailor your headline to mirror '{job.Title}'.\n2. Highlight accomplishments involving {string.Join(", ", profile.Skills.Take(3).Select(s => s.Name))}.\n3. Quantify impact for projects similar to {job.Company}'s tech stack.",
+                JobId: job.Id,
+                Title: job.Title,
+                Company: job.Company
             );
         }
 
@@ -312,14 +346,23 @@ public class JobMatcherService : IJobMatcherService
             var coverLetter = root.TryGetProperty("coverLetter", out var cProp) ? cProp.GetString() : "Dear Hiring Manager...";
             var resumeTips = root.TryGetProperty("resumeTips", out var rProp) ? rProp.GetString() : "Align your top projects with the company tech stack.";
 
-            return new TailoredApplicationResult(coverLetter ?? "", resumeTips ?? "");
+            return new TailoredApplicationResult(
+                CoverLetter: coverLetter ?? "",
+                ResumeTips: resumeTips ?? "",
+                JobId: job.Id,
+                Title: job.Title,
+                Company: job.Company
+            );
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to generate tailored application materials.");
             return new TailoredApplicationResult(
                 CoverLetter: $"Dear Hiring Team at {job.Company},\n\nI am writing to express my strong interest in the {job.Title} role. With my background in {profile.TargetRole}, I look forward to bringing impact to your team.",
-                ResumeTips: "Ensure your primary skills and recent achievements are prominently displayed at the top of your resume."
+                ResumeTips: "Ensure your primary skills and recent achievements are prominently displayed at the top of your resume.",
+                JobId: job.Id,
+                Title: job.Title,
+                Company: job.Company
             );
         }
     }

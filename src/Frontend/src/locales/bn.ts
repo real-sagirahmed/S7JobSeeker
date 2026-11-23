@@ -89,7 +89,11 @@ export const bn: TranslationDictionary = {
     remote: 'রিমোট',
     saveJob: 'জব সংরক্ষণ করুন',
     removeBookmark: 'বুকমার্ক মুছে ফেলুন',
-    anywhere: 'যেকোনো স্থান'
+    anywhere: 'যেকোনো স্থান',
+    flexRadar: 'S7 ফ্লেক্স রাডার',
+    autonomyScore: 'অটোনমি ইনডেক্স',
+    wfaBadge: 'যেকোনো স্থান থেকে কাজ (WFA)',
+    asyncBadge: 'ফুল অ্যাসিনক্রোনাস'
   },
   paste: {
     title: 'S7 সার্কুলার স্ক্যানার ও গ্যাপ অডিট',
@@ -332,7 +336,16 @@ export const bn: TranslationDictionary = {
     coverLetter: 'টেইলরড কভার লেটার',
     download: 'ডাউনলোড .txt',
     copy: 'কপি টেক্সট',
-    copied: 'কপি হয়েছে'
+    copied: 'কপি হয়েছে',
+    copilotTab: 'S7 অ্যাপ্লিকেশন কপাইলট',
+    coverLetterTab: 'কভার লেটার ও রেজুমি টিপস',
+    questionsPlaceholder: 'জব পোর্টালের স্ক্রিনিং প্রশ্নগুলো লিখুন (প্রতি লাইনে একটি)...',
+    generateAnswers: 'কাস্টমাইজড উত্তর তৈরি করুন',
+    generating: 'এআই উত্তর প্রস্তুত হচ্ছে...',
+    recruiterSection: 'হায়ারিং টিমের সাথে সরাসরি যোগাযোগ',
+    openRecruiterSearch: 'লিঙ্কডইনে রিক্রুটার ও ইঞ্জিনিয়ারিং ম্যানেজার খুঁজুন',
+    coldEmailPitch: 'ওয়ান-ক্লিক কোল্ড ইনমেইল / ইমেইল পিচ',
+    keyHighlights: 'মূল টেকনিক্যাল হাইলাইটস'
   },
   cbsHero: {
     track: 'স্পেশালাইজেশন ট্র্যাক',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, Bookmark, Sparkles, CheckCircle2, AlertTriangle, FileEdit, BookOpen } from 'lucide-react';
+import { ExternalLink, Bookmark, Sparkles, CheckCircle2, AlertTriangle, FileEdit, BookOpen, Compass } from 'lucide-react';
 import type { JobMatch } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -95,15 +95,32 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
                 {t.jobCard.remote}
               </span>
             )}
+            {typeof match.flexScore === 'number' && match.flexScore > 0 && (
+              <span
+                className="px-2 py-0.5 text-xs font-black rounded-md bg-purple-50 text-purple-700 border border-purple-200 flex items-center space-x-1"
+                title={`${t.jobCard.flexRadar}: ${match.flexScore}/100 • Where: ${match.flexWhereScore ?? 0}%, When: ${match.flexWhenScore ?? 0}%, How: ${match.flexHowScore ?? 0}%`}
+              >
+                <Compass className="w-3 h-3 text-purple-600" />
+                <span>{match.flexScore} {t.jobCard.flexRadar}</span>
+                {match.isWorkFromAnywhere && (
+                  <span className="text-[10px] bg-purple-200/60 px-1 rounded text-purple-900 font-bold ml-0.5">WFA</span>
+                )}
+              </span>
+            )}
             {match.jobType && (
               <span className="px-2 py-0.5 text-xs rounded-md bg-[#F8FAFC] text-[#333333] border border-black/8">
                 {match.jobType}
               </span>
             )}
           </div>
-          <div className="text-xs font-medium text-[#7C7C7C]">
-            {match.company} • <span className="text-[#333333]">{match.location || t.jobCard.anywhere}</span>
-            {match.salaryRange && <span className="text-[#007070] ml-2 font-bold">• {match.salaryRange}</span>}
+          <div className="text-xs font-medium text-[#7C7C7C] flex flex-wrap items-center gap-1.5">
+            <span>{match.company}</span> • <span className="text-[#333333]">{match.location || t.jobCard.anywhere}</span>
+            {match.timezoneRequirements && (
+              <span className="text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-semibold">
+                🕒 {match.timezoneRequirements}
+              </span>
+            )}
+            {match.salaryRange && <span className="text-[#007070] font-bold">• {match.salaryRange}</span>}
           </div>
         </div>
 

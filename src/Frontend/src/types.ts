@@ -53,6 +53,13 @@ export interface JobMatch {
   isBookmarked: boolean;
   source?: number;
   sourceName?: string;
+  flexScore?: number;
+  flexWhereScore?: number;
+  flexWhenScore?: number;
+  flexHowScore?: number;
+  isWorkFromAnywhere?: boolean;
+  timezoneRequirements?: string;
+  flexibilityNotes?: string;
 }
 
 export interface PagedJobMatches {
@@ -66,6 +73,31 @@ export interface PagedJobMatches {
 export interface TailoredApplication {
   coverLetter: string;
   resumeTips: string;
+  jobId?: string;
+  title?: string;
+  company?: string;
+}
+
+export interface ApplicationCopilotRequest {
+  jobId?: string;
+  jobTitle?: string;
+  companyName?: string;
+  jobDescription?: string;
+  screeningQuestions: string[];
+  customNotes?: string;
+}
+
+export interface CopilotAnswer {
+  question: string;
+  answer: string;
+  keyHighlights: string[];
+}
+
+export interface ApplicationCopilotResponse {
+  answers: CopilotAnswer[];
+  creditsRemaining: number;
+  recruiterSearchUrl?: string;
+  coldEmailPitch?: string;
 }
 
 export type CompanyCategory = 

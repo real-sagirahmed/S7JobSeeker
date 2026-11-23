@@ -10,6 +10,7 @@ using S7JobSeeker.AI.Services;
 using S7JobSeeker.Api.Controllers;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Interfaces;
+using S7JobSeeker.Core.Services;
 using S7JobSeeker.Infrastructure.Data;
 using S7JobSeeker.Infrastructure.JobFetchers;
 using S7JobSeeker.Infrastructure.Vector;
@@ -67,10 +68,13 @@ public class DependencyInjectionTests
         services.AddScoped<ISkillExtractorService, SkillExtractorService>();
         services.AddScoped<IJobMatcherService, JobMatcherService>();
         services.AddScoped<IJobPreparationService, JobPreparationService>();
+        services.AddSingleton<IFlexScoreCalculator, FlexScoreCalculator>();
+        services.AddScoped<IApplicationCopilotService, ApplicationCopilotService>();
 
         // Register Controllers
         services.AddScoped<ProfileController>();
         services.AddScoped<JobsController>();
+        services.AddScoped<CopilotController>();
         services.AddSingleton<IWebHostEnvironment, TestWebHostEnvironment>();
 
         var sp = services.BuildServiceProvider();
@@ -82,5 +86,8 @@ public class DependencyInjectionTests
 
         var jobsController = scope.ServiceProvider.GetRequiredService<JobsController>();
         Assert.NotNull(jobsController);
+
+        var copilotController = scope.ServiceProvider.GetRequiredService<CopilotController>();
+        Assert.NotNull(copilotController);
     }
 }

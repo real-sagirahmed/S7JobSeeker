@@ -20,6 +20,15 @@ public class JobPosting
     public DateTime? PublishedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    // S7 Remote Autonomy Index (S7 Flex Radar: 0-100)
+    public int? FlexScore { get; set; }
+    public int? FlexWhereScore { get; set; }
+    public int? FlexWhenScore { get; set; }
+    public int? FlexHowScore { get; set; }
+    public bool IsWorkFromAnywhere { get; set; }
+    public string? TimezoneRequirements { get; set; }
+    public string? FlexibilityNotes { get; set; }
+
     public ICollection<JobMatchScore> MatchScores { get; set; } = [];
     public ICollection<TailoredApplication> TailoredApplications { get; set; } = [];
 }

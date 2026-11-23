@@ -77,6 +77,8 @@ public class ArchitecturalIntentLockTests
             Assert.Contains("'S7 Production-Ready CBS Credential'", enCode);
             Assert.Contains("'S7 Technical Readiness Dossier'", enCode);
             Assert.Contains("'S7 Tailored Application Pack'", enCode);
+            Assert.Contains("'S7 Flex Radar'", enCode);
+            Assert.Contains("'S7 Application Copilot'", enCode);
 
             // Assert Bengali proprietary branding
             Assert.Contains("'S7 ম্যাচ রাডার'", bnCode);
@@ -86,12 +88,14 @@ public class ArchitecturalIntentLockTests
             Assert.Contains("'S7 ভেরিফায়েড প্রোডাকশন ক্রেডেনশিয়াল'", bnCode);
             Assert.Contains("'S7 টেকনিক্যাল রেডিনেস ডসিয়ার'", bnCode);
             Assert.Contains("'S7 টেইলরড অ্যাপ্লিকেশন প্যাক'", bnCode);
+            Assert.Contains("'S7 ফ্লেক্স রাডার'", bnCode);
+            Assert.Contains("'S7 অ্যাপ্লিকেশন কপাইলট'", bnCode);
 
             // Assert zero occurrences of competitor branding (e.g. "coursera") across all non-comment translation lines
             var enExecutableCode = string.Join("\n", enCode.Split('\n').Where(line => !line.TrimStart().StartsWith("//")));
             var bnExecutableCode = string.Join("\n", bnCode.Split('\n').Where(line => !line.TrimStart().StartsWith("//")));
 
-            string[] bannedCompetitors = ["coursera", "udemy", "edx", "pluralsight"];
+            string[] bannedCompetitors = ["coursera", "udemy", "edx", "pluralsight", "jobgether", "jobcopilot"];
             foreach (var competitor in bannedCompetitors)
             {
                 Assert.DoesNotContain(competitor, enExecutableCode, StringComparison.OrdinalIgnoreCase);

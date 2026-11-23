@@ -87,7 +87,11 @@ export const en = {
     remote: 'Remote',
     saveJob: 'Save Job',
     removeBookmark: 'Remove Bookmark',
-    anywhere: 'Anywhere'
+    anywhere: 'Anywhere',
+    flexRadar: 'S7 Flex Radar',
+    autonomyScore: 'Autonomy Index',
+    wfaBadge: 'Work From Anywhere',
+    asyncBadge: 'Full Async'
   },
   paste: {
     title: 'S7 Circular Scanner & Gap Audit',
@@ -330,7 +334,16 @@ export const en = {
     coverLetter: 'Tailored Cover Letter',
     download: 'Download .txt',
     copy: 'Copy Text',
-    copied: 'Copied'
+    copied: 'Copied',
+    copilotTab: 'S7 Application Copilot',
+    coverLetterTab: 'Cover Letter & Resume Tips',
+    questionsPlaceholder: 'Enter screening questions from job portal (one per line)...',
+    generateAnswers: 'Generate Tailored Answers',
+    generating: 'Generating AI Answers...',
+    recruiterSection: 'Direct Hiring Team Outreach',
+    openRecruiterSearch: 'Find Recruiters on LinkedIn',
+    coldEmailPitch: '1-Click Cold InMail / Email Pitch',
+    keyHighlights: 'Key Technical Highlights'
   },
   cbsHero: {
     track: 'Specialization Track',

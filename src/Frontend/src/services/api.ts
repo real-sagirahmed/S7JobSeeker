@@ -20,7 +20,9 @@ import type {
   CbsAiDoubtRequest,
   CbsAiDoubtResponse,
   CbsCertificateVerification,
-  CbsFullExport
+  CbsFullExport,
+  ApplicationCopilotRequest,
+  ApplicationCopilotResponse
 } from '../types';
 
 const API_BASE = '/api';
@@ -580,6 +582,24 @@ export const api = {
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: 'Export failed' }));
         throw new Error(err.message || 'Failed to export curriculum blueprint');
+      }
+      return res.json();
+    }
+  },
+
+  copilot: {
+    async generateAnswers(data: ApplicationCopilotRequest): Promise<ApplicationCopilotResponse> {
+      const res = await fetch(`${API_BASE}/copilot/screening-answers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to generate copilot answers' }));
+        throw new Error(err.message || 'Failed to generate copilot answers');
       }
       return res.json();
     }

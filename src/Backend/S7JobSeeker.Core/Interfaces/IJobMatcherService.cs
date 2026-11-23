@@ -5,7 +5,10 @@ namespace S7JobSeeker.Core.Interfaces;
 
 public record TailoredApplicationResult(
     string CoverLetter,
-    string ResumeTips
+    string ResumeTips,
+    Guid? JobId = null,
+    string? Title = null,
+    string? Company = null
 );
 
 public interface IJobMatcherService

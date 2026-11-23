@@ -10,6 +10,7 @@ using S7JobSeeker.AI.Parsers;
 using S7JobSeeker.AI.Services;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Interfaces;
+using S7JobSeeker.Core.Services;
 using S7JobSeeker.Infrastructure.Data;
 using S7JobSeeker.Infrastructure.JobFetchers;
 using S7JobSeeker.Infrastructure.Vector;
@@ -176,6 +177,8 @@ builder.Services.AddScoped<ISkillExtractorService, SkillExtractorService>();
 builder.Services.AddScoped<IJobMatcherService, JobMatcherService>();
 builder.Services.AddScoped<IJobPreparationService, JobPreparationService>();
 builder.Services.AddScoped<ICbsSprintService, CbsSprintService>();
+builder.Services.AddSingleton<IFlexScoreCalculator, FlexScoreCalculator>();
+builder.Services.AddScoped<IApplicationCopilotService, ApplicationCopilotService>();
 
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();

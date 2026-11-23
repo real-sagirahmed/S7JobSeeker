@@ -10,7 +10,7 @@
 [![Semantic Kernel](https://img.shields.io/badge/Semantic%20Kernel-Microsoft%20AI-0078D4?style=for-the-badge&logo=microsoft&logoColor=white)](https://github.com/microsoft/semantic-kernel)
 [![Qdrant](https://img.shields.io/badge/Qdrant-Vector%20Search-DC382D?style=for-the-badge&logo=qdrant&logoColor=white)](https://qdrant.tech/)
 [![Google Gemini](https://img.shields.io/badge/Gemini%202.0%20Flash-Google%20AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
-[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-129%20Passing-success?style=for-the-badge&logo=checkmarx&logoColor=white)]()
+[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-135%20Passing-success?style=for-the-badge&logo=checkmarx&logoColor=white)]()
 [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ---
@@ -227,7 +227,7 @@ npm run dev
 ```powershell
 dotnet test S7JobSeeker.sln --configuration Release
 ```
-- **ফলাফল**: `Passed! - Failed: 0, Passed: 77, Skipped: 0, Total: 77`
+- **ফলাফল**: `Passed! - Failed: 0, Passed: 135, Skipped: 0, Total: 135`
 
 ---
 
@@ -237,7 +237,7 @@ dotnet test S7JobSeeker.sln --configuration Release
 1. `main` ব্রাঞ্চে কোনো কমিট পুশ হলে `.github/workflows/deploy.yml` ট্রিগার হয়।
 2. React ফ্রন্টএন্ড টাইপস্ক্রিপ্ট সহ প্রডাকশন বিল্ড হয় এবং ব্যাকএন্ডের `wwwroot/`-এ মার্জ হয়।
 3. .NET 9 এপিআই রিলিজ কনফিগারেশনে পাবলিশ হয়।
-4. মোট ৫৩টি অটোমেটেড ইউনিট ও ইন্টিগ্রেশন টেস্ট রান করে। টেস্ট পাস করলেই কেবল ডিপ্লয়মেন্ট অগ্রসর হয়।
+4. মোট ১৩৫টি অটোমেটেড ইউনিট ও ইন্টিগ্রেশন টেস্ট রান করে। টেস্ট পাস করলেই কেবল ডিপ্লয়মেন্ট অগ্রসর হয়।
 5. MonsterASP.net হোস্টিংয়ে FTPS-এর মাধ্যমে লাইভ সার্ভার আপডেট সম্পন্ন হয়।
 
 ---
