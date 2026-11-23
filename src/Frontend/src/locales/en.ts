@@ -1,3 +1,11 @@
+// ARCHITECTURAL INTENT: Proprietary S7 Brand Nomenclature Lock
+// All user-facing terminology across UI components, locales (en/bn), and metadata
+// MUST reflect teamS7 proprietary systems (e.g. S7 Semantic Match Radar, S7 Circular Scanner,
+// S7 Talent DNA, teamS7 CBS Engineering Immersion, S7 Production-Ready CBS Credential).
+// Third-party educational or aggregator names (e.g. "Coursera-Grade") MUST NOT be used to describe
+// our features or certifications. External source names (BDJobs, LinkedIn, RemoteOK) are strictly
+// permitted ONLY as external data source filter tags.
+
 export const en = {
   common: {
     save: 'Save',
@@ -23,26 +31,26 @@ export const en = {
   },
   nav: {
     brandSubtitle: 'teamS7 Intelligence',
-    matches: 'Smart Matches',
-    profile: 'Resume & Profile',
-    paste: 'Paste & Analyze',
+    matches: 'S7 Match Radar',
+    profile: 'S7 Talent DNA',
+    paste: 'S7 Circular Scanner',
     saved: 'Saved Jobs',
-    companies: 'BD Tech Ecosystem',
-    cbsSprint: 'CBS Sprint',
+    companies: 'S7 Tech Directory',
+    cbsSprint: 'S7 CBS Immersion',
     directorConsole: 'Director Console',
     loginRegister: 'Login / Register',
     logout: 'Logout',
     history: 'History',
-    topUpCredits: 'Click to view AI Credits or Top Up via bKash/Nagad',
+    topUpCredits: 'View S7 Intelligence Credits & Top Up via bKash/Nagad',
     topUp: 'Top Up',
     director: 'Director',
     menu: 'Menu',
     closeMenu: 'Close menu'
   },
   matches: {
-    title: 'Top Matching Opportunities',
-    subtitle: 'RAG semantic ranking based on your resume, technical pillars and experience curve',
-    syncJobs: 'Sync Tech Jobs',
+    title: 'S7 Semantic Match Radar',
+    subtitle: 'Proprietary RAG semantic scoring based on your S7 Talent DNA and engineering benchmarks',
+    syncJobs: 'Run S7 Live Ingestion Radar',
     syncing: 'Syncing live jobs...',
     allSources: 'All Sources (7 Sources)',
     localJobs: 'BDJobs (Local BD)',
@@ -53,8 +61,8 @@ export const en = {
     fairMatch: 'Fair Match (60%+)',
     evaluatingSemantic: 'Evaluating semantic relevance with Gemini RAG...',
     noJobsFoundTitle: 'No Matching Jobs Found',
-    noJobsFoundDesc: 'Click the "Sync Tech Jobs" button above to ingest new jobs from live sources, or paste any circular directly via "Paste & Analyze".',
-    fetchNow: 'Fetch & Ingest Live Jobs Now',
+    noJobsFoundDesc: 'Click the "Run S7 Live Ingestion Radar" button above to ingest new jobs from live sources, or scan any circular directly via "S7 Circular Scanner".',
+    fetchNow: 'Run S7 Live Ingestion Radar',
     loadMore: 'Load More Matches',
     loadingMore: 'Loading Next Matches...',
     showingAll: 'All matching opportunities displayed',
@@ -62,7 +70,7 @@ export const en = {
     savedJobsSubtitle: 'Your bookmarked career opportunities',
     loadingSaved: 'Loading saved opportunities...',
     refreshSaved: 'Refresh Saved Jobs',
-    noSavedJobs: 'You have not saved any jobs yet. Bookmark opportunities from Smart Matches.'
+    noSavedJobs: 'You have not saved any jobs yet. Bookmark opportunities from S7 Match Radar.'
   },
   jobCard: {
     matchScore: 'Match Score',
@@ -70,10 +78,10 @@ export const en = {
     skillCompetency: 'Skill Competency',
     matchingSkills: 'Matching Competencies',
     missingSkills: 'Skill Gaps To Bridge',
-    aiInsight: 'AI Advisor Insight',
-    prepGuide: 'Prep & Interview Guide',
-    loadingGuide: 'Loading Guide...',
-    tailorApp: 'Tailor Application',
+    aiInsight: 'S7 AI Advisor Insight',
+    prepGuide: 'S7 Readiness Dossier',
+    loadingGuide: 'Loading Dossier...',
+    tailorApp: 'S7 Application Pack',
     draftingApp: 'Drafting Application...',
     applyOnPortal: 'Apply on',
     remote: 'Remote',
@@ -82,9 +90,9 @@ export const en = {
     anywhere: 'Anywhere'
   },
   paste: {
-    title: 'Paste & Analyze Custom Circular',
-    subtitle: 'Paste any job circular from LinkedIn, BDJobs, or an email to evaluate candidate fit',
-    clearAndPaste: 'Clear & Paste Another',
+    title: 'S7 Circular Scanner & Gap Audit',
+    subtitle: 'Scan and deconstruct any job circular to evaluate candidate fit, tech stack alignment & bridge gaps',
+    clearAndPaste: 'Clear & Scan Another',
     jobTitle: 'Job Title (Optional)',
     jobTitlePlaceholder: 'e.g. Senior .NET Architect',
     company: 'Company (Optional)',
@@ -93,23 +101,23 @@ export const en = {
     urlPlaceholder: 'https://...',
     requirementsText: 'Job Circular / Requirements Text',
     requirementsPlaceholder: 'Paste the job requirements, responsibilities, or entire circular text here...',
-    evaluateButton: 'Evaluate Match & Gaps',
+    evaluateButton: 'Run S7 Circular Audit',
     evaluatingButton: 'Analyzing via Gemini RAG...',
     resultTitle: 'Evaluation Result & Actions',
-    resultSubtitle: 'Persisted in Database & ready for tailored cover letter or bookmarking',
-    gapChecklistTitle: 'Skill Gap Bridge & Interview Preparation Checklist',
-    gapChecklistDesc: 'The following skills from this circular were not found in your resume. Review them before interviewing or highlight them in your cover letter:',
-    openBlueprint: 'Open 4-Stage Interview & Assessment Blueprint'
+    resultSubtitle: 'Persisted in Database & ready for tailored application pack or bookmarking',
+    gapChecklistTitle: 'S7 Skill Gap Bridge & Readiness Checklist',
+    gapChecklistDesc: 'The following skills from this circular were not found in your S7 Talent DNA. Review them before interviewing or highlight them in your application pack:',
+    openBlueprint: 'Open S7 4-Stage Interview & Assessment Blueprint'
   },
   profile: {
-    title: 'Candidate Profile & Resume Intelligence',
+    title: 'S7 Talent DNA & Profile Intelligence',
     subtitle: 'Parsed skills, experience timeline and role alignment extracted via PdfPig and Gemini RAG',
     uploadTitle: 'Upload or Update Resume (PDF)',
-    uploadDesc: 'Upload your latest technical resume. We will parse your skills, experiences, and calculate job match scores.',
+    uploadDesc: 'Upload your latest technical resume to construct your S7 Talent DNA and calculate real-time match scores.',
     dragDrop: 'Drag and drop your PDF resume here, or browse files',
-    uploading: 'Uploading & Extracting...',
-    viewMatches: 'View Matching Jobs',
-    exploreCompanies: 'Explore BD Tech Companies',
+    uploading: 'Uploading & Extracting Talent DNA...',
+    viewMatches: 'View S7 Match Radar',
+    exploreCompanies: 'Explore S7 Tech Directory',
     summaryTitle: 'Professional Summary',
     skillsTitle: 'Extracted Technical Competencies',
     addSkillTitle: 'Add Custom Skill',
@@ -119,7 +127,7 @@ export const en = {
     yearsExp: 'Years of Experience'
   },
   companies: {
-    title: 'Bangladesh Global Tech Companies Ecosystem',
+    title: 'S7 Global Tech Directory',
     subtitle: 'Curated directory of 180+ tech companies in Bangladesh operating globally with enterprise engineering stacks',
     searchPlaceholder: 'Search company, global product, or location (e.g. Therap, TigerIT)...',
     allCompanies: 'All Companies',
@@ -128,16 +136,16 @@ export const en = {
     clearFilters: 'Clear all filters',
     showingCount: 'Showing',
     verifiedCompanies: 'verified tech companies',
-    rankedByOverlap: 'Ranked by your resume tech overlap',
+    rankedByOverlap: 'Ranked by your Talent DNA overlap',
     viewActiveJobs: 'Active Jobs',
     generatePitch: 'Generate Cold Pitch',
     globalProducts: 'Global Solutions',
     coreTechStack: 'Core Tech Stack'
   },
   cbs: {
-    portalBadge: 'Coursera-Grade CBS Career Sprint',
-    portalTitle: 'Core Banking Systems (CBS) Support & Engineering Sprint',
-    portalSubtitle: '14-Day Structured Career Sprint for Core Banking Systems Support, SQL practical triage, Linux/Docker diagnostic labs and mock assessments.',
+    portalBadge: 'teamS7 CBS Engineering Immersion',
+    portalTitle: 'Core Banking Systems (CBS) Support & Engineering Immersion',
+    portalSubtitle: '14-Day Structured Career Immersion for Core Banking Systems Support, SQL practical triage, Linux/Docker diagnostic labs and mock assessments.',
     overviewTab: 'Overview & Syllabus',
     curriculumTab: '14-Day Curriculum',
     labsTab: 'Production Diagnostic Labs',
@@ -150,9 +158,9 @@ export const en = {
     commonMistakesTitle: 'CBS Support Common Mistakes — Avoid These Strictly'
   },
   prep: {
-    modalTitle: 'Customized Job Application Package',
-    generatingTitle: 'Generating Preparation Master Guide...',
-    subtitle: 'Enterprise 4-Stage Interview & Assessment Master Blueprint',
+    modalTitle: 'S7 Technical Readiness Dossier',
+    generatingTitle: 'Generating S7 Technical Readiness Dossier...',
+    subtitle: 'S7 4-Stage Interview & Assessment Blueprint',
     exportDossier: 'Export Dossier',
     downloadGuide: 'Download .md Guide',
     done: 'Done',
@@ -187,8 +195,8 @@ export const en = {
   auth: {
     loginTitle: 'Welcome Back',
     registerTitle: 'Create Your Account',
-    loginSubtitle: 'Login to access your AI job match recommendations and career tools',
-    registerSubtitle: 'Get 50 Welcome AI Credits & 30-Day Free Trial access',
+    loginSubtitle: 'Login to access your S7 career intelligence tools and match radar',
+    registerSubtitle: 'Get 50 Welcome S7 Credits & 30-Day Free Trial access',
     emailLabel: 'Email Address',
     emailPlaceholder: 'you@example.com',
     passwordLabel: 'Password',
@@ -205,13 +213,13 @@ export const en = {
     registering: 'Creating account...'
   },
   credits: {
-    title: 'AI Credits & Top Up',
+    title: 'S7 Intelligence Credits',
     subtitle: 'Transparent pay-as-you-go bundles via bKash, Nagad or Rocket',
     currentBalance: 'Current Balance',
     unlimitedAdmin: 'Master Director (Unlimited Access)',
     trialNotice: 'Trial Active',
     trialDaysRemaining: 'days remaining',
-    selectBundle: 'Select a Credit Bundle',
+    selectBundle: 'Select an Intelligence Bundle',
     sendPaymentTitle: 'Send Mobile Banking Payment',
     verifyTitle: 'Verify Payment',
     senderNumber: 'Sender Mobile Number',
@@ -246,8 +254,8 @@ export const en = {
   },
   footer: {
     tagline: 'teamS7 Intelligence',
-    matcher: 'Semantic AI Job Matcher',
-    ragEngine: 'RAG Tailored Application Engine',
+    matcher: 'S7 Semantic AI Radar',
+    ragEngine: 'S7 RAG Tailored Application Engine',
     copyright: 'teamS7. All rights reserved.'
   },
   hero: {
@@ -256,24 +264,24 @@ export const en = {
     titleHighlight: 'with Semantic AI',
     subtitle: 'Upload your resume. Our AI automatically analyzes your technical competencies and experience to provide real-time semantic matching, skill gap analysis, and tailored applications.',
     getStarted: 'Get Started Free',
-    feat1Title: 'Automated Resume Parsing',
-    feat1Desc: 'Extracts skills, experience, and career trajectory from PDF to construct an accurate candidate profile.',
+    feat1Title: 'S7 Talent DNA Extraction',
+    feat1Desc: 'Extracts skills, experience, and career trajectory from PDF to construct an accurate candidate vector profile.',
     feat2Title: 'Semantic & RAG Matching',
     feat2Desc: 'Goes beyond keyword matching to calculate vector-based relevance (0-100%) against actual job responsibilities.',
-    feat3Title: 'Tailored Prep & Dossier',
+    feat3Title: 'S7 Readiness Dossier & Pack',
     feat3Desc: 'Generates 4-stage interview blueprints, skill gap mitigation checklists, and bespoke cover letters.'
   },
   toasts: {
     loadMatchesError: 'Failed to load job matches.',
-    outOfCredits: 'Your AI credits are exhausted. Please top up your credits to continue.',
+    outOfCredits: 'Your S7 Intelligence credits are exhausted. Please top up your credits to continue.',
     removedBookmark: 'Job successfully removed from bookmarks.',
     savedBookmark: 'Job successfully saved to bookmarks.',
-    pasteEvaluated: 'Circular analysis completed.',
-    tailoredReady: 'Tailored application package prepared.',
-    prepReady: 'Interview preparation guide generated.',
+    pasteEvaluated: 'S7 circular scan completed.',
+    tailoredReady: 'S7 tailored application pack prepared.',
+    prepReady: 'S7 technical readiness dossier generated.',
     suggestCompanySuccess: 'Company suggestion submitted. It will be published after director review.',
     pitchGenerated: 'Targeted cold pitch successfully generated.',
-    resumeUploaded: 'Resume uploaded and skills parsed successfully.',
+    resumeUploaded: 'Resume uploaded and S7 Talent DNA extracted successfully.',
     copiedToClipboard: 'Copied to clipboard.',
     moduleLoading: 'Loading module...'
   },
@@ -291,7 +299,7 @@ export const en = {
   },
   suggestModal: {
     title: 'Suggest a Company',
-    subtitle: 'Contribute to the BD Tech Directory. Submissions are reviewed by admin before publishing.',
+    subtitle: 'Contribute to the S7 Tech Directory. Submissions are reviewed by admin before publishing.',
     name: 'Company Name',
     website: 'Company Website URL',
     careers: 'Careers / Jobs URL (Optional)',
@@ -317,7 +325,7 @@ export const en = {
     failed: 'Submission failed. Please try again.'
   },
   tailoredModal: {
-    title: 'Customized Job Application Package',
+    title: 'S7 Tailored Application Pack',
     resumeTips: 'High-Impact Resume Optimization Tips',
     coverLetter: 'Tailored Cover Letter',
     download: 'Download .txt',
@@ -383,10 +391,10 @@ export const en = {
     title: 'Grades & Assessment (Gradebook & Performance)',
     subtitle: 'A minimum score of 70% is required on self-check assessments across all modules.',
     avgScore: 'Average Assessment Score',
-    certReadyTitle: 'Congratulations! Your Certificate is Unlocked',
+    certReadyTitle: 'Congratulations! Your S7 Credential is Unlocked',
     certProgressTitle: 'Certificate of CBS Readiness Progress',
     certReadyDesc: 'You have completed all 14 curriculum days and scored 70%+ average on assessments.',
-    certProgressDesc: 'Complete all 14 days and score 70%+ on quizzes to unlock your verified digital certificate.',
+    certProgressDesc: 'Complete all 14 days and score 70%+ on quizzes to unlock your verified digital credential.',
     viewCert: 'View & Print Certificate',
     moduleBreakdown: 'Daily Performance Breakdown',
     completed: 'Completed',
@@ -394,7 +402,7 @@ export const en = {
     reviewLesson: 'Review Lesson'
   },
   cbsCertModal: {
-    verifiedBadge: 'Coursera-Grade Verified Certificate',
+    verifiedBadge: 'S7 Production-Ready CBS Credential',
     copyVerificationLink: 'Verification Link',
     linkCopied: 'Link Copied!',
     print: 'Print / Save PDF',
@@ -408,7 +416,7 @@ export const en = {
   },
   cbsVerification: {
     backToApp: 'Back to S7 Job Seeker',
-    networkBadge: 'teamS7 Global Verification Network',
+    networkBadge: 'teamS7 Cryptographic Verification Ledger',
     trackBadge: 'CBS Career Specialization Track',
     title: 'Public Certificate Credential Verification',
     subtitle: 'Verify candidate credentials, specialization track completion, and official examination scores.',
@@ -428,12 +436,12 @@ export const en = {
     tamperProof: 'Cryptographically verified via teamS7 Intelligence SHA-256 ledger.'
   },
   cbsAi: {
-    mentorTitle: 'CBS AI Senior Mentor',
+    mentorTitle: 'S7 Production Architect (CBS AI)',
     mentorSubtitle: 'Ask any questions regarding Core Banking Systems, Linux troubleshooting, Docker, or SQL OLTP incidents.',
     quickQuestions: 'Quick Scenario Prompts:',
     selectTopic: 'Select Topic Focus:',
     askPlaceholder: 'e.g. How to prevent duplicate postings when retrying failed transactions in double-entry ledger?',
-    askButton: 'Ask AI Mentor',
+    askButton: 'Ask S7 Mentor',
     thinking: 'Analyzing production incident...',
     relatedTopics: 'Related Production Topics:',
     errorResponse: 'Failed to retrieve AI mentor advice. Please try again.'

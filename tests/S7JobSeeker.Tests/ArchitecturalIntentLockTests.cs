@@ -52,4 +52,46 @@ public class ArchitecturalIntentLockTests
             Assert.Contains("\"s7job-seeker-client\"", programCode);
         }
     }
+
+    // ARCHITECTURAL INTENT: Proprietary S7 Brand Nomenclature Lock
+    // The system locks proprietary branding for all modules: S7 Match Radar, S7 Circular Scanner,
+    // S7 Talent DNA, teamS7 CBS Engineering Immersion, S7 Production-Ready CBS Credential,
+    // S7 Technical Readiness Dossier, and S7 Tailored Application Pack.
+    // Third-party educational or aggregator names (e.g. "Coursera-Grade") MUST NOT be used.
+    [Fact]
+    public void LocaleBranding_MustEnforceProprietaryS7NomenclatureAndExcludeCompetitorNames()
+    {
+        var enLocalePath = Path.Combine(AppContext.BaseDirectory, "../../../../../src/Frontend/src/locales/en.ts");
+        var bnLocalePath = Path.Combine(AppContext.BaseDirectory, "../../../../../src/Frontend/src/locales/bn.ts");
+
+        if (File.Exists(enLocalePath) && File.Exists(bnLocalePath))
+        {
+            var enCode = File.ReadAllText(enLocalePath);
+            var bnCode = File.ReadAllText(bnLocalePath);
+
+            // Assert English proprietary branding
+            Assert.Contains("'S7 Match Radar'", enCode);
+            Assert.Contains("'S7 Circular Scanner'", enCode);
+            Assert.Contains("'S7 Talent DNA'", enCode);
+            Assert.Contains("'teamS7 CBS Engineering Immersion'", enCode);
+            Assert.Contains("'S7 Production-Ready CBS Credential'", enCode);
+            Assert.Contains("'S7 Technical Readiness Dossier'", enCode);
+            Assert.Contains("'S7 Tailored Application Pack'", enCode);
+
+            // Assert Bengali proprietary branding
+            Assert.Contains("'S7 ম্যাচ রাডার'", bnCode);
+            Assert.Contains("'S7 সার্কুলার স্ক্যানার'", bnCode);
+            Assert.Contains("'S7 ট্যালেন্ট DNA'", bnCode);
+            Assert.Contains("'teamS7 সিবিএস ইঞ্জিনিয়ারিং ইমার্শন'", bnCode);
+            Assert.Contains("'S7 ভেরিফায়েড প্রোডাকশন ক্রেডেনশিয়াল'", bnCode);
+            Assert.Contains("'S7 টেকনিক্যাল রেডিনেস ডসিয়ার'", bnCode);
+            Assert.Contains("'S7 টেইলরড অ্যাপ্লিকেশন প্যাক'", bnCode);
+
+            // Assert no active third-party educational competitor labels
+            Assert.DoesNotContain("'Coursera-Grade CBS Career Sprint'", enCode);
+            Assert.DoesNotContain("'Coursera-Grade Verified Certificate'", enCode);
+            Assert.DoesNotContain("'Coursera-মানের সিবিএস ক্যারিয়ার স্প্রিন্ট'", bnCode);
+            Assert.DoesNotContain("'Coursera-মানের ভেরিফায়েড সার্টিফিকেট'", bnCode);
+        }
+    }
 }

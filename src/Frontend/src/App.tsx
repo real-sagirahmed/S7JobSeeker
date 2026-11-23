@@ -400,7 +400,7 @@ export const App: React.FC = () => {
               </div>
             )}
 
-            {/* TAB: Smart Matches */}
+            {/* TAB: S7 Match Radar */}
             {activeTab === 'matches' && (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/8">
@@ -548,7 +548,7 @@ export const App: React.FC = () => {
               </div>
             )}
 
-            {/* TAB: Paste & Analyze */}
+            {/* TAB: S7 Circular Scanner */}
             {activeTab === 'paste' && (
               <React.Suspense fallback={<ComponentFallback />}>
                 <PasteAndAnalyze
@@ -560,7 +560,7 @@ export const App: React.FC = () => {
               </React.Suspense>
             )}
 
-            {/* TAB: Resume & Profile */}
+            {/* TAB: S7 Talent DNA & Profile */}
             {activeTab === 'profile' && (
               <ResumeUploader
                 profile={profile}

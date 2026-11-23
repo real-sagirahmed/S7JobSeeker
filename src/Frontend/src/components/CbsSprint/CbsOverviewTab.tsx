@@ -136,7 +136,7 @@ export const CbsOverviewTab: React.FC<CbsOverviewTabProps> = ({ onGoToCurriculum
               {language === 'bn' ? 'Specialization Modules (৪টি মডিউলের বিস্তারিত রোডম্যাপ)' : 'Specialization Modules (4 Modules Detailed Syllabus)'}
             </h2>
             <p className="text-xs text-slate-500">
-              {language === 'bn' ? 'Coursera কাঠামোর মত ধাপে ধাপে ফাউন্ডেশন থেকে অ্যাডভান্সড ইনসিডেন্ট ম্যানেজমেন্ট' : 'Structured Coursera-grade roadmap from fundamentals to live incident management'}
+              {language === 'bn' ? 'teamS7 ইঞ্জিনিয়ারিং কাঠামো অনুযায়ী ধাপে ধাপে ফাউন্ডেশন থেকে অ্যাডভান্সড ইনসিডেন্ট ম্যানেজমেন্ট' : 'Structured teamS7 engineering roadmap from fundamentals to live incident management'}
             </p>
           </div>
           <button
@@ -199,8 +199,8 @@ export const CbsOverviewTab: React.FC<CbsOverviewTabProps> = ({ onGoToCurriculum
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
               {language === 'bn'
-                ? 'প্রতিটি দিনের পাঠ ও সেলফ-চেক অ্যাসেসমেন্টে ন্যূনতম ৭০% পাসিং স্কোর অর্জন করতে হবে। ১৪ দিন সফলভাবে সম্পন্ন হলে স্বয়ংক্রিয়ভাবে একটি ভেরিফাইড Coursera-স্টাইল ডিজিটাল সার্টিফিকেট তৈরি হবে।'
-                : 'Achieve a minimum passing score of 70% across all daily self-check assessments. Completing all 14 days unlocks a verified Coursera-grade digital certificate.'
+                ? 'প্রতিটি দিনের পাঠ ও সেলফ-চেক অ্যাসেসমেন্টে ন্যূনতম ৭০% পাসিং স্কোর অর্জন করতে হবে। ১৪ দিন সফলভাবে সম্পন্ন হলে স্বয়ংক্রিয়ভাবে একটি ভেরিফাইড S7 ডিজিটাল ক্রেডেনশিয়াল তৈরি হবে।'
+                : 'Achieve a minimum passing score of 70% across all daily self-check assessments. Completing all 14 days unlocks a verified S7 digital credential.'
               }
             </p>
           </div>

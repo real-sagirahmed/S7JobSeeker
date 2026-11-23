@@ -227,7 +227,7 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
         <RefreshCw className="w-8 h-8 text-teal-600 animate-spin" />
-        <p className="text-sm font-bold text-slate-700">Coursera-Grade CBS Specialization লোড হচ্ছে...</p>
+        <p className="text-sm font-bold text-slate-700">{language === 'bn' ? 'teamS7 CBS ইমার্শন লোড হচ্ছে...' : 'Loading teamS7 CBS Immersion...'}</p>
       </div>
     );
   }
@@ -250,7 +250,7 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
 
       {/* Main Specialization Container */}
       <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-        {/* Coursera-Style Specialization Hero Banner */}
+        {/* teamS7 Specialization Hero Banner */}
         <CbsSpecializationHero
           curriculum={curriculum}
           progress={progress}
@@ -260,7 +260,7 @@ export const CbsSprintPortal: React.FC<CbsSprintPortalProps> = ({
           onDownloadFullDossier={handleDownloadFullDossier}
         />
 
-        {/* Coursera 5-Tab Navigation Bar */}
+        {/* teamS7 5-Tab Navigation Bar */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-1.5 flex items-center overflow-x-auto gap-1">
           {[
             { id: 'overview', label: t.cbs.overviewTab, icon: <BookOpen className="w-4 h-4" /> },

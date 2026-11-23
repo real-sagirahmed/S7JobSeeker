@@ -124,12 +124,12 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
     return (
       <div className="min-h-[40vh] flex flex-col items-center justify-center space-y-3">
         <RefreshCw className="w-8 h-8 text-teal-600 animate-spin" />
-        <p className="text-xs font-bold text-slate-600">{language === 'bn' ? 'Coursera লেসন কন্টেন্ট লোড হচ্ছে...' : 'Loading Coursera lesson content...'}</p>
+        <p className="text-xs font-bold text-slate-600">{language === 'bn' ? 'teamS7 লেসন কন্টেন্ট লোড হচ্ছে...' : 'Loading S7 lesson content...'}</p>
       </div>
     );
   }
 
-  // If a lesson is active, render In-Place Coursera Lesson Reader
+  // If a lesson is active, render In-Place teamS7 Lesson Reader
   if (activeLesson) {
     const currentDay = activeLesson.dayNumber;
     const currentModule = getModuleForDay(currentDay);
@@ -139,7 +139,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
 
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
-        {/* Coursera-grade Breadcrumb Header */}
+        {/* teamS7 Breadcrumb Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
           <div className="flex items-center space-x-2 text-xs text-slate-500 overflow-x-auto whitespace-nowrap py-1">
             <button
@@ -173,7 +173,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
           onSaveQuizScore={onSaveQuizScore}
         />
 
-        {/* Floating Bottom Coursera Navigation Bar */}
+        {/* Floating Bottom teamS7 Navigation Bar */}
         <div className="sticky bottom-4 z-30 bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-teal-500/30 flex items-center justify-between gap-4">
           <div>
             {hasPrevious ? (
@@ -237,7 +237,7 @@ export const CbsCurriculumTab: React.FC<CbsCurriculumTabProps> = ({
     );
   }
 
-  // Otherwise, render Coursera 4-Module Syllabus Accordion
+  // Otherwise, render teamS7 4-Module Syllabus Accordion
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between border-b border-slate-200 pb-4">
