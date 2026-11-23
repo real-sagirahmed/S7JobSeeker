@@ -462,7 +462,14 @@ public class JobsController : ControllerBase
                             JobSource.Remotive => "Remotive",
                             JobSource.Arbeitnow => "Arbeitnow",
                             _ => "Custom Paste"
-                        });
+                        },
+                        job.FlexScore,
+                        job.FlexWhereScore,
+                        job.FlexWhenScore,
+                        job.FlexHowScore,
+                        job.IsWorkFromAnywhere,
+                        job.TimezoneRequirements,
+                        job.FlexibilityNotes);
 
                 results.Add(eval with { IsBookmarked = true });
             }

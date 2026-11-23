@@ -184,6 +184,12 @@ export const App: React.FC = () => {
   }, [activeTab, user]);
 
   useEffect(() => {
+    if (activeTab === 'matches' && user && profile && matches.length === 0) {
+      fetchMatches(sourceFilter, remoteOnly);
+    }
+  }, [activeTab, user, profile]);
+
+  useEffect(() => {
     if (activeTab === 'matches' && user && profile) {
       fetchMatches(sourceFilter, remoteOnly);
     }
