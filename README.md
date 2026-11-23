@@ -27,7 +27,7 @@
 
 সিস্টেমটি প্রার্থীর রেজুমি পার্স করে ৭৬৮-ডাইমেনশনাল ভেক্টর এমবেডিং তৈরি করে, Qdrant ভেক্টর ক্লাউডের মাধ্যমে রিয়েল-টাইম জবের সাথে সিম্যান্টিক সিমিলারিটি স্কোরিং করে, স্কিল গ্যাপ চিহ্নিত করে এবং জব সার্কুলার অনুযায়ী কাস্টমাইজড কভার লেটার প্রস্তুত করে। 
 
-পাশাপাশি প্ল্যাটফর্মটিতে যুক্ত রয়েছে **১৮০+ বাংলাদেশি গ্লোবাল টেক কোম্পানি ডিরেক্টরি** (যাতে .NET ও C# নিয়ে কাজ করা ৩০+ এন্টারপ্রাইজ কোম্পানির বিশেষায়িত ক্লাস্টার অন্তর্ভুক্ত) এবং **১৪-দিনের Coursera-মানের কোর ব্যাংকিং (CBS) ক্যারিয়ার স্প্রিন্ট মডিউল** সহ ভেরিফায়েড ডিজিটাল সার্টিফিকেট জেনারেটর।
+পাশাপাশি প্ল্যাটফর্মটিতে যুক্ত রয়েছে **১৮০+ বাংলাদেশি গ্লোবাল টেক কোম্পানি ডিরেক্টরি** (যাতে .NET ও C# নিয়ে কাজ করা ৩০+ এন্টারপ্রাইজ কোম্পানির বিশেষায়িত ক্লাস্টার অন্তর্ভুক্ত) এবং **১৪-দিনের teamS7 সিবিএস ইঞ্জিনিয়ারিং ইমার্শন মডিউল** সহ ভেরিফায়েড ডিজিটাল ক্রেডেনশিয়াল জেনারেটর।
 
 ---
 
@@ -98,7 +98,7 @@ flowchart TD
 - **Dedicated .NET & C# Enterprise Cluster**: মাইক্রোসফট টেকনোলজি স্ট্যাক (.NET Core, ASP.NET, C#, Azure, SQL Server) নিয়ে কাজ করা ৩০+ শীর্ষস্থানীয় এন্টারপ্রাইজ কোম্পানি (যেমন: Therap, Brain Station 23, Enosis Solutions, BJIT, Cefalo, Kona Software Lab, Kaz Software, Dynamic Solution Innovators, BJIT, ইত্যাদি) আলাদা ফিল্টারে সাজানো।
 - **Community Contribution**: বাদ পড়া কোনো কোম্পানি থাকলে প্রার্থীরা প্ল্যাটফর্ম থেকেই "Suggest a Company" ফর্মের মাধ্যমে যুক্ত করার অনুরোধ জানাতে পারেন।
 
-### ৩. 14-Day CBS Support Career Sprint (Coursera-Grade LMS Hub)
+### ৩. 14-Day teamS7 CBS Engineering Immersion Hub
 - **Modular Curriculum**: ব্যাংকিং টেকনোলজি ও কোর ব্যাংকিং সিস্টেম (CBS) ক্যারিয়ার প্রস্তুতির জন্য ১৪ দিনের মডুলার কারিকুলাম।
 - **5-Tab Integrated Hub**: Overview, Curriculum Modules, Diagnostic Labs, Timed Mock Assessment, এবং Digital Certificate।
 - **Live Production Diagnostics**: ডার্ক টার্মিনাল এসকিউএল স্ক্রিপ্ট, লিনাক্স ট্রাবলশুটিং কমান্ড, ডকার অপারেশনস এবং EOD (End-of-Day) ব্যাচ ফেইলিউর ডায়াগনস্টিকস।
@@ -137,7 +137,7 @@ flowchart TD
 | **Document Parsing** | **PdfPig** | Cross-platform, managed C# PDF text and metadata extraction |
 | **Frontend SPA** | **React 19 (TypeScript)** | Next-generation React with Hooks, typed DTOs and fast VDOM |
 | **Styling & Icons** | **Tailwind CSS v4 + Lucide** | Modern design system, responsive mobile-first UI, Lucide icons |
-| **Markdown Engine** | **react-markdown + remark-gfm**| Coursera-grade documentation, lab syntax highlighting, tables |
+| **Markdown Engine** | **react-markdown + remark-gfm**| Production-grade technical documentation, lab syntax highlighting, tables |
 | **CI/CD & Hosting** | **GitHub Actions + FTPS** | Automated release deployment to **MonsterASP.net** & scheduled cron |
 
 ---
