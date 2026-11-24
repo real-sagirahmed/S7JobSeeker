@@ -80,6 +80,8 @@ export const en = {
     localSourceRemoteNotice: 'Most Skill.Jobs and local BD tech jobs are on-site in Dhaka. Uncheck "Remote Only" to explore all active local job circulars.',
     syncSource: 'Sync Source',
     syncSourceSuccess: 'Source sync completed successfully.',
+    syncFreelancerNow: 'Ingest Live Freelancer.com Projects',
+    syncSelectedSourceNow: 'Sync {source} Jobs Now',
     highMatch: 'High Match (75%+)',
     fairMatch: 'Fair Match (60%+)',
     evaluatingSemantic: 'Evaluating semantic relevance with Gemini RAG...',

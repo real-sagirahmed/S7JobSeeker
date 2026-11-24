@@ -80,6 +80,8 @@ export const bn: TranslationDictionary = {
     localSourceRemoteNotice: 'Skill.Jobs এবং লোকাল বাংলাদেশি সার্কুলারগুলোর অধিকাংশ ঢাকাভিত্তিক অন-সাইট। সমস্ত সার্কুলার দেখতে "শুধুমাত্র রিমোট জব" অপশনটি আনচেক করুন।',
     syncSource: 'সোর্স সিঙ্ক করুন',
     syncSourceSuccess: 'সোর্স সিঙ্ক সফলভাবে সম্পন্ন হয়েছে।',
+    syncFreelancerNow: 'Freelancer.com লাইভ প্রজেক্ট ইনজেস্ট করুন',
+    syncSelectedSourceNow: '{source} জবস এখন সিঙ্ক করুন',
     minScore: 'মিনিমাম ম্যাচ স্কোর',
     anyScore: 'যেকোনো স্কোর (০%+)',
     highMatch: 'উচ্চ ম্যাচ (৭৫%+)',

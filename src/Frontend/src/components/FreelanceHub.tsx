@@ -5,7 +5,8 @@ import {
   Sparkles,
   Copy,
   Check,
-  Zap
+  Zap,
+  DownloadCloud
 } from 'lucide-react';
 import type { JobMatch, ResumeProfile, FreelanceProposalRequest, FreelanceProposalResponse } from '../types';
 import { api } from '../services/api';
@@ -29,8 +30,36 @@ export const FreelanceHub: React.FC<FreelanceHubProps> = ({
   // Freelance Jobs from Backend
   const [freelanceJobs, setFreelanceJobs] = useState<JobMatch[]>([]);
   const [isLoadingJobs, setIsLoadingJobs] = useState(false);
+  const [isSyncingFreelance, setIsSyncingFreelance] = useState(false);
 
-  // Proposal Copilot State
+  const fetchFreelanceProjects = async () => {
+    setIsLoadingJobs(true);
+    try {
+      const res = await api.jobs.getMatches(13, true, 1, 30);
+      setFreelanceJobs(res.items || []);
+    } catch (err) {
+      console.error('Failed to load freelance projects:', err);
+    } finally {
+      setIsLoadingJobs(false);
+    }
+  };
+
+  const handleSyncFreelanceProjects = async () => {
+    setIsSyncingFreelance(true);
+    try {
+      await api.jobs.syncJobs('Freelancer');
+      await fetchFreelanceProjects();
+    } catch (err) {
+      console.error('Failed to sync freelance projects:', err);
+    } finally {
+      setIsSyncingFreelance(false);
+    }
+  };
+
+  // Fetch live freelance jobs (source === 13 / Freelancer)
+  useEffect(() => {
+    fetchFreelanceProjects();
+  }, []);
   const [projectTitle, setProjectTitle] = useState('');
   const [clientName, setClientName] = useState('');
   const [targetPlatform, setTargetPlatform] = useState<'Upwork' | 'Freelancer' | 'Fiverr'>('Upwork');
@@ -80,28 +109,7 @@ export const FreelanceHub: React.FC<FreelanceHubProps> = ({
     return list;
   }, []);
 
-  // Fetch live freelance jobs (source === 13 / Freelancer)
-  useEffect(() => {
-    let isMounted = true;
-    const fetchFreelanceProjects = async () => {
-      setIsLoadingJobs(true);
-      try {
-        const res = await api.jobs.getMatches(13, true, 1, 30);
-        if (isMounted) {
-          setFreelanceJobs(res.items || []);
-        }
-      } catch (err) {
-        console.error('Failed to load freelance projects:', err);
-      } finally {
-        if (isMounted) setIsLoadingJobs(false);
-      }
-    };
 
-    fetchFreelanceProjects();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   // Handle generating freelance proposal
   const handleGenerateProposal = async (e: React.FormEvent) => {
@@ -355,7 +363,7 @@ export const FreelanceHub: React.FC<FreelanceHubProps> = ({
       {/* SUB-TAB 2: Live Freelance Radar */}
       {hubTab === 'liveRadar' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-[#0B0B0B]">
                 {t.freelance?.liveProjectsTitle || 'Live Freelance Radar'}
@@ -365,19 +373,37 @@ export const FreelanceHub: React.FC<FreelanceHubProps> = ({
                   'Active freelance projects ingested directly via Freelancer.com API with S7 Match Scoring'}
               </p>
             </div>
-            <span className="text-xs font-bold text-[#007070] bg-[#E6F4F4] px-2.5 py-1 rounded-md">
-              {freelanceJobs.length} Active Projects
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold text-[#007070] bg-[#E6F4F4] px-2.5 py-1.5 rounded-xl border border-[#007070]/20">
+                {freelanceJobs.length} Active Projects
+              </span>
+              <button
+                onClick={handleSyncFreelanceProjects}
+                disabled={isSyncingFreelance || isLoadingJobs}
+                className="px-3.5 py-1.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white text-xs font-bold inline-flex items-center space-x-1.5 transition-all shadow-xs disabled:opacity-50"
+              >
+                <DownloadCloud className={`w-3.5 h-3.5 ${isSyncingFreelance ? 'animate-bounce' : ''}`} />
+                <span>{isSyncingFreelance ? (t.matches?.syncing || 'Syncing...') : (t.matches?.syncSource || 'Sync Freelancer')}</span>
+              </button>
+            </div>
           </div>
 
           {isLoadingJobs ? (
             <div className="p-12 text-center text-xs text-[#7C7C7C]">Loading active freelance projects...</div>
           ) : freelanceJobs.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl bg-white border border-black/8 space-y-3">
-              <Briefcase className="w-8 h-8 text-[#7C7C7C] mx-auto" />
-              <p className="text-xs text-[#7C7C7C]">
-                {t.freelance?.noProjectsFound || 'No freelance projects found matching your current filter.'}
+            <div className="p-12 text-center rounded-2xl bg-white border border-black/8 space-y-4 shadow-xs">
+              <Briefcase className="w-10 h-10 text-[#7C7C7C] mx-auto" />
+              <p className="text-xs text-[#7C7C7C] max-w-md mx-auto">
+                {t.freelance?.noProjectsFound || 'No freelance projects found matching your current filter. Click below to ingest live projects directly from Freelancer.com API.'}
               </p>
+              <button
+                onClick={handleSyncFreelanceProjects}
+                disabled={isSyncingFreelance}
+                className="px-5 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white font-bold text-xs inline-flex items-center space-x-2 transition-all shadow-[0_4px_16px_rgba(0,112,112,0.25)]"
+              >
+                <DownloadCloud className={`w-4 h-4 ${isSyncingFreelance ? 'animate-bounce' : ''}`} />
+                <span>{isSyncingFreelance ? (t.matches?.syncing || 'Syncing...') : (t.matches?.syncFreelancerNow || 'Ingest Live Freelancer.com Projects')}</span>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">

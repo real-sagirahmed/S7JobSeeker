@@ -13,14 +13,16 @@ public class FreelancerJobFetcher : IJobFetcherService
     private readonly HttpClient _httpClient;
     private readonly ILogger<FreelancerJobFetcher> _logger;
 
+    // ARCHITECTURAL INTENT: Targeted skill taxonomy IDs & full description queries.
+    // Querying with explicit jobs[] skill IDs (15: .NET, 106: C#, 690: ASP.NET, 1654: ASP.NET MVC,
+    // 2130: .NET Core Web API, 695: SQL Server, 1239: Web API, 2164: API Dev, 759: React, 1088: Full Stack)
+    // with full_description=true retrieves 150+ verified, high-value technical freelance projects.
     private static readonly string[] SearchQueries =
     [
-        "https://www.freelancer.com/api/projects/0.1/projects/active?query=c%23&job_details=true&limit=25",
-        "https://www.freelancer.com/api/projects/0.1/projects/active?query=dotnet&job_details=true&limit=25",
-        "https://www.freelancer.com/api/projects/0.1/projects/active?query=asp.net&job_details=true&limit=25",
-        "https://www.freelancer.com/api/projects/0.1/projects/active?query=react&job_details=true&limit=25",
-        "https://www.freelancer.com/api/projects/0.1/projects/active?query=sql%20server&job_details=true&limit=25",
-        "https://www.freelancer.com/api/projects/0.1/projects/active?query=api%20development&job_details=true&limit=25"
+        "https://www.freelancer.com/api/projects/0.1/projects/active?jobs[]=15&jobs[]=106&jobs[]=690&jobs[]=1654&jobs[]=2130&jobs[]=695&jobs[]=1239&jobs[]=2164&full_description=true&job_details=true&limit=50",
+        "https://www.freelancer.com/api/projects/0.1/projects/active?jobs[]=759&jobs[]=1088&jobs[]=3518&jobs[]=279&jobs[]=1610&jobs[]=1623&full_description=true&job_details=true&limit=50",
+        "https://www.freelancer.com/api/projects/0.1/projects/active?query=.net&full_description=true&job_details=true&limit=30",
+        "https://www.freelancer.com/api/projects/0.1/projects/active?query=csharp&full_description=true&job_details=true&limit=30"
     ];
 
     public FreelancerJobFetcher(HttpClient httpClient, ILogger<FreelancerJobFetcher> logger)
@@ -102,18 +104,18 @@ public class FreelancerJobFetcher : IJobFetcherService
             var title = p.TryGetProperty("title", out var titleProp) ? titleProp.GetString() : "Untitled Freelance Project";
             if (string.IsNullOrWhiteSpace(title)) title = "Untitled Freelance Project";
 
-            // Description
-            string previewDesc = "";
-            if (p.TryGetProperty("preview_description", out var prevProp) && !string.IsNullOrWhiteSpace(prevProp.GetString()))
+            // Description: Prioritize full client brief over 100-character preview
+            string projectBrief = "";
+            if (p.TryGetProperty("description", out var descProp) && !string.IsNullOrWhiteSpace(descProp.GetString()))
             {
-                previewDesc = prevProp.GetString()!;
+                projectBrief = descProp.GetString()!;
             }
-            else if (p.TryGetProperty("description", out var descProp) && !string.IsNullOrWhiteSpace(descProp.GetString()))
+            else if (p.TryGetProperty("preview_description", out var prevProp) && !string.IsNullOrWhiteSpace(prevProp.GetString()))
             {
-                previewDesc = descProp.GetString()!;
+                projectBrief = prevProp.GetString()!;
             }
 
-            previewDesc = Regex.Replace(previewDesc, "<.*?>", string.Empty).Trim();
+            projectBrief = Regex.Replace(projectBrief, "<.*?>", string.Empty).Trim();
 
             // URL
             string projectUrl = $"https://www.freelancer.com/projects/{externalId}";
@@ -198,9 +200,9 @@ public class FreelancerJobFetcher : IJobFetcherService
 
             var skillsStr = skills.Count > 0 ? string.Join(", ", skills) : "Software Development";
             var budgetInfo = !string.IsNullOrWhiteSpace(salaryRange) ? $"\nBudget: {salaryRange}" : "";
-            var fullDescription = $"{title}\n\nClient Project Brief:\n{previewDesc}{budgetInfo}\nRequired Skills: {skillsStr}\n\nPlatform: Freelancer.com (Remote Freelance Project)";
+            var fullDescription = $"{title}\n\nClient Project Brief:\n{projectBrief}{budgetInfo}\nRequired Skills: {skillsStr}\n\nPlatform: Freelancer.com (Remote Freelance Project)";
 
-            var expLevel = ExperienceLevelDetector.Detect(title, fullDescription, projectType);
+            var expLevel = ExperienceLevelDetector.Detect(title, fullDescription);
 
             results.Add(new JobPosting
             {

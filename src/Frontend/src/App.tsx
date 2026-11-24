@@ -203,12 +203,29 @@ export const App: React.FC = () => {
     }
   }, [sourceFilter, remoteOnly]);
 
-  const handleSyncJobs = async () => {
+  const sourceNameMap: Record<number, string> = {
+    1: 'Remotive',
+    2: 'Arbeitnow',
+    3: 'Jobicy',
+    5: 'Himalayas',
+    6: 'WeWorkRemotely',
+    7: 'BDJobs',
+    8: 'LinkedIn',
+    9: 'Jobgether',
+    10: 'SkillJobs',
+    11: 'Careerjet',
+    12: 'Wellfound',
+    13: 'Freelancer'
+  };
+
+  const handleSyncJobs = async (targetSource?: string) => {
     setIsSyncingJobs(true);
+    const sourceParam = targetSource || (sourceFilter && sourceNameMap[sourceFilter] ? sourceNameMap[sourceFilter] : undefined);
     try {
-      const res = await api.jobs.syncJobs();
-      showToast(`Job sync complete! Fetched: ${res.totalFetched}, New: ${res.totalNew}`, 'success');
-      fetchMatches();
+      const res = await api.jobs.syncJobs(sourceParam);
+      const sourceLabel = sourceParam ? `[${sourceParam}] ` : '';
+      showToast(`${sourceLabel}Job sync complete! Fetched: ${res.totalFetched}, New: ${res.totalNew}`, 'success');
+      fetchMatches(sourceFilter, remoteOnly, 1, false, searchKeyword, experienceFilter);
       if (activeTab === 'saved') fetchSavedMatches();
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to trigger job sync.', 'error');
@@ -473,13 +490,19 @@ export const App: React.FC = () => {
                     </select>
 
                     <button
-                      onClick={handleSyncJobs}
+                      onClick={() => handleSyncJobs()}
                       disabled={isSyncingJobs}
                       className="min-h-[40px] px-3.5 py-2 rounded-xl bg-[#E6F4F4] hover:bg-[#007070]/20 text-[#007070] border border-[#007070]/30 text-xs font-bold flex items-center space-x-1.5 transition-all disabled:opacity-50 active:scale-95"
                       title="Fetch latest tech jobs from live sources"
                     >
                       <DownloadCloud className={`w-3.5 h-3.5 ${isSyncingJobs ? 'animate-bounce' : ''}`} />
-                      <span>{isSyncingJobs ? t.matches.syncing : t.matches.syncJobs}</span>
+                      <span>
+                        {isSyncingJobs
+                          ? t.matches.syncing
+                          : sourceFilter > 0 && sourceNameMap[sourceFilter]
+                          ? `${t.matches.syncSource || 'Sync'} ${sourceNameMap[sourceFilter]}`
+                          : t.matches.syncJobs}
+                      </span>
                     </button>
 
                     <label className="min-h-[40px] px-3 py-2 rounded-xl border border-black/10 bg-white flex items-center space-x-2 text-xs text-[#333333] font-medium cursor-pointer">
@@ -705,12 +728,20 @@ export const App: React.FC = () => {
                       {t.matches.noJobsFoundDesc}
                     </p>
                     <button
-                      onClick={handleSyncJobs}
+                      onClick={() => handleSyncJobs()}
                       disabled={isSyncingJobs}
                       className="px-5 py-2.5 rounded-xl bg-[#007070] hover:bg-[#005858] text-white font-bold text-xs inline-flex items-center space-x-2 transition-all shadow-[0_4px_16px_rgba(0,112,112,0.25)]"
                     >
                       <DownloadCloud className="w-4 h-4" />
-                      <span>{isSyncingJobs ? t.matches.syncing : t.matches.fetchNow}</span>
+                      <span>
+                        {isSyncingJobs
+                          ? t.matches.syncing
+                          : sourceFilter === 13
+                          ? (t.matches.syncFreelancerNow || 'Ingest Live Freelancer.com Projects')
+                          : sourceFilter > 0 && sourceNameMap[sourceFilter]
+                          ? `${t.matches.syncSource || 'Sync'} ${sourceNameMap[sourceFilter]}`
+                          : t.matches.fetchNow}
+                      </span>
                     </button>
                   </div>
                 )}

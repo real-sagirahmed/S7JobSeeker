@@ -90,6 +90,40 @@ public class FreelancerJobFetcherTests
         Assert.Equal(100, second.FlexScore);
     }
 
+    [Fact]
+    public void ParseFreelancerJson_PrioritizesFullDescriptionOverPreviewSnippet()
+    {
+        const string json = """
+        {
+          "status": "success",
+          "result": {
+            "projects": [
+              {
+                "id": 40833000,
+                "title": "Complex .NET Microservices Architecture",
+                "seo_url": "software-development/Dotnet-Microservices",
+                "type": "fixed",
+                "preview_description": "We need an engineer to...",
+                "description": "We need an engineer to build an enterprise-grade ASP.NET Core 9 microservices platform using RabbitMQ, MediatR, and Clean Architecture.",
+                "currency": { "code": "USD", "sign": "$" },
+                "budget": { "minimum": 2000.0, "maximum": 4000.0 },
+                "jobs": [{ "id": 15, "name": ".NET" }, { "id": 106, "name": "C# Programming" }],
+                "submitdate": 1795495000
+              }
+            ],
+            "total_count": 1
+          }
+        }
+        """;
+
+        var projects = FreelancerJobFetcher.ParseFreelancerJson(json);
+
+        Assert.Single(projects);
+        var job = projects[0];
+        Assert.Contains("enterprise-grade ASP.NET Core 9 microservices platform", job.Description);
+        Assert.DoesNotContain("We need an engineer to...", job.Description);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
