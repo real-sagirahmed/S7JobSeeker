@@ -231,6 +231,7 @@ public class JobMatcherScoringTests
     [InlineData(JobSource.Arbeitnow, "Arbeitnow")]
     [InlineData(JobSource.Jobgether, "Jobgether (Remote)")]
     [InlineData(JobSource.SkillJobs, "Skill.Jobs")]
+    [InlineData(JobSource.Careerjet, "Careerjet")]
     [InlineData(JobSource.CustomPaste, "Custom Paste")]
     public async Task EvaluateMatch_CorrectlyPreservesJobSourceAndFormattedSourceName(JobSource source, string expectedSourceName)
     {

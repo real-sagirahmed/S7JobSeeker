@@ -11,5 +11,6 @@ public enum JobSource
     Bdjobs = 7,
     LinkedIn = 8,
     Jobgether = 9,
-    SkillJobs = 10
+    SkillJobs = 10,
+    Careerjet = 11
 }

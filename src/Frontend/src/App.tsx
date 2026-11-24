@@ -507,6 +507,7 @@ export const App: React.FC = () => {
                       <option value={0}>{t.matches.allSources}</option>
                       <option value={7}>{t.matches.localJobs}</option>
                       <option value={10}>{t.matches.skillJobs}</option>
+                      <option value={11}>{t.matches.careerjet}</option>
                       <option value={8}>LinkedIn Jobs</option>
                       <option value={3}>Jobicy (Remote)</option>
                       <option value={5}>Himalayas (Remote)</option>
