@@ -24,11 +24,21 @@ public interface IJobMatcherService
         JobPosting job,
         CancellationToken cancellationToken = default);
 
+    Task<FreelanceProposalResponse> GenerateFreelanceProposalAsync(
+        ResumeParsedProfileDto profile,
+        string projectTitle,
+        string clientName,
+        string projectDescription,
+        string? targetPlatform = null,
+        string? customAngle = null,
+        CancellationToken cancellationToken = default);
+
     Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default);
 }
 
 public interface IJobFetcherService
 {
     string SourceName { get; }
+    bool IsConfigured => true;
     Task<IReadOnlyList<JobPosting>> FetchLatestJobsAsync(CancellationToken cancellationToken = default);
 }

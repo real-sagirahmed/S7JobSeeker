@@ -44,6 +44,7 @@ export interface JobMatch {
   salaryRange?: string;
   url?: string;
   publishedAt?: string;
+  description?: string;
   overallScore: number;
   semanticSimilarityScore: number;
   skillMatchScore: number;
@@ -389,6 +390,26 @@ export interface CbsFullExport {
   totalDays: number;
   generatedAt: string;
 }
+
+export interface FreelanceProposalRequest {
+  jobId?: string;
+  projectTitle?: string;
+  clientName?: string;
+  projectDescription?: string;
+  targetPlatform?: string;
+  customAngle?: string;
+}
+
+export interface FreelanceProposalResponse {
+  hook: string;
+  relevantExperienceProof: string;
+  technicalSolutionAndMilestones: string;
+  callToAction: string;
+  fullProposalText: string;
+  clarifyingQuestions: string[];
+  creditsRemaining: number;
+}
+
 
 
 

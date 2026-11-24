@@ -60,9 +60,11 @@ public class DependencyInjectionTests
         services.AddHttpClient<SkillJobsJobFetcher>();
         services.AddHttpClient<CareerjetJobFetcher>();
         services.AddHttpClient<WellfoundJobFetcher>();
+        services.AddHttpClient<FreelancerJobFetcher>();
         services.AddScoped<IJobFetcherService, RemotiveJobFetcher>();
         services.AddScoped<IJobFetcherService, ArbeitnowJobFetcher>();
         services.AddScoped<IJobFetcherService, JobgetherJobFetcher>();
+        services.AddScoped<IJobFetcherService, FreelancerJobFetcher>();
 
         services.AddSingleton<IQdrantVectorService, QdrantVectorService>();
         services.AddScoped<IResumeParserService, ResumeParserService>();

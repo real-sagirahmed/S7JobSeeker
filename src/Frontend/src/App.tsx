@@ -6,7 +6,7 @@ import { AuthModal } from './components/AuthModal';
 import { ToastContainer, type ToastMessage } from './components/Toast';
 import { api } from './services/api';
 import type { User, ResumeProfile, JobMatch, TailoredApplication, JobPrepGuide } from './types';
-import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu, DownloadCloud, Search, X } from 'lucide-react';
+import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu, DownloadCloud, Search, X, Info } from 'lucide-react';
 import { useLanguage } from './context/LanguageContext';
 
 // ARCHITECTURAL INTENT: Lazy-load heavy and on-demand components to reduce initial JavaScript bundle by >60%
@@ -18,6 +18,7 @@ const BuyCreditsModal = React.lazy(() => import('./components/BuyCreditsModal').
 const AdminDashboard = React.lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const CbsSprintPortal = React.lazy(() => import('./components/CbsSprint/CbsSprintPortal').then(m => ({ default: m.CbsSprintPortal })));
 const CertificateVerificationView = React.lazy(() => import('./components/CbsSprint/CertificateVerificationView').then(m => ({ default: m.CertificateVerificationView })));
+const FreelanceHub = React.lazy(() => import('./components/FreelanceHub').then(m => ({ default: m.FreelanceHub })));
 
 const ComponentFallback: React.FC = () => {
   const { language } = useLanguage();
@@ -34,7 +35,7 @@ const ComponentFallback: React.FC = () => {
 export const App: React.FC = () => {
   const { t, language } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint'>('matches');
+  const [activeTab, setActiveTab] = useState<'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint' | 'freelance'>('matches');
   const [profile, setProfile] = useState<ResumeProfile | null>(null);
   const [matches, setMatches] = useState<JobMatch[]>([]);
   const [savedList, setSavedList] = useState<JobMatch[]>([]);
@@ -516,6 +517,7 @@ export const App: React.FC = () => {
                       <option value={1}>Remotive</option>
                       <option value={2}>Arbeitnow</option>
                       <option value={9}>Jobgether (Remote)</option>
+                      <option value={13}>Freelancer.com (Projects)</option>
                       <option value={4}>Custom Pasted</option>
                     </select>
 
@@ -589,6 +591,20 @@ export const App: React.FC = () => {
                     <span>{t.matches.presetFresherJunior || 'All Fresher & Junior Roles'}</span>
                   </button>
 
+                  <button
+                    onClick={() => {
+                      setSourceFilter(13);
+                      fetchMatches(13, remoteOnly, 1, false, searchKeyword, experienceFilter);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center space-x-1 ${
+                      sourceFilter === 13
+                        ? 'bg-[#007070] text-white border-[#007070] shadow-sm'
+                        : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
+                    }`}
+                  >
+                    <span>{t.matches.presetFreelance || 'Freelance Projects'}</span>
+                  </button>
+
                   {(searchKeyword || experienceFilter !== 'all') && (
                     <button
                       onClick={() => {
@@ -602,6 +618,35 @@ export const App: React.FC = () => {
                     </button>
                   )}
                 </div>
+
+                {/* Local BD Source & Careerjet Guidance Banners */}
+                {remoteOnly && (sourceFilter === 10 || sourceFilter === 7) && (
+                  <div className="mb-4 p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-xs">
+                    <div className="flex items-center space-x-2.5">
+                      <Info className="w-4 h-4 shrink-0 text-amber-700" />
+                      <span className="font-medium leading-relaxed">{t.matches.localSourceRemoteNotice}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setRemoteOnly(false);
+                        fetchMatches(sourceFilter, false, 1, false, searchKeyword, experienceFilter);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-amber-200 hover:bg-amber-300 text-amber-950 font-bold shrink-0 transition-colors self-start sm:self-auto cursor-pointer"
+                    >
+                      {language === 'bn' ? 'রিমোট ফিল্টার বন্ধ করুন' : 'Turn Off Remote Only'}
+                    </button>
+                  </div>
+                )}
+
+                {sourceFilter === 11 && matches.length === 0 && !isLoadingMatches && (
+                  <div className="mb-4 p-4 rounded-2xl bg-sky-50 border border-sky-200 text-sky-950 text-xs flex items-start space-x-3 shadow-xs">
+                    <Info className="w-4 h-4 shrink-0 text-sky-700 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="font-black text-sky-900">{language === 'bn' ? 'Careerjet এপিআই কী স্ট্যাটাস' : 'Careerjet API Configuration'}</p>
+                      <p className="text-sky-800 leading-relaxed font-normal">{t.matches.careerjetMissingKeyNotice}</p>
+                    </div>
+                  </div>
+                )}
 
                 {isLoadingMatches ? (
                   <div className="py-20 text-center space-y-3">
@@ -749,6 +794,17 @@ export const App: React.FC = () => {
                   hasProfile={!!profile}
                   onSelectJobForApplication={handleGenerateApplication}
                   showToast={showToast}
+                />
+              </React.Suspense>
+            )}
+
+            {/* TAB: S7 Freelance Hub */}
+            {activeTab === 'freelance' && (
+              <React.Suspense fallback={<ComponentFallback />}>
+                <FreelanceHub
+                  profile={profile}
+                  onOpenPrepGuide={handleOpenPrepGuide}
+                  onRefreshUser={() => api.auth.getMe().then(setUser).catch(() => {})}
                 />
               </React.Suspense>
             )}

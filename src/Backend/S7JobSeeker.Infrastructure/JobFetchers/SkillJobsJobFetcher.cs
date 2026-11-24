@@ -48,8 +48,8 @@ public class SkillJobsJobFetcher : IJobFetcherService
             {
                 _logger.LogInformation("Fetching Bangladeshi tech jobs from Skill.Jobs API: {Url}...", endpointUrl);
                 using var request = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
-                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-                request.Headers.Add("Accept", "application/json, text/plain, */*");
+                request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+                request.Headers.TryAddWithoutValidation("Accept", "application/json, text/plain, */*");
 
                 var response = await _httpClient.SendAsync(request, cancellationToken);
                 if (!response.IsSuccessStatusCode)

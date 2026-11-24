@@ -13,5 +13,8 @@ public enum JobSource
     Jobgether = 9,
     SkillJobs = 10,
     Careerjet = 11,
-    Wellfound = 12
+    Wellfound = 12,
+    Freelancer = 13,
+    Upwork = 14,
+    Fiverr = 15
 }

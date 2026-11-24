@@ -21,3 +21,23 @@ public record ApplicationCopilotResponse(
     string? RecruiterSearchUrl,
     string? ColdEmailPitch
 );
+
+public record FreelanceProposalRequest(
+    Guid? JobId,
+    string? ProjectTitle,
+    string? ClientName,
+    string? ProjectDescription,
+    string? TargetPlatform,
+    string? CustomAngle
+);
+
+public record FreelanceProposalResponse(
+    string Hook,
+    string RelevantExperienceProof,
+    string TechnicalSolutionAndMilestones,
+    string CallToAction,
+    string FullProposalText,
+    List<string> ClarifyingQuestions,
+    int CreditsRemaining
+);
+

@@ -41,6 +41,19 @@ public class CareerjetJobFetcher : IJobFetcherService
 
     public string SourceName => "Careerjet";
 
+    public bool IsConfigured
+    {
+        get
+        {
+            var apiKey = _configuration["CareerjetSettings:ApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                apiKey = Environment.GetEnvironmentVariable("CAREERJET_API_KEY");
+            }
+            return !string.IsNullOrWhiteSpace(apiKey) && !apiKey.Equals("YOUR_CAREERJET_API_KEY", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
     public async Task<IReadOnlyList<JobPosting>> FetchLatestJobsAsync(CancellationToken cancellationToken = default)
     {
         var jobList = new List<JobPosting>();
@@ -53,14 +66,14 @@ public class CareerjetJobFetcher : IJobFetcherService
         }
 
         // Graceful Degraded Mode when API Key is unconfigured
-        if (string.IsNullOrWhiteSpace(apiKey) || apiKey.Equals("YOUR_CAREERJET_API_KEY", StringComparison.OrdinalIgnoreCase))
+        if (!IsConfigured)
         {
             _logger.LogInformation("Careerjet API Key is not configured. Register for a free publisher key at https://www.careerjet.com/partners/api/ and configure CareerjetSettings:ApiKey. Skipping Careerjet ingestion.");
             return jobList;
         }
 
         var baseUrl = _configuration["CareerjetSettings:BaseUrl"] ?? "https://search.api.careerjet.net/v4/query";
-        var authBytes = Encoding.UTF8.GetBytes($"{apiKey.Trim()}:");
+        var authBytes = Encoding.UTF8.GetBytes($"{apiKey!.Trim()}:");
         var authHeaderValue = Convert.ToBase64String(authBytes);
 
         foreach (var keyword in SearchKeywords)

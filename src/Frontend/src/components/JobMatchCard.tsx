@@ -41,6 +41,9 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
       match.source === 10 ? 'Skill.Jobs' :
       match.source === 11 ? 'Careerjet' :
       match.source === 12 ? 'Wellfound' :
+      match.source === 13 ? 'Freelancer' :
+      match.source === 14 ? 'Upwork' :
+      match.source === 15 ? 'Fiverr' :
       match.source === 4 ? 'Custom Opportunity' : null
     );
 
@@ -69,6 +72,12 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
       style = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
     } else if (name.includes('Wellfound') || match.source === 12) {
       style = 'bg-rose-50 text-rose-800 border-rose-300 font-bold';
+    } else if (name.includes('Freelancer') || match.source === 13) {
+      style = 'bg-sky-50 text-[#0288d1] border-sky-300 font-bold';
+    } else if (name.includes('Upwork') || match.source === 14) {
+      style = 'bg-emerald-50 text-[#14a800] border-emerald-300 font-bold';
+    } else if (name.includes('Fiverr') || match.source === 15) {
+      style = 'bg-teal-50 text-[#1dbf73] border-teal-300 font-bold';
     }
 
     return (

@@ -14,15 +14,16 @@ import {
   CreditCard,
   Server,
   History,
-  ChevronDown
+  ChevronDown,
+  Briefcase
 } from 'lucide-react';
 import type { User } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
   user: User | null;
-  activeTab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint';
-  setActiveTab: (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint') => void;
+  activeTab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint' | 'freelance';
+  setActiveTab: (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint' | 'freelance') => void;
   onLogout: () => void;
   onOpenAuth: () => void;
   onOpenBuyCredits: () => void;
@@ -78,7 +79,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     };
   }, [isUserMenuOpen]);
 
-  const handleNavClick = (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint') => {
+  const handleNavClick = (tab: 'matches' | 'profile' | 'paste' | 'saved' | 'companies' | 'admin' | 'cbs-sprint' | 'freelance') => {
     setActiveTab(tab);
     setIsMobileMenuOpen(false);
     setIsUserMenuOpen(false);
@@ -194,6 +195,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <Building2 className="w-3.5 h-3.5" />
                   <span>{t.nav.companies}</span>
+                </button>
+
+                <button
+                  onClick={() => handleNavClick('freelance')}
+                  aria-current={activeTab === 'freelance' ? 'page' : undefined}
+                  className={`px-2.5 py-1.5 xl:px-3 xl:py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer ${
+                    activeTab === 'freelance'
+                      ? 'bg-[#007070] text-white shadow-[0_3px_12px_rgba(0,112,112,0.22)]'
+                      : 'text-slate-700 hover:text-[#007070] hover:bg-[#E6F4F4]/70'
+                  }`}
+                >
+                  <Briefcase className="w-3.5 h-3.5" />
+                  <span>{t.nav.freelance || 'Freelance Hub'}</span>
                 </button>
               </>
             )}
@@ -582,6 +596,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <Building2 className="w-4 h-4 shrink-0" />
                   <span>{t.nav.companies}</span>
+                </button>
+
+                <button
+                  onClick={() => handleNavClick('freelance')}
+                  aria-current={activeTab === 'freelance' ? 'page' : undefined}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center space-x-3 transition-all min-h-[46px] active:scale-[0.98] cursor-pointer ${
+                    activeTab === 'freelance'
+                      ? 'bg-[#007070] text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <Briefcase className="w-4 h-4 shrink-0" />
+                  <span>{t.nav.freelance || 'Freelance Hub'}</span>
                 </button>
 
                 <button

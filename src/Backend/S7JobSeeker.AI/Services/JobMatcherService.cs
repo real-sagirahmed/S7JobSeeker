@@ -279,6 +279,9 @@ public class JobMatcherService : IJobMatcherService
         JobSource.SkillJobs => "Skill.Jobs",
         JobSource.Careerjet => "Careerjet",
         JobSource.Wellfound => "Wellfound",
+        JobSource.Freelancer => "Freelancer",
+        JobSource.Upwork => "Upwork",
+        JobSource.Fiverr => "Fiverr",
         JobSource.CustomPaste => "Custom Paste",
         _ => source.ToString()
     };
@@ -356,6 +359,157 @@ public class JobMatcherService : IJobMatcherService
             return new TailoredApplicationResult(
                 CoverLetter: $"Dear Hiring Team at {job.Company},\n\nI am writing to express my strong interest in the {job.Title} role. With my background in {profile.TargetRole}, I look forward to bringing impact to your team.",
                 ResumeTips: "Ensure your primary skills and recent achievements are prominently displayed at the top of your resume."
+            );
+        }
+    }
+
+    public async Task<FreelanceProposalResponse> GenerateFreelanceProposalAsync(
+        ResumeParsedProfileDto profile,
+        string projectTitle,
+        string clientName,
+        string projectDescription,
+        string? targetPlatform = null,
+        string? customAngle = null,
+        CancellationToken cancellationToken = default)
+    {
+        var platform = string.IsNullOrWhiteSpace(targetPlatform) ? "Upwork" : targetPlatform;
+        var topSkills = string.Join(", ", profile.Skills.Take(6).Select(s => s.Name));
+        var safeTitle = PromptSecuritySanitizer.Sanitize(projectTitle, 150);
+        var safeClient = string.IsNullOrWhiteSpace(clientName) ? "Client" : PromptSecuritySanitizer.Sanitize(clientName, 100);
+
+        if (string.IsNullOrWhiteSpace(_apiKey) || _apiKey.StartsWith("DEMO"))
+        {
+            var fallbackHook = $"I noticed your project regarding \"{safeTitle}\" and can deliver a clean, maintainable solution using {topSkills}.";
+            var fallbackProof = $"As a {profile.TargetRole} with {profile.TotalYearsOfExperience ?? 1}+ years of hands-on experience, I have built and optimized production applications using {topSkills}.";
+            var fallbackSolution = "1. Technical audit and requirements alignment\n2. Implementation and clean architecture setup\n3. Comprehensive testing and milestone deployment";
+            var fallbackCta = "Let's connect in chat to discuss the details and get started on Milestone 1.";
+            var fallbackFull = $"{fallbackHook}\n\n{fallbackProof}\n\nProposed Action Plan:\n{fallbackSolution}\n\n{fallbackCta}\n\nBest regards,\n{profile.FullName}";
+
+            return new FreelanceProposalResponse(
+                Hook: fallbackHook,
+                RelevantExperienceProof: fallbackProof,
+                TechnicalSolutionAndMilestones: fallbackSolution,
+                CallToAction: fallbackCta,
+                FullProposalText: fallbackFull,
+                ClarifyingQuestions:
+                [
+                    "Do you have existing API documentation or database schema for this project?",
+                    "What is your target deadline for the initial working milestone?"
+                ],
+                CreditsRemaining: 0
+            );
+        }
+
+        var wrappedJobDesc = PromptSecuritySanitizer.WrapUntrusted("project_brief", projectDescription, maxLength: 3000);
+        var wrappedCandidate = PromptSecuritySanitizer.WrapUntrusted(
+            "candidate_profile",
+            $"Name: {profile.FullName}\nRole: {profile.TargetRole}\nExperience: {profile.TotalYearsOfExperience ?? 0} years\nCore Skills: {topSkills}\nSummary: {profile.Summary}",
+            maxLength: 2000);
+
+        var prompt = $$"""
+        You are a Top-Rated Freelance Proposal Strategist on Upwork, Freelancer, and Fiverr.
+        Craft a winning, high-converting client proposal tailored to this project using the candidate's verified skills.
+
+        PLATFORM: {{platform}}
+        CANDIDATE:
+        {{wrappedCandidate}}
+
+        CLIENT PROJECT:
+        - Title: {{safeTitle}}
+        - Client: {{safeClient}}
+        - Angle/Notes: {{customAngle ?? "Focus on immediate technical capability and reliability"}}
+        - Brief:
+        {{wrappedJobDesc}}
+
+        STRICT PROPOSAL RULES:
+        1. NO generic greetings like "Dear Hiring Manager" or "I am excited to apply".
+        2. Hook: Start immediately with the client's problem and how the candidate solves it in 1-2 punchy sentences.
+        3. Proof of Past Work: Cite 1-2 concrete competencies or past achievements from the candidate's profile.
+        4. Technical Plan: Outline a concise 3-step execution plan or milestones.
+        5. Clarifying Questions: Provide 2 smart, highly relevant technical questions that prove domain mastery.
+        6. Call to Action: Low-friction closing invitation.
+
+        Respond strictly in valid JSON matching this schema:
+        {
+          "hook": "1-2 sentence solution hook",
+          "relevantExperienceProof": "Proof citing candidate's relevant skills/experience",
+          "technicalSolutionAndMilestones": "Step 1: ... Step 2: ... Step 3: ...",
+          "callToAction": "Direct closing statement",
+          "fullProposalText": "Complete ready-to-paste proposal combining hook, proof, plan, questions, and CTA",
+          "clarifyingQuestions": ["Question 1?", "Question 2?"]
+        }
+
+        Do NOT wrap in markdown code blocks. Return ONLY pure raw JSON.
+        """;
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage($"You draft elite freelance proposals. Return strictly raw JSON.\n\n{PromptSecuritySanitizer.SystemDefenseClause}");
+        chatHistory.AddUserMessage(prompt);
+
+        try
+        {
+            var response = await _chatCompletionService.GetChatMessageContentAsync(chatHistory, cancellationToken: cancellationToken);
+            var rawJson = response.Content?.Trim() ?? string.Empty;
+
+            if (rawJson.StartsWith("```json")) rawJson = rawJson[7..];
+            if (rawJson.StartsWith("```")) rawJson = rawJson[3..];
+            if (rawJson.EndsWith("```")) rawJson = rawJson[..^3];
+            rawJson = rawJson.Trim();
+
+            using var doc = JsonDocument.Parse(rawJson);
+            var root = doc.RootElement;
+
+            var hook = root.TryGetProperty("hook", out var hProp) ? hProp.GetString() ?? "" : "";
+            var proof = root.TryGetProperty("relevantExperienceProof", out var pProp) ? pProp.GetString() ?? "" : "";
+            var solution = root.TryGetProperty("technicalSolutionAndMilestones", out var sProp) ? sProp.GetString() ?? "" : "";
+            var cta = root.TryGetProperty("callToAction", out var cProp) ? cProp.GetString() ?? "" : "";
+            var fullProposal = root.TryGetProperty("fullProposalText", out var fProp) ? fProp.GetString() ?? "" : "";
+
+            var questions = new List<string>();
+            if (root.TryGetProperty("clarifyingQuestions", out var qProp) && qProp.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var q in qProp.EnumerateArray())
+                {
+                    var qStr = q.GetString();
+                    if (!string.IsNullOrWhiteSpace(qStr)) questions.Add(qStr);
+                }
+            }
+
+            if (questions.Count == 0)
+            {
+                questions.Add("Do you have specific architectural guidelines or an existing repository?");
+                questions.Add("What is your timeline for the first phase?");
+            }
+
+            if (string.IsNullOrWhiteSpace(fullProposal))
+            {
+                fullProposal = $"{hook}\n\n{proof}\n\nPlan:\n{solution}\n\nQuestions:\n- " + string.Join("\n- ", questions) + $"\n\n{cta}\n\nBest regards,\n{profile.FullName}";
+            }
+
+            return new FreelanceProposalResponse(
+                Hook: hook,
+                RelevantExperienceProof: proof,
+                TechnicalSolutionAndMilestones: solution,
+                CallToAction: cta,
+                FullProposalText: fullProposal,
+                ClarifyingQuestions: questions,
+                CreditsRemaining: 0
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate AI freelance proposal.");
+            var fallbackHook = $"I reviewed your {safeTitle} brief and have the exact experience in {topSkills} to solve this.";
+            var fallbackFull = $"{fallbackHook}\n\nAs a {profile.TargetRole}, I specialize in building reliable, scalable software solutions.\n\nLet's discuss your timeline and milestones in chat.\n\nBest regards,\n{profile.FullName}";
+
+            return new FreelanceProposalResponse(
+                Hook: fallbackHook,
+                RelevantExperienceProof: $"Hands-on experience in {topSkills}.",
+                TechnicalSolutionAndMilestones: "Step 1: Requirements analysis\nStep 2: Core implementation\nStep 3: Verification and testing",
+                CallToAction: "Ready to discuss in chat.",
+                FullProposalText: fallbackFull,
+                ClarifyingQuestions: ["What is your preferred deployment environment?"],
+                CreditsRemaining: 0
             );
         }
     }

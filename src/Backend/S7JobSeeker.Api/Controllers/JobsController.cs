@@ -91,7 +91,10 @@ public class JobsController : ControllerBase
     }
 
     [HttpPost("sync")]
-    public async Task<IActionResult> SyncJobs([FromQuery] string? cronKey, CancellationToken cancellationToken)
+    public async Task<IActionResult> SyncJobs(
+        [FromQuery] string? cronKey,
+        [FromQuery] string? source = null,
+        CancellationToken cancellationToken = default)
     {
         var isDev = _environment.IsDevelopment();
         var expectedKey = _configuration["CronSettings:SecretKey"]
@@ -134,7 +137,7 @@ public class JobsController : ControllerBase
         }
 
         var sw = Stopwatch.StartNew();
-        _logger.LogInformation("Starting job sync pipeline (IsDev: {IsDev})...", isDev);
+        _logger.LogInformation("Starting job sync pipeline (IsDev: {IsDev}, TargetSource: {Source})...", isDev, source ?? "All");
 
         // Ensure Qdrant collection exists (resilient check)
         try
@@ -149,7 +152,25 @@ public class JobsController : ControllerBase
         int totalFetched = 0;
         int totalNew = 0;
 
-        foreach (var fetcher in _jobFetchers)
+        var targetFetchers = _jobFetchers;
+        if (!string.IsNullOrWhiteSpace(source))
+        {
+            var cleanSource = source.Trim();
+            var filtered = _jobFetchers.Where(f =>
+                f.SourceName.Equals(cleanSource, StringComparison.OrdinalIgnoreCase) ||
+                (Enum.TryParse<JobSource>(cleanSource, true, out var parsedSource) &&
+                 f.SourceName.Equals(parsedSource.ToString(), StringComparison.OrdinalIgnoreCase)) ||
+                (int.TryParse(cleanSource, out var sourceInt) &&
+                 f.SourceName.Equals(((JobSource)sourceInt).ToString(), StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+
+            if (filtered.Count > 0)
+            {
+                targetFetchers = filtered;
+            }
+        }
+
+        foreach (var fetcher in targetFetchers)
         {
             try
             {
@@ -210,8 +231,11 @@ public class JobsController : ControllerBase
 
                     try
                     {
+                        using var embeddingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                        embeddingCts.CancelAfter(TimeSpan.FromSeconds(2)); // Strict 2s timeout per embedding to prevent sync stalling
+
                         var embeddingText = $"{job.Title} at {job.Company}. {job.Description}";
-                        var embedding = await _matcherService.GenerateEmbeddingAsync(embeddingText, cancellationToken);
+                        var embedding = await _matcherService.GenerateEmbeddingAsync(embeddingText, embeddingCts.Token);
 
                         var pointId = Guid.NewGuid();
                         job.QdrantPointId = pointId;
@@ -225,7 +249,7 @@ public class JobsController : ControllerBase
                             ["Source"] = job.Source.ToString()
                         };
 
-                        await _vectorService.UpsertJobVectorAsync(pointId, embedding, metadata, cancellationToken);
+                        await _vectorService.UpsertJobVectorAsync(pointId, embedding, metadata, embeddingCts.Token);
                         vectorCount++;
                     }
                     catch (Exception ex)
@@ -252,6 +276,7 @@ public class JobsController : ControllerBase
         {
             totalFetched,
             totalNew,
+            source = string.IsNullOrWhiteSpace(source) ? "All" : source,
             elapsedMilliseconds = sw.ElapsedMilliseconds
         });
     }
@@ -390,7 +415,26 @@ public class JobsController : ControllerBase
                 .Select(m => m.JobPostingId)
                 .ToListAsync(cancellationToken);
 
-            if (vectorMatches.Count > 0 && vectorMatches.Count > skip)
+            // ARCHITECTURAL INTENT: Pure relational pagination for single-source queries
+            // When a specific source is filtered (e.g. SkillJobs, Careerjet or BDJobs), Qdrant global vector search
+            // causes severe offset skew because Qdrant results are dominated by multi-source distribution.
+            // For single-source queries, we paginate directly from SQL and evaluate matches deterministically.
+            if (source.HasValue && source.Value != 0)
+            {
+                var pagedJobs = await query
+                    .OrderByDescending(j => j.CreatedAt)
+                    .Skip(skip)
+                    .Take(pageSize)
+                    .ToListAsync(cancellationToken);
+
+                foreach (var job in pagedJobs)
+                {
+                    var evaluation = await _matcherService.EvaluateMatchAsync(parsedProfile, job, null, cancellationToken);
+                    var isBookmarked = bookmarkedIds.Contains(job.Id);
+                    matchedJobs.Add(evaluation with { IsBookmarked = isBookmarked });
+                }
+            }
+            else if (vectorMatches.Count > 0 && vectorMatches.Count > skip)
             {
                 var pageVectorMatches = vectorMatches.Skip(skip).Take(pageSize).ToList();
                 var jobGuids = pageVectorMatches
@@ -411,7 +455,7 @@ public class JobsController : ControllerBase
                     var extraJobs = await query
                         .Where(j => !existingJobIds.Contains(j.Id))
                         .OrderByDescending(j => j.CreatedAt)
-                        .Skip(Math.Max(0, skip - vectorMatches.Count))
+                        .Skip(skip + jobs.Count)
                         .Take(needed)
                         .ToListAsync(cancellationToken);
 
@@ -728,6 +772,81 @@ public class JobsController : ControllerBase
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Ok(application);
+    }
+
+    [Authorize]
+    [EnableRateLimiting("AiPolicy")]
+    [HttpPost("freelance-proposal")]
+    public async Task<ActionResult<FreelanceProposalResponse>> GenerateFreelanceProposal(
+        [FromBody] FreelanceProposalRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        if (string.IsNullOrWhiteSpace(request.ProjectTitle) && string.IsNullOrWhiteSpace(request.ProjectDescription))
+        {
+            return BadRequest(new { message = "Project title or brief description is required." });
+        }
+
+        var profile = await _dbContext.UserProfiles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+
+        if (profile == null || string.IsNullOrEmpty(profile.ParsedProfileJson))
+        {
+            return BadRequest(new { message = "Please upload your resume first to generate a freelance proposal." });
+        }
+
+        var parsedProfile = JsonSerializer.Deserialize<ResumeParsedProfileDto>(profile.ParsedProfileJson);
+        if (parsedProfile == null)
+        {
+            return BadRequest(new { message = "Invalid profile data." });
+        }
+
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user == null) return Unauthorized();
+
+        if (!user.IsAdmin && user.AiCredits <= 0)
+        {
+            return StatusCode(402, new { message = "Out of AI credits. Please purchase a credit pack to continue." });
+        }
+
+        // If JobId is supplied and description is empty, pull from DB
+        var title = request.ProjectTitle ?? "Freelance Software Project";
+        var description = request.ProjectDescription ?? "";
+        var client = request.ClientName ?? "Client";
+
+        if (request.JobId.HasValue && string.IsNullOrWhiteSpace(description))
+        {
+            var job = await _dbContext.JobPostings
+                .AsNoTracking()
+                .FirstOrDefaultAsync(j => j.Id == request.JobId.Value, cancellationToken);
+
+            if (job != null)
+            {
+                title = job.Title;
+                description = job.Description;
+                client = job.Company;
+            }
+        }
+
+        var proposal = await _matcherService.GenerateFreelanceProposalAsync(
+            parsedProfile,
+            title,
+            client,
+            description,
+            request.TargetPlatform,
+            request.CustomAngle,
+            cancellationToken);
+
+        if (!user.IsAdmin)
+        {
+            user.AiCredits = Math.Max(0, user.AiCredits - 1);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return Ok(proposal with { CreditsRemaining = user.AiCredits });
     }
 
     [Authorize]

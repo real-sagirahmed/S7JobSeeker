@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using S7JobSeeker.Api.Controllers;
 using S7JobSeeker.Core.DTOs;
 using S7JobSeeker.Core.Enums;
@@ -140,5 +141,40 @@ public class JobMatchingPaginationTests
     {
         var clamped = Math.Clamp(inputPageSize, 1, 50);
         Assert.Equal(expectedPageSize, clamped);
+    }
+
+    [Fact]
+    public void SyncJobs_EndpointSignature_SupportsSourceParameter()
+    {
+        var method = typeof(JobsController).GetMethod(nameof(JobsController.SyncJobs));
+        Assert.NotNull(method);
+
+        var httpPostAttr = method.GetCustomAttribute<HttpPostAttribute>();
+        Assert.NotNull(httpPostAttr);
+        Assert.Equal("sync", httpPostAttr.Template);
+
+        var parameters = method.GetParameters();
+        var sourceParam = parameters.FirstOrDefault(p => p.Name == "source");
+        Assert.NotNull(sourceParam);
+        Assert.Equal(typeof(string), sourceParam.ParameterType);
+    }
+
+    [Fact]
+    public void CareerjetJobFetcher_IsConfigured_ReflectsMissingApiKeySafely()
+    {
+        var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["CareerjetSettings:ApiKey"] = ""
+            })
+            .Build();
+
+        var fetcher = new S7JobSeeker.Infrastructure.JobFetchers.CareerjetJobFetcher(
+            new System.Net.Http.HttpClient(),
+            config,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<S7JobSeeker.Infrastructure.JobFetchers.CareerjetJobFetcher>.Instance
+        );
+
+        Assert.False(fetcher.IsConfigured);
     }
 }

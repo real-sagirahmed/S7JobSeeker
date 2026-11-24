@@ -22,7 +22,9 @@ import type {
   CbsCertificateVerification,
   CbsFullExport,
   ApplicationCopilotRequest,
-  ApplicationCopilotResponse
+  ApplicationCopilotResponse,
+  FreelanceProposalRequest,
+  FreelanceProposalResponse
 } from '../types';
 
 const API_BASE = '/api';
@@ -173,8 +175,9 @@ export const api = {
       return res.json();
     },
 
-    async syncJobs(): Promise<{ totalFetched: number; totalNew: number }> {
-      const res = await fetch(`${API_BASE}/jobs/sync`, {
+    async syncJobs(source?: string): Promise<{ totalFetched: number; totalNew: number; source?: string; elapsedMilliseconds?: number }> {
+      const query = source ? `?source=${encodeURIComponent(source)}` : '';
+      const res = await fetch(`${API_BASE}/jobs/sync${query}`, {
         method: 'POST',
         headers: { ...getAuthHeader() }
       });
@@ -257,6 +260,22 @@ export const api = {
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: 'Generation failed' }));
         throw new Error(err.message || 'Failed to generate custom preparation guide');
+      }
+      return res.json();
+    },
+
+    async generateFreelanceProposal(data: FreelanceProposalRequest): Promise<FreelanceProposalResponse> {
+      const res = await fetch(`${API_BASE}/jobs/freelance-proposal`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Proposal generation failed' }));
+        throw new Error(err.message || 'Failed to generate freelance proposal');
       }
       return res.json();
     }

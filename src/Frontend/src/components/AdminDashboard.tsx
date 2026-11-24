@@ -190,11 +190,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
     }
   };
 
-  const handleSyncJobs = async () => {
+  const handleSyncJobs = async (sourceName?: string) => {
     setIsSyncing(true);
     try {
-      const res = await api.jobs.syncJobs();
-      onNotify(`Job Engine Sync Finished: Fetched ${res.totalFetched}, New: ${res.totalNew}`, 'success');
+      const res = await api.jobs.syncJobs(sourceName);
+      onNotify(`Job Engine Sync Finished (${res.source || 'All'}): Fetched ${res.totalFetched}, New: ${res.totalNew}`, 'success');
       const m = await api.admin.getMetrics();
       if (m) setMetrics(m);
     } catch (err: unknown) {
@@ -813,39 +813,57 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
           <div>
             <h3 className="text-base font-bold text-slate-900">Job Pipeline Aggregator Engine</h3>
             <p className="text-xs text-slate-500 mt-1">
-              Currently ingesting and deduplicating jobs from 8 active platforms.
+              Currently ingesting and deduplicating jobs across 11 active platforms.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
-              { name: 'BDJobs', tag: 'Direct SPA Crawler' },
-              { name: 'LinkedIn', tag: 'Public Guest Scraper' },
-              { name: 'Jobicy', tag: 'Remote API' },
-              { name: 'Himalayas', tag: 'Global Tech API' },
-              { name: 'We Work Remotely', tag: 'RSS Feed' },
-              { name: 'Remotive', tag: 'Developer API' },
-              { name: 'Arbeitnow', tag: 'European & Remote API' },
-              { name: 'Jobgether', tag: 'Global Remote REST API' },
-              { name: 'Skill.Jobs', tag: 'Bangladesh IT Portal REST API' },
-              { name: 'Careerjet', tag: 'Bangladesh Official REST API' },
-              { name: 'Wellfound', tag: 'Startup & Tech Ecosystem' }
+              { name: 'BDJobs', id: 'Bdjobs', tag: 'Direct SPA Crawler', status: 'Ready' },
+              { name: 'LinkedIn', id: 'Linkedin', tag: 'Public Guest Scraper', status: 'Ready' },
+              { name: 'Jobicy', id: 'Jobicy', tag: 'Remote API', status: 'Ready' },
+              { name: 'Himalayas', id: 'Himalayas', tag: 'Global Tech API', status: 'Ready' },
+              { name: 'We Work Remotely', id: 'Wwr', tag: 'RSS Feed', status: 'Ready' },
+              { name: 'Remotive', id: 'Remotive', tag: 'Developer API', status: 'Ready' },
+              { name: 'Arbeitnow', id: 'Arbeitnow', tag: 'European & Remote API', status: 'Ready' },
+              { name: 'Jobgether', id: 'Jobgether', tag: 'Global Remote REST API', status: 'Ready' },
+              { name: 'Skill.Jobs', id: 'SkillJobs', tag: 'Bangladesh IT Portal REST API', status: 'Ready' },
+              { name: 'Careerjet', id: 'Careerjet', tag: 'Bangladesh Official REST API', status: 'Key Required' },
+              { name: 'Wellfound', id: 'Wellfound', tag: 'Startup & Tech Ecosystem', status: 'Ready' }
             ].map((src, i) => (
-              <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="font-bold text-slate-900 text-xs">{src.name}</div>
-                <div className="text-[10px] text-slate-500 font-semibold mt-0.5">{src.tag}</div>
+              <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900 text-xs">{src.name}</span>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                      src.status === 'Ready' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {src.status}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-semibold mt-0.5">{src.tag}</div>
+                </div>
+                <div className="mt-3 pt-2 border-t border-slate-200/60 flex justify-end">
+                  <button
+                    onClick={() => handleSyncJobs(src.id)}
+                    disabled={isSyncing}
+                    className="text-[11px] font-bold text-[#007070] hover:text-[#005858] disabled:opacity-50 cursor-pointer"
+                  >
+                    Sync This Source
+                  </button>
+                </div>
               </div>
             ))}
           </div>
 
           <div className="pt-2">
             <button
-              onClick={handleSyncJobs}
+              onClick={() => handleSyncJobs()}
               disabled={isSyncing}
               className="w-full sm:w-auto min-h-[44px] justify-center px-6 py-3 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-extrabold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? 'Ingesting Jobs from 8 Sources...' : 'Trigger Live Sync Now'}</span>
+              <span>{isSyncing ? 'Ingesting Jobs across All Platforms...' : 'Trigger Full Ingestion Now'}</span>
             </button>
           </div>
         </div>
