@@ -278,6 +278,7 @@ public class JobMatcherService : IJobMatcherService
         JobSource.Jobgether => "Jobgether (Remote)",
         JobSource.SkillJobs => "Skill.Jobs",
         JobSource.Careerjet => "Careerjet",
+        JobSource.Wellfound => "Wellfound",
         JobSource.CustomPaste => "Custom Paste",
         _ => source.ToString()
     };

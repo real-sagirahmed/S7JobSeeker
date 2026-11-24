@@ -12,5 +12,6 @@ public enum JobSource
     LinkedIn = 8,
     Jobgether = 9,
     SkillJobs = 10,
-    Careerjet = 11
+    Careerjet = 11,
+    Wellfound = 12
 }

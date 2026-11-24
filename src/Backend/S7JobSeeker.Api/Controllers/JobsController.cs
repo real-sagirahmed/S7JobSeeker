@@ -537,6 +537,7 @@ public class JobsController : ControllerBase
                             JobSource.Jobgether => "Jobgether",
                             JobSource.SkillJobs => "Skill.Jobs",
                             JobSource.Careerjet => "Careerjet",
+                            JobSource.Wellfound => "Wellfound",
                             _ => "Custom Paste"
                         },
                         job.FlexScore,

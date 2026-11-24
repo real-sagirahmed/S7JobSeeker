@@ -59,6 +59,7 @@ public class DependencyInjectionTests
         services.AddHttpClient<JobgetherJobFetcher>();
         services.AddHttpClient<SkillJobsJobFetcher>();
         services.AddHttpClient<CareerjetJobFetcher>();
+        services.AddHttpClient<WellfoundJobFetcher>();
         services.AddScoped<IJobFetcherService, RemotiveJobFetcher>();
         services.AddScoped<IJobFetcherService, ArbeitnowJobFetcher>();
         services.AddScoped<IJobFetcherService, JobgetherJobFetcher>();
