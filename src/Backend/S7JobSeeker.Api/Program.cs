@@ -154,6 +154,11 @@ builder.Services.AddHttpClient<JobgetherJobFetcher>(client =>
     client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
     client.Timeout = TimeSpan.FromSeconds(15);
 });
+builder.Services.AddHttpClient<SkillJobsJobFetcher>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 
 builder.Services.AddScoped<IJobFetcherService, BdjobsJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, LinkedinJobFetcher>();
@@ -163,6 +168,7 @@ builder.Services.AddScoped<IJobFetcherService, WwrJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, RemotiveJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, ArbeitnowJobFetcher>();
 builder.Services.AddScoped<IJobFetcherService, JobgetherJobFetcher>();
+builder.Services.AddScoped<IJobFetcherService, SkillJobsJobFetcher>();
 
 // Qdrant Vector Service
 builder.Services.AddSingleton<IQdrantVectorService, QdrantVectorService>();

@@ -38,6 +38,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
       match.source === 1 ? 'Remotive' :
       match.source === 2 ? 'Arbeitnow' :
       match.source === 9 ? 'Jobgether' :
+      match.source === 10 ? 'Skill.Jobs' :
       match.source === 4 ? 'Custom Opportunity' : null
     );
 
@@ -60,6 +61,8 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
       style = 'bg-slate-50 text-slate-800 border-slate-200 font-bold';
     } else if (name.includes('Jobgether') || match.source === 9) {
       style = 'bg-teal-50 text-teal-800 border-teal-300 font-bold';
+    } else if (name.includes('Skill.Jobs') || match.source === 10) {
+      style = 'bg-indigo-50 text-indigo-800 border-indigo-300 font-bold';
     }
 
     return (

@@ -826,7 +826,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
               { name: 'We Work Remotely', tag: 'RSS Feed' },
               { name: 'Remotive', tag: 'Developer API' },
               { name: 'Arbeitnow', tag: 'European & Remote API' },
-              { name: 'Jobgether', tag: 'Global Remote REST API' }
+              { name: 'Jobgether', tag: 'Global Remote REST API' },
+              { name: 'Skill.Jobs', tag: 'Bangladesh IT Portal REST API' }
             ].map((src, i) => (
               <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                 <div className="font-bold text-slate-900 text-xs">{src.name}</div>

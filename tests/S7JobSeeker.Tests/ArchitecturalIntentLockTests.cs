@@ -6,12 +6,12 @@ namespace S7JobSeeker.Tests;
 public class ArchitecturalIntentLockTests
 {
     // ARCHITECTURAL INTENT: The system locks the Multi-Source Ingestion model:
-    // 7 Open API / Gateway sources (Remotive, Arbeitnow, Jobicy, Himalayas, Bdjobs, LinkedIn, Jobgether) + 1 RSS source (WeWorkRemotely) + 1 Custom Paste source.
+    // 8 Open API / Gateway sources (Remotive, Arbeitnow, Jobicy, Himalayas, Bdjobs, LinkedIn, Jobgether, SkillJobs) + 1 RSS source (WeWorkRemotely) + 1 Custom Paste source.
     [Fact]
-    public void JobSourceEnum_MustHaveExactlyNineLockedSources()
+    public void JobSourceEnum_MustHaveExactlyTenLockedSources()
     {
         var sources = Enum.GetValues<JobSource>();
-        Assert.Equal(9, sources.Length);
+        Assert.Equal(10, sources.Length);
         Assert.Contains(JobSource.Remotive, sources);
         Assert.Contains(JobSource.Arbeitnow, sources);
         Assert.Contains(JobSource.Jobicy, sources);
@@ -21,6 +21,7 @@ public class ArchitecturalIntentLockTests
         Assert.Contains(JobSource.Bdjobs, sources);
         Assert.Contains(JobSource.LinkedIn, sources);
         Assert.Contains(JobSource.Jobgether, sources);
+        Assert.Contains(JobSource.SkillJobs, sources);
     }
 
     [Fact]

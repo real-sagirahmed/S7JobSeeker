@@ -10,5 +10,6 @@ public enum JobSource
     WeWorkRemotely = 6,
     Bdjobs = 7,
     LinkedIn = 8,
-    Jobgether = 9
+    Jobgether = 9,
+    SkillJobs = 10
 }
