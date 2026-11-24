@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
+using S7JobSeeker.Infrastructure.Services;
 
 namespace S7JobSeeker.Infrastructure.JobFetchers;
 
@@ -114,6 +115,7 @@ public class BdjobsJobFetcher : IJobFetcherService
                     SalaryRange = salary,
                     JobType = jobType,
                     Description = fullDesc,
+                    ExperienceLevel = ExperienceLevelDetector.Detect(title, fullDesc, experience),
                     // ARCHITECTURAL INTENT: Direct route to BDJobs Angular SPA route (details/:id) to prevent 404
                     Url = $"https://bdjobs.com/h/details/{jobId}",
                     PublishedAt = publishedAt,

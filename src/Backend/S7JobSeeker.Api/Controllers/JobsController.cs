@@ -12,6 +12,7 @@ using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
 using S7JobSeeker.Core.Services;
+using S7JobSeeker.Infrastructure.Services;
 
 namespace S7JobSeeker.Api.Controllers;
 
@@ -189,6 +190,9 @@ public class JobsController : ControllerBase
                     job.IsWorkFromAnywhere = flex.IsWorkFromAnywhere;
                     job.TimezoneRequirements = flex.TimezoneRequirements;
                     job.FlexibilityNotes = flex.FlexibilityNotes;
+
+                    // S7 Standardized Experience Level detection
+                    job.ExperienceLevel ??= ExperienceLevelDetector.Detect(job.Title, job.Description, job.JobType);
                 }
 
                 // ARCHITECTURAL INTENT: Relational-first persistence. Add and save all new jobs to MSSQL
@@ -260,6 +264,8 @@ public class JobsController : ControllerBase
         [FromQuery] int? limit = null,
         [FromQuery] JobSource? source = null,
         [FromQuery] bool? remoteOnly = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? experienceLevel = null,
         CancellationToken cancellationToken = default)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -299,6 +305,62 @@ public class JobsController : ControllerBase
             if (remoteOnly.HasValue && remoteOnly.Value)
             {
                 query = query.Where(j => j.IsRemote);
+            }
+
+            // Keyword Search Filtering (.NET / C# ecosystem & generic tech stacks)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim();
+                if (s.Equals(".net", StringComparison.OrdinalIgnoreCase) ||
+                    s.Equals("dotnet", StringComparison.OrdinalIgnoreCase) ||
+                    s.Equals("c#", StringComparison.OrdinalIgnoreCase) ||
+                    s.Equals("csharp", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(j =>
+                        j.Title.Contains(".net") || j.Title.Contains("dotnet") || j.Title.Contains("c#") || j.Title.Contains("csharp") ||
+                        j.Description.Contains(".net") || j.Description.Contains("dotnet") || j.Description.Contains("asp.net") || j.Description.Contains("c#"));
+                }
+                else
+                {
+                    query = query.Where(j =>
+                        j.Title.Contains(s) || j.Company.Contains(s) || j.Description.Contains(s));
+                }
+            }
+
+            // Experience Level Filtering (Fresher, Junior, Mid, Senior)
+            if (!string.IsNullOrWhiteSpace(experienceLevel) && !experienceLevel.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                var level = experienceLevel.Trim().ToLowerInvariant();
+                if (level == "fresher")
+                {
+                    query = query.Where(j => j.ExperienceLevel == "Fresher" ||
+                        j.Title.Contains("fresher") || j.Title.Contains("entry") || j.Title.Contains("graduate") ||
+                        j.Title.Contains("intern") || j.Title.Contains("trainee") ||
+                        (j.JobType != null && j.JobType.Contains("Internship")));
+                }
+                else if (level == "junior")
+                {
+                    query = query.Where(j => j.ExperienceLevel == "Junior" || j.ExperienceLevel == "Fresher" ||
+                        j.Title.Contains("junior") || j.Title.Contains("jr.") || j.Title.Contains("jr ") ||
+                        j.Title.Contains("associate") || j.Title.Contains("level 1") || j.Title.Contains("fresher") ||
+                        j.Title.Contains("graduate") || j.Title.Contains("intern"));
+                }
+                else if (level == "fresher_junior")
+                {
+                    query = query.Where(j => j.ExperienceLevel == "Fresher" || j.ExperienceLevel == "Junior" ||
+                        j.Title.Contains("fresher") || j.Title.Contains("junior") || j.Title.Contains("jr.") || j.Title.Contains("jr ") ||
+                        j.Title.Contains("entry") || j.Title.Contains("graduate") || j.Title.Contains("intern") || j.Title.Contains("trainee") ||
+                        j.Title.Contains("associate") || (j.JobType != null && j.JobType.Contains("Internship")));
+                }
+                else if (level == "mid")
+                {
+                    query = query.Where(j => j.ExperienceLevel == "Mid" || j.Title.Contains("mid"));
+                }
+                else if (level == "senior")
+                {
+                    query = query.Where(j => j.ExperienceLevel == "Senior" ||
+                        j.Title.Contains("senior") || j.Title.Contains("sr.") || j.Title.Contains("lead") || j.Title.Contains("principal"));
+                }
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
@@ -481,7 +543,8 @@ public class JobsController : ControllerBase
                         job.FlexHowScore,
                         job.IsWorkFromAnywhere,
                         job.TimezoneRequirements,
-                        job.FlexibilityNotes);
+                        job.FlexibilityNotes,
+                        job.ExperienceLevel);
 
                 results.Add(eval with { IsBookmarked = true });
             }

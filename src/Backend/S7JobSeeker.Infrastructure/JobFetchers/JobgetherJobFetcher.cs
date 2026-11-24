@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
+using S7JobSeeker.Infrastructure.Services;
 
 namespace S7JobSeeker.Infrastructure.JobFetchers;
 
@@ -14,8 +15,13 @@ public class JobgetherJobFetcher : IJobFetcherService
 
     private static readonly string[] SearchQueries =
     [
-        "https://jobgether.com/api/v1/jobs?keyword=software&locations=anywhere&limit=25",
-        "https://jobgether.com/api/v1/jobs?keyword=dotnet&locations=anywhere&limit=25"
+        "https://jobgether.com/api/v1/jobs?keyword=dotnet&locations=anywhere&limit=25",
+        "https://jobgether.com/api/v1/jobs?keyword=c%23&locations=anywhere&limit=25",
+        "https://jobgether.com/api/v1/jobs?keyword=software&experience=entry-level-graduate&locations=anywhere&limit=25",
+        "https://jobgether.com/api/v1/jobs?keyword=software&experience=junior-1-2-years&locations=anywhere&limit=25",
+        "https://jobgether.com/api/v1/jobs?keyword=developer&experience=entry-level-graduate&locations=anywhere&limit=25",
+        "https://jobgether.com/api/v1/jobs?keyword=developer&experience=junior-1-2-years&locations=anywhere&limit=25",
+        "https://jobgether.com/api/v1/jobs?keyword=software&locations=anywhere&limit=25"
     ];
 
     public JobgetherJobFetcher(HttpClient httpClient, ILogger<JobgetherJobFetcher> logger)
@@ -134,6 +140,7 @@ public class JobgetherJobFetcher : IJobFetcherService
             }
 
             var externalId = !string.IsNullOrWhiteSpace(id) ? id : (url ?? Guid.NewGuid().ToString());
+            var expLevel = ExperienceLevelDetector.Detect(title, description, experience);
 
             results.Add(new JobPosting
             {
@@ -146,6 +153,7 @@ public class JobgetherJobFetcher : IJobFetcherService
                 IsRemote = isRemote,
                 JobType = contractType ?? "Full-time",
                 Description = description,
+                ExperienceLevel = expLevel,
                 Url = url,
                 PublishedAt = publishedAt ?? DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow

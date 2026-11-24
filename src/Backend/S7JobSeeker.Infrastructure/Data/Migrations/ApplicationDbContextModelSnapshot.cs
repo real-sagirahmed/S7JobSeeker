@@ -459,6 +459,10 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("ExperienceLevel")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<int?>("FlexHowScore")
                         .HasColumnType("int");
 
@@ -517,6 +521,8 @@ namespace S7JobSeeker.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Company");
+
+                    b.HasIndex("ExperienceLevel");
 
                     b.HasIndex("CreatedAt");
 

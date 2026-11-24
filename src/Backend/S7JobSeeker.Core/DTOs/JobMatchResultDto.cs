@@ -27,7 +27,8 @@ public record JobMatchResultDto(
     int? FlexHowScore = null,
     bool IsWorkFromAnywhere = false,
     string? TimezoneRequirements = null,
-    string? FlexibilityNotes = null
+    string? FlexibilityNotes = null,
+    string? ExperienceLevel = null
 );
 
 public record PagedJobMatchesDto(

@@ -57,6 +57,7 @@ public class JobgetherJobFetcherTests
         Assert.Equal("Anywhere", first.Location);
         Assert.True(first.IsRemote);
         Assert.Equal("Full time", first.JobType);
+        Assert.Equal("Senior", first.ExperienceLevel);
         Assert.Contains("Supabase", first.Description);
         Assert.Contains("Software Engineer", first.Description);
         Assert.Equal("https://jobgether.com/offer/6affbf538acd9c1f9b305e35-software-engineer---postgres-tooling", first.Url);
@@ -65,6 +66,7 @@ public class JobgetherJobFetcherTests
         Assert.Equal("6afb21be8acd9c1f9b191eb2", second.ExternalId);
         Assert.Equal(JobSource.Jobgether, second.Source);
         Assert.Equal("Canonical", second.Company);
+        Assert.Equal("Fresher", second.ExperienceLevel);
         Assert.True(second.IsRemote);
     }
 

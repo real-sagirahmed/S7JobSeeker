@@ -60,6 +60,7 @@ export interface JobMatch {
   isWorkFromAnywhere?: boolean;
   timezoneRequirements?: string;
   flexibilityNotes?: string;
+  experienceLevel?: string;
 }
 
 export interface PagedJobMatches {

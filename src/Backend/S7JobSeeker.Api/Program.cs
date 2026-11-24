@@ -306,6 +306,18 @@ using (var scope = app.Services.CreateScope())
                         logger.LogInformation("Auto-healed {Count} BDJobs URLs to modern SPA details route.", rowsUpdated);
                     }
                 }
+
+                // S7 Standardized Experience Level auto-backfill on startup
+                var hasUnclassifiedJobs = dbContext.JobPostings.Any(j => j.ExperienceLevel == null);
+                if (hasUnclassifiedJobs)
+                {
+                    logger.LogInformation("Backfilling ExperienceLevel for unclassified job postings...");
+                    dbContext.Database.ExecuteSqlRaw("UPDATE JobPostings SET ExperienceLevel = 'Fresher' WHERE ExperienceLevel IS NULL AND (Title LIKE '%fresher%' OR Title LIKE '%intern%' OR Title LIKE '%trainee%' OR Title LIKE '%graduate%' OR Title LIKE '%entry%');");
+                    dbContext.Database.ExecuteSqlRaw("UPDATE JobPostings SET ExperienceLevel = 'Junior' WHERE ExperienceLevel IS NULL AND (Title LIKE '%junior%' OR Title LIKE '%jr.%' OR Title LIKE '%associate%' OR Title LIKE '%engineer 1%' OR Title LIKE '%level 1%');");
+                    dbContext.Database.ExecuteSqlRaw("UPDATE JobPostings SET ExperienceLevel = 'Senior' WHERE ExperienceLevel IS NULL AND (Title LIKE '%senior%' OR Title LIKE '%sr.%' OR Title LIKE '%lead%' OR Title LIKE '%principal%' OR Title LIKE '%architect%' OR Title LIKE '%manager%');");
+                    dbContext.Database.ExecuteSqlRaw("UPDATE JobPostings SET ExperienceLevel = 'Mid' WHERE ExperienceLevel IS NULL AND (Title LIKE '%mid%');");
+                    logger.LogInformation("ExperienceLevel auto-backfill completed.");
+                }
             }
             catch (Exception ex)
             {

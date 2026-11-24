@@ -139,11 +139,15 @@ export const api = {
       source?: number,
       remoteOnly?: boolean,
       page: number = 1,
-      pageSize: number = 20
+      pageSize: number = 20,
+      search?: string,
+      experienceLevel?: string
     ): Promise<PagedJobMatches> {
       const params = new URLSearchParams();
       if (source && source !== 0) params.append('source', source.toString());
       if (remoteOnly) params.append('remoteOnly', 'true');
+      if (search && search.trim()) params.append('search', search.trim());
+      if (experienceLevel && experienceLevel !== 'all') params.append('experienceLevel', experienceLevel);
       params.append('page', page.toString());
       params.append('pageSize', pageSize.toString());
       const query = `?${params.toString()}`;

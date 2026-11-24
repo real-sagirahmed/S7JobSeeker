@@ -69,6 +69,40 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
     );
   };
 
+  const getExperienceBadge = () => {
+    if (!match.experienceLevel) return null;
+    const level = match.experienceLevel;
+    if (level === 'Fresher') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center space-x-1">
+          <span>🌱 Fresher / Intern</span>
+        </span>
+      );
+    }
+    if (level === 'Junior') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-sky-50 text-sky-800 border border-sky-300 flex items-center space-x-1">
+          <span>⚡ Junior (1-3 yrs)</span>
+        </span>
+      );
+    }
+    if (level === 'Mid') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-semibold rounded-md bg-indigo-50 text-indigo-800 border border-indigo-200">
+          <span>🎯 Mid-Level</span>
+        </span>
+      );
+    }
+    if (level === 'Senior') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-semibold rounded-md bg-slate-100 text-slate-800 border border-slate-300">
+          <span>💎 Senior</span>
+        </span>
+      );
+    }
+    return null;
+  };
+
   const getDirectApplicationUrl = (url?: string) => {
     if (!url) return undefined;
     // ARCHITECTURAL INTENT: Direct route to BDJobs Angular SPA details/:id to prevent 404
@@ -93,6 +127,7 @@ export const JobMatchCard: React.FC<JobMatchCardProps> = ({
               {match.title}
             </h3>
             {getSourceBadge()}
+            {getExperienceBadge()}
             {match.isRemote && (
               <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-[#E6F4F4] text-[#007070] border border-[#007070]/20">
                 {t.jobCard.remote}

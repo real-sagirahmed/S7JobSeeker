@@ -6,7 +6,7 @@ import { AuthModal } from './components/AuthModal';
 import { ToastContainer, type ToastMessage } from './components/Toast';
 import { api } from './services/api';
 import type { User, ResumeProfile, JobMatch, TailoredApplication, JobPrepGuide } from './types';
-import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu, DownloadCloud } from 'lucide-react';
+import { Sparkles, RefreshCw, Briefcase, FileText, ArrowRight, ShieldCheck, Cpu, DownloadCloud, Search, X } from 'lucide-react';
 import { useLanguage } from './context/LanguageContext';
 
 // ARCHITECTURAL INTENT: Lazy-load heavy and on-demand components to reduce initial JavaScript bundle by >60%
@@ -52,6 +52,8 @@ export const App: React.FC = () => {
   const [minScoreFilter, setMinScoreFilter] = useState<number>(0);
   const [sourceFilter, setSourceFilter] = useState<number>(0);
   const [remoteOnly, setRemoteOnly] = useState<boolean>(false);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [experienceFilter, setExperienceFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalMatchesCount, setTotalMatchesCount] = useState<number>(0);
   const [hasMoreMatches, setHasMoreMatches] = useState<boolean>(false);
@@ -129,7 +131,9 @@ export const App: React.FC = () => {
     targetSource?: number,
     isRemote?: boolean,
     pageToFetch: number = 1,
-    isAppending: boolean = false
+    isAppending: boolean = false,
+    targetSearch?: string,
+    targetExperience?: string
   ) => {
     if (isAppending) {
       setIsLoadingMore(true);
@@ -140,7 +144,9 @@ export const App: React.FC = () => {
     try {
       const src = targetSource !== undefined ? targetSource : sourceFilter;
       const rem = isRemote !== undefined ? isRemote : remoteOnly;
-      const res = await api.jobs.getMatches(src, rem, pageToFetch, 20);
+      const search = targetSearch !== undefined ? targetSearch : searchKeyword;
+      const exp = targetExperience !== undefined ? targetExperience : experienceFilter;
+      const res = await api.jobs.getMatches(src, rem, pageToFetch, 20, search, exp);
 
       if (isAppending) {
         setMatches((prev) => [...prev, ...res.items]);
@@ -163,7 +169,7 @@ export const App: React.FC = () => {
 
   const handleLoadMoreMatches = () => {
     if (isLoadingMore || !hasMoreMatches) return;
-    fetchMatches(sourceFilter, remoteOnly, currentPage + 1, true);
+    fetchMatches(sourceFilter, remoteOnly, currentPage + 1, true, searchKeyword, experienceFilter);
   };
 
   const fetchSavedMatches = async () => {
@@ -421,6 +427,50 @@ export const App: React.FC = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <div className="relative min-w-[170px] sm:min-w-[210px] flex-1 sm:flex-initial">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={searchKeyword}
+                        onChange={(e) => setSearchKeyword(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            fetchMatches(sourceFilter, remoteOnly, 1, false, searchKeyword, experienceFilter);
+                          }
+                        }}
+                        placeholder={t.matches.searchPlaceholder || "Search .NET, C#, Role..."}
+                        className="w-full min-h-[40px] pl-8 pr-7 py-2 rounded-xl bg-white border border-black/10 text-xs text-[#333333] placeholder:text-slate-400 focus:outline-none focus:border-[#007070]"
+                      />
+                      {searchKeyword && (
+                        <button
+                          onClick={() => {
+                            setSearchKeyword('');
+                            fetchMatches(sourceFilter, remoteOnly, 1, false, '', experienceFilter);
+                          }}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+
+                    <select
+                      value={experienceFilter}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setExperienceFilter(val);
+                        fetchMatches(sourceFilter, remoteOnly, 1, false, searchKeyword, val);
+                      }}
+                      className="min-h-[40px] px-3 py-2 rounded-xl bg-white border border-black/10 text-base sm:text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
+                    >
+                      <option value="all">{t.matches.allExperience || 'All Experience Levels'}</option>
+                      <option value="fresher_junior">{t.matches.fresherJunior || '🌱 Fresher & Junior (0-3 yrs)'}</option>
+                      <option value="fresher">{t.matches.fresher || '🌱 Fresher / Intern / Graduate'}</option>
+                      <option value="junior">{t.matches.junior || '⚡ Junior / Associate (1-3 yrs)'}</option>
+                      <option value="mid">{t.matches.mid || '🎯 Mid-Level (2-5 yrs)'}</option>
+                      <option value="senior">{t.matches.senior || '💎 Senior & Lead (5+ yrs)'}</option>
+                    </select>
+
                     <button
                       onClick={handleSyncJobs}
                       disabled={isSyncingJobs}
@@ -438,7 +488,7 @@ export const App: React.FC = () => {
                         onChange={(e) => {
                           const val = e.target.checked;
                           setRemoteOnly(val);
-                          fetchMatches(sourceFilter, val, 1, false);
+                          fetchMatches(sourceFilter, val, 1, false, searchKeyword, experienceFilter);
                         }}
                         className="rounded border-black/20 text-[#007070] focus:ring-0"
                       />
@@ -450,7 +500,7 @@ export const App: React.FC = () => {
                       onChange={(e) => {
                         const val = Number(e.target.value);
                         setSourceFilter(val);
-                        fetchMatches(val, remoteOnly, 1, false);
+                        fetchMatches(val, remoteOnly, 1, false, searchKeyword, experienceFilter);
                       }}
                       className="min-h-[40px] px-3 py-2 rounded-xl bg-white border border-black/10 text-base sm:text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
                     >
@@ -477,7 +527,7 @@ export const App: React.FC = () => {
                     </select>
 
                     <button
-                      onClick={() => fetchMatches(sourceFilter, remoteOnly, 1, false)}
+                      onClick={() => fetchMatches(sourceFilter, remoteOnly, 1, false, searchKeyword, experienceFilter)}
                       disabled={isLoadingMatches}
                       title="Refresh Matches"
                       className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl border border-black/10 text-[#7C7C7C] hover:text-[#0B0B0B] hover:bg-black/5 transition-all disabled:opacity-50 active:scale-95"
@@ -485,6 +535,69 @@ export const App: React.FC = () => {
                       <RefreshCw className={`w-4 h-4 ${isLoadingMatches ? 'animate-spin' : ''}`} />
                     </button>
                   </div>
+                </div>
+
+                {/* S7 Quick Filter Discovery Presets */}
+                <div className="flex flex-wrap items-center gap-2 pt-1 pb-3">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{t.matches.quickFilters || 'Quick Filters:'}</span>
+                  
+                  <button
+                    onClick={() => {
+                      setSearchKeyword('.NET');
+                      setExperienceFilter('fresher_junior');
+                      fetchMatches(sourceFilter, remoteOnly, 1, false, '.NET', 'fresher_junior');
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center space-x-1 ${
+                      searchKeyword === '.NET' && experienceFilter === 'fresher_junior'
+                        ? 'bg-[#007070] text-white border-[#007070] shadow-sm'
+                        : 'bg-teal-50 text-[#007070] border-teal-200 hover:bg-teal-100'
+                    }`}
+                  >
+                    <span>{t.matches.presetJuniorDotNet || '🚀 Junior .NET Developer'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSearchKeyword('.NET');
+                      setExperienceFilter('all');
+                      fetchMatches(sourceFilter, remoteOnly, 1, false, '.NET', 'all');
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center space-x-1 ${
+                      searchKeyword === '.NET' && experienceFilter === 'all'
+                        ? 'bg-[#007070] text-white border-[#007070] shadow-sm'
+                        : 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100'
+                    }`}
+                  >
+                    <span>{t.matches.presetDotNet || '🔷 .NET / C# Developer'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSearchKeyword('');
+                      setExperienceFilter('fresher_junior');
+                      fetchMatches(sourceFilter, remoteOnly, 1, false, '', 'fresher_junior');
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center space-x-1 ${
+                      !searchKeyword && experienceFilter === 'fresher_junior'
+                        ? 'bg-[#007070] text-white border-[#007070] shadow-sm'
+                        : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                    }`}
+                  >
+                    <span>{t.matches.presetFresherJunior || '🌱 All Fresher & Junior Roles'}</span>
+                  </button>
+
+                  {(searchKeyword || experienceFilter !== 'all') && (
+                    <button
+                      onClick={() => {
+                        setSearchKeyword('');
+                        setExperienceFilter('all');
+                        fetchMatches(sourceFilter, remoteOnly, 1, false, '', 'all');
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
+                    >
+                      {t.matches.resetFilters || 'Reset Filters'}
+                    </button>
+                  )}
                 </div>
 
                 {isLoadingMatches ? (

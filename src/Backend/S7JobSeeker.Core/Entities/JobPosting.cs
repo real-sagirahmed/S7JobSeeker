@@ -29,6 +29,9 @@ public class JobPosting
     public string? TimezoneRequirements { get; set; }
     public string? FlexibilityNotes { get; set; }
 
+    // S7 Standardized Experience Level (Fresher, Junior, Mid, Senior)
+    public string? ExperienceLevel { get; set; }
+
     public ICollection<JobMatchScore> MatchScores { get; set; } = [];
     public ICollection<TailoredApplication> TailoredApplications { get; set; } = [];
 }

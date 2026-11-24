@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using S7JobSeeker.Core.Entities;
 using S7JobSeeker.Core.Enums;
 using S7JobSeeker.Core.Interfaces;
+using S7JobSeeker.Infrastructure.Services;
 
 namespace S7JobSeeker.Infrastructure.JobFetchers;
 
@@ -14,9 +15,12 @@ public class LinkedinJobFetcher : IJobFetcherService
 
     private static readonly string[] SearchUrls =
     [
+        "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=dotnet+developer&location=Bangladesh&start=0",
+        "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=junior+dotnet+developer&location=Bangladesh&start=0",
+        "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=junior+software+engineer&location=Bangladesh&start=0",
+        "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=trainee+software+engineer&location=Bangladesh&start=0",
         "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=software+engineer&location=Bangladesh&start=0",
-        "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=software+engineer&location=Bangladesh&start=10",
-        "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=dotnet+developer&location=Bangladesh&start=0"
+        "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=software+engineer&location=Bangladesh&start=10"
     ];
 
     public LinkedinJobFetcher(HttpClient httpClient, ILogger<LinkedinJobFetcher> logger)
@@ -156,6 +160,7 @@ public class LinkedinJobFetcher : IJobFetcherService
                 SalaryRange = null,
                 JobType = "Full-time",
                 Description = descSummary,
+                ExperienceLevel = ExperienceLevelDetector.Detect(safeTitle, descSummary),
                 Url = directUrl,
                 PublishedAt = publishedAt,
                 CreatedAt = DateTime.UtcNow

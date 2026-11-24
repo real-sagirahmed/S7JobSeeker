@@ -63,10 +63,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             b.Property(j => j.Location).HasMaxLength(200);
             b.Property(j => j.Description).HasColumnType("nvarchar(max)").IsRequired();
             b.Property(j => j.TagsJson).HasColumnType("nvarchar(max)");
+            b.Property(j => j.ExperienceLevel).HasMaxLength(50);
             b.HasIndex(j => new { j.Source, j.ExternalId }).IsUnique();
             b.HasIndex(j => j.CreatedAt);
             b.HasIndex(j => j.IsRemote);
             b.HasIndex(j => j.Company);
+            b.HasIndex(j => j.ExperienceLevel);
         });
 
         // JobMatchScore

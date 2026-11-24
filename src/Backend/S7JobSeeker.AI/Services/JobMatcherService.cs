@@ -261,7 +261,8 @@ public class JobMatcherService : IJobMatcherService
             FlexHowScore: flexHow,
             IsWorkFromAnywhere: isWfa,
             TimezoneRequirements: tzReq,
-            FlexibilityNotes: flexNotes
+            FlexibilityNotes: flexNotes,
+            ExperienceLevel: job.ExperienceLevel
         );
     }
 
