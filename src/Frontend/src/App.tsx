@@ -464,11 +464,11 @@ export const App: React.FC = () => {
                       className="min-h-[40px] px-3 py-2 rounded-xl bg-white border border-black/10 text-base sm:text-xs text-[#333333] focus:outline-none focus:border-[#007070]"
                     >
                       <option value="all">{t.matches.allExperience || 'All Experience Levels'}</option>
-                      <option value="fresher_junior">{t.matches.fresherJunior || '🌱 Fresher & Junior (0-3 yrs)'}</option>
-                      <option value="fresher">{t.matches.fresher || '🌱 Fresher / Intern / Graduate'}</option>
-                      <option value="junior">{t.matches.junior || '⚡ Junior / Associate (1-3 yrs)'}</option>
-                      <option value="mid">{t.matches.mid || '🎯 Mid-Level (2-5 yrs)'}</option>
-                      <option value="senior">{t.matches.senior || '💎 Senior & Lead (5+ yrs)'}</option>
+                      <option value="fresher_junior">{t.matches.fresherJunior || 'Fresher & Junior (0-3 yrs)'}</option>
+                      <option value="fresher">{t.matches.fresher || 'Fresher / Intern / Graduate'}</option>
+                      <option value="junior">{t.matches.junior || 'Junior / Associate (1-3 yrs)'}</option>
+                      <option value="mid">{t.matches.mid || 'Mid-Level (2-5 yrs)'}</option>
+                      <option value="senior">{t.matches.senior || 'Senior & Lead (5+ yrs)'}</option>
                     </select>
 
                     <button
@@ -553,7 +553,7 @@ export const App: React.FC = () => {
                         : 'bg-teal-50 text-[#007070] border-teal-200 hover:bg-teal-100'
                     }`}
                   >
-                    <span>{t.matches.presetJuniorDotNet || '🚀 Junior .NET Developer'}</span>
+                    <span>{t.matches.presetJuniorDotNet || 'Junior .NET Developer'}</span>
                   </button>
 
                   <button
@@ -568,7 +568,7 @@ export const App: React.FC = () => {
                         : 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100'
                     }`}
                   >
-                    <span>{t.matches.presetDotNet || '🔷 .NET / C# Developer'}</span>
+                    <span>{t.matches.presetDotNet || '.NET / C# Developer'}</span>
                   </button>
 
                   <button
@@ -583,7 +583,7 @@ export const App: React.FC = () => {
                         : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
                     }`}
                   >
-                    <span>{t.matches.presetFresherJunior || '🌱 All Fresher & Junior Roles'}</span>
+                    <span>{t.matches.presetFresherJunior || 'All Fresher & Junior Roles'}</span>
                   </button>
 
                   {(searchKeyword || experienceFilter !== 'all') && (
