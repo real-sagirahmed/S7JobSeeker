@@ -462,6 +462,7 @@ export const App: React.FC = () => {
                       <option value={6}>We Work Remotely</option>
                       <option value={1}>Remotive</option>
                       <option value={2}>Arbeitnow</option>
+                      <option value={9}>Jobgether (Remote)</option>
                       <option value={4}>Custom Pasted</option>
                     </select>
 

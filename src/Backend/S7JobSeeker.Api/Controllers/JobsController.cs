@@ -472,6 +472,7 @@ public class JobsController : ControllerBase
                             JobSource.WeWorkRemotely => "We Work Remotely",
                             JobSource.Remotive => "Remotive",
                             JobSource.Arbeitnow => "Arbeitnow",
+                            JobSource.Jobgether => "Jobgether",
                             _ => "Custom Paste"
                         },
                         job.FlexScore,

@@ -6,12 +6,12 @@ namespace S7JobSeeker.Tests;
 public class ArchitecturalIntentLockTests
 {
     // ARCHITECTURAL INTENT: The system locks the Multi-Source Ingestion model:
-    // 6 Open API / Gateway sources (Remotive, Arbeitnow, Jobicy, Himalayas, Bdjobs, LinkedIn) + 1 RSS source (WeWorkRemotely) + 1 Custom Paste source.
+    // 7 Open API / Gateway sources (Remotive, Arbeitnow, Jobicy, Himalayas, Bdjobs, LinkedIn, Jobgether) + 1 RSS source (WeWorkRemotely) + 1 Custom Paste source.
     [Fact]
-    public void JobSourceEnum_MustHaveExactlyEightLockedSources()
+    public void JobSourceEnum_MustHaveExactlyNineLockedSources()
     {
         var sources = Enum.GetValues<JobSource>();
-        Assert.Equal(8, sources.Length);
+        Assert.Equal(9, sources.Length);
         Assert.Contains(JobSource.Remotive, sources);
         Assert.Contains(JobSource.Arbeitnow, sources);
         Assert.Contains(JobSource.Jobicy, sources);
@@ -20,6 +20,7 @@ public class ArchitecturalIntentLockTests
         Assert.Contains(JobSource.WeWorkRemotely, sources);
         Assert.Contains(JobSource.Bdjobs, sources);
         Assert.Contains(JobSource.LinkedIn, sources);
+        Assert.Contains(JobSource.Jobgether, sources);
     }
 
     [Fact]
@@ -95,7 +96,7 @@ public class ArchitecturalIntentLockTests
             var enExecutableCode = string.Join("\n", enCode.Split('\n').Where(line => !line.TrimStart().StartsWith("//")));
             var bnExecutableCode = string.Join("\n", bnCode.Split('\n').Where(line => !line.TrimStart().StartsWith("//")));
 
-            string[] bannedCompetitors = ["coursera", "udemy", "edx", "pluralsight", "jobgether", "jobcopilot"];
+            string[] bannedCompetitors = ["coursera", "udemy", "edx", "pluralsight", "jobcopilot"];
             foreach (var competitor in bannedCompetitors)
             {
                 Assert.DoesNotContain(competitor, enExecutableCode, StringComparison.OrdinalIgnoreCase);

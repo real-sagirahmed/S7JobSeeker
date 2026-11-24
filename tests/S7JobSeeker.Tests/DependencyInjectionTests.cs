@@ -56,8 +56,10 @@ public class DependencyInjectionTests
 
         services.AddHttpClient<RemotiveJobFetcher>();
         services.AddHttpClient<ArbeitnowJobFetcher>();
+        services.AddHttpClient<JobgetherJobFetcher>();
         services.AddScoped<IJobFetcherService, RemotiveJobFetcher>();
         services.AddScoped<IJobFetcherService, ArbeitnowJobFetcher>();
+        services.AddScoped<IJobFetcherService, JobgetherJobFetcher>();
 
         services.AddSingleton<IQdrantVectorService, QdrantVectorService>();
         services.AddScoped<IResumeParserService, ResumeParserService>();

@@ -813,7 +813,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
           <div>
             <h3 className="text-base font-bold text-slate-900">Job Pipeline Aggregator Engine</h3>
             <p className="text-xs text-slate-500 mt-1">
-              Currently ingesting and deduplicating jobs from 7 active platforms.
+              Currently ingesting and deduplicating jobs from 8 active platforms.
             </p>
           </div>
 
@@ -825,7 +825,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
               { name: 'Himalayas', tag: 'Global Tech API' },
               { name: 'We Work Remotely', tag: 'RSS Feed' },
               { name: 'Remotive', tag: 'Developer API' },
-              { name: 'Arbeitnow', tag: 'European & Remote API' }
+              { name: 'Arbeitnow', tag: 'European & Remote API' },
+              { name: 'Jobgether', tag: 'Global Remote REST API' }
             ].map((src, i) => (
               <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                 <div className="font-bold text-slate-900 text-xs">{src.name}</div>
@@ -841,7 +842,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNotify }) => {
               className="w-full sm:w-auto min-h-[44px] justify-center px-6 py-3 rounded-xl bg-[#007070] hover:bg-[#005858] active:scale-[0.98] text-white text-xs font-extrabold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? 'Ingesting Jobs from 7 Sources...' : 'Trigger Live Sync Now'}</span>
+              <span>{isSyncing ? 'Ingesting Jobs from 8 Sources...' : 'Trigger Live Sync Now'}</span>
             </button>
           </div>
         </div>

@@ -9,5 +9,6 @@ public enum JobSource
     Himalayas = 5,
     WeWorkRemotely = 6,
     Bdjobs = 7,
-    LinkedIn = 8
+    LinkedIn = 8,
+    Jobgether = 9
 }
